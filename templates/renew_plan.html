@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<title>CDR Intelligence — Renew / Change Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#04100a;--surface:#091a10;--surface2:#0d2218;--border:#1e4030;--accent:#c9a84c;--accent2:#fff;--muted:#1e4030;--text:#fff;--dim:#888;--danger:#ff003c;--success:#00c853;--mono:'Share Tech Mono',monospace;--sans:'Barlow',sans-serif;--cond:'Barlow Condensed',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(201,168,76,.012) 2px,rgba(201,168,76,.012) 4px);pointer-events:none;z-index:9999}
+header{padding:18px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:relative}
+header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-mark{width:36px;height:36px;border:2px solid var(--accent);display:grid;place-items:center}
+.logo-title{font-family:var(--cond);font-size:1.2rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.logo-sub{font-family:var(--mono);font-size:.7rem;color:var(--dim);letter-spacing:.15em;margin-top:2px}
+.back-btn{font-family:var(--mono);font-size:.75rem;color:var(--accent);text-decoration:none;letter-spacing:.1em;border:1px solid var(--border);padding:6px 14px}
+.back-btn:hover{border-color:var(--accent)}
+main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px}
+.container{width:100%;max-width:680px}
+
+/* Current plan banner */
+.current-plan{background:var(--surface);border:1px solid var(--border);padding:20px 28px;margin-bottom:30px;position:relative}
+.current-plan::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.cp-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cp-item{text-align:center}
+.cp-val{font-family:var(--cond);font-size:1.4rem;font-weight:900;color:var(--accent);letter-spacing:.05em}
+.cp-key{font-family:var(--mono);font-size:.65rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+
+/* Section title */
+.section-title{font-family:var(--cond);font-size:1.2rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Plan cards */
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.plan-card{background:var(--surface);border:2px solid var(--border);padding:20px 16px;cursor:pointer;transition:border-color .2s,background .2s;position:relative;text-align:center}
+.plan-card:hover{border-color:var(--accent)}
+.plan-card.selected{border-color:var(--accent);background:rgba(201,168,76,.06)}
+.plan-card.selected::before{content:'✓ SELECTED';position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:.55rem;color:var(--accent);letter-spacing:.1em}
+.plan-card input[type=radio]{position:absolute;opacity:0;width:0}
+.plan-name{font-family:var(--cond);font-size:1.1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text);margin-bottom:6px}
+.plan-price{font-family:var(--mono);font-size:1.3rem;color:var(--accent);font-weight:bold;margin-bottom:8px}
+.plan-features{font-family:var(--mono);font-size:.65rem;color:var(--dim);line-height:1.9;letter-spacing:.05em}
+
+/* Form fields */
+.form-group{margin-bottom:20px}
+label{display:block;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+input[type=text],select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.95rem;padding:12px 14px;outline:none;transition:border-color .2s}
+input[type=text]:focus,select:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
+.hint{font-family:var(--mono);font-size:.65rem;color:var(--dim);margin-top:6px;letter-spacing:.05em}
+
+/* Alert */
+.alert{padding:12px 16px;margin-bottom:20px;font-family:var(--mono);font-size:.8rem;border:1px solid}
+.alert-success{background:rgba(0,200,83,.07);border-color:rgba(0,200,83,.3);color:var(--success)}
+.alert-error{background:rgba(255,0,60,.07);border-color:rgba(255,0,60,.3);color:var(--danger)}
+.alert::before{margin-right:8px}
+.alert-success::before{content:'✔'}
+.alert-error::before{content:'✖'}
+
+/* Submit */
+.btn{width:100%;background:var(--accent);color:#000;border:none;font-family:var(--cond);font-size:1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:14px;cursor:pointer;transition:all .2s;margin-top:4px}
+.btn:hover{background:#d4a843;transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Info note */
+.info-note{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);padding:14px 18px;font-family:var(--mono);font-size:.72rem;color:var(--dim);line-height:1.8;margin-top:24px}
+.info-note strong{color:var(--accent)}
+
+footer{text-align:center;padding:16px;font-family:var(--mono);font-size:.75rem;color:var(--dim);border-top:1px solid var(--border)}
+
+/* Mobile */
+@media(max-width:600px){
+  header{padding:14px 16px}
+  main{padding:20px 14px}
+  .cp-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .cp-val{font-size:1.1rem}
+  .plan-grid{grid-template-columns:1fr}
+  .plan-card{padding:16px}
+  .logo-sub{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="4" stroke="#c9a84c" stroke-width="1.5"/>
+        <path d="M9 1v3M9 14v3M1 9h3M14 9h3" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-title">CDR Intelligence</div>
+      <div class="logo-sub">Subscription Management</div>
+    </div>
+  </div>
+  <a href="/upload" class="back-btn">← Dashboard</a>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- Current Plan Info -->
+    <div class="current-plan">
+      <div class="cp-label">▸ Current Subscription Status</div>
+      <div class="cp-grid">
+        <div class="cp-item">
+          <div class="cp-val">{{ plan_label }}</div>
+          <div class="cp-key">Active Plan</div>
+        </div>
+        <div class="cp-item">
+          <div class="cp-val">{{ days_remaining }}</div>
+          <div class="cp-key">Days Remaining</div>
+        </div>
+        <div class="cp-item">
+          <div class="cp-val">{{ expiry_date }}</div>
+          <div class="cp-key">Expiry Date</div>
+        </div>
+      </div>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">Renewal request submitted successfully. Admin will review and activate your plan.</div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <!-- Plan Selection -->
+    <div class="section-title">Select New Plan</div>
+    <form action="/auth/renew-plan" method="POST" id="renewForm">
+
+      <div class="plan-grid">
+        <label class="plan-card" id="card-1month" onclick="selectPlan('1_month')">
+          <input type="radio" name="new_plan" value="1_month" id="p1"/>
+          <div class="plan-name">Basic</div>
+          <div class="plan-price">1 Month</div>
+          <div class="plan-features">
+            30 CDR uploads<br>
+            Single CDR analysis<br>
+            All visualizations<br>
+            Email support
+          </div>
+        </label>
+        <label class="plan-card" id="card-6months" onclick="selectPlan('6_months')">
+          <input type="radio" name="new_plan" value="6_months" id="p6"/>
+          <div class="plan-name">Standard</div>
+          <div class="plan-price">6 Months</div>
+          <div class="plan-features">
+            Unlimited uploads<br>
+            Dual CDR analysis<br>
+            All visualizations<br>
+            Priority support
+          </div>
+        </label>
+        <label class="plan-card" id="card-1year" onclick="selectPlan('1_year')">
+          <input type="radio" name="new_plan" value="1_year" id="p12"/>
+          <div class="plan-name">Extended</div>
+          <div class="plan-price">1 Year</div>
+          <div class="plan-features">
+            Unlimited uploads<br>
+            Dual CDR analysis<br>
+            All visualizations<br>
+            Dedicated support
+          </div>
+        </label>
+      </div>
+
+      <!-- Request Type -->
+      <div class="form-group">
+        <label>Request Type</label>
+        <select name="request_type" required>
+          <option value="" disabled selected>— Select request type —</option>
+          <option value="renewal">Renewal (same plan, new payment)</option>
+          <option value="upgrade">Plan Change / Upgrade</option>
+        </select>
+      </div>
+
+      <!-- Transaction ID -->
+      <div class="form-group">
+        <label>Payment Transaction ID</label>
+        <input type="text" name="transaction_id" placeholder="e.g. TXN-20260609-XXXXXX" required maxlength="100"/>
+        <div class="hint">Enter the transaction/reference ID from your bank transfer or payment receipt.</div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label>Additional Notes <span style="color:var(--dim);font-size:.6rem">(optional)</span></label>
+        <input type="text" name="notes" placeholder="Any remarks for the admin…" maxlength="250"/>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn" disabled>Submit Renewal Request →</button>
+    </form>
+
+    <div class="info-note">
+      <strong>How it works:</strong><br>
+      1. Select your desired plan above.<br>
+      2. Make the payment via your usual method and get the transaction ID.<br>
+      3. Submit this form — admin will verify and activate within 24 hours.<br>
+      If renewing the same plan, your <strong>subscription period will be extended</strong> from the current expiry date.
+    </div>
+
+  </div>
+</main>
+
+<footer>CDR Intelligence Portal &nbsp;|&nbsp; Authorized Personnel Only</footer>
+
+<script>
+function selectPlan(val) {
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  const map = {'1_month':'card-1month','6_months':'card-6months','1_year':'card-1year'};
+  document.getElementById(map[val]).classList.add('selected');
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// Restore selection if form was re-rendered
+const checked = document.querySelector('input[name=new_plan]:checked');
+if (checked) selectPlan(checked.value);
+</script>
+</body>
+</html>

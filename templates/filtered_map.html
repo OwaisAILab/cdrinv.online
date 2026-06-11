@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Filtered CDR Tower Map</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: monospace; }
+        #map { width: 100%; height: 100vh; }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid #c9a84c;
+            pointer-events: none;
+            font-family: monospace;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: #c9a84c;
+            color: black;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+        .close-btn:hover {
+            background: #d4a843;
+        }
+    </style>
+</head>
+<body>
+    <button class="close-btn" onclick="window.close()">← Close Map</button>
+    <div class="info-panel" id="infoPanel">
+        Loading filtered towers...
+    </div>
+    <div id="map"></div>
+
+    <script>
+        // Get filtered data from sessionStorage
+        let mapData = [];
+        const storedData = sessionStorage.getItem('filteredMapData');
+        const filterDate = sessionStorage.getItem('filterDate') || 'unknown date';
+        
+        if (storedData) {
+            mapData = JSON.parse(storedData);
+            document.getElementById('infoPanel').innerHTML = `
+                📅 <b>${filterDate}</b><br>
+                📍 ${mapData.length} tower location${mapData.length !== 1 ? 's' : ''} active
+            `;
+        } else {
+            document.getElementById('infoPanel').innerHTML = '⚠️ No filtered data found';
+        }
+        
+        // Initialize map
+        const map = L.map('map').setView([24.8607, 67.0011], 11);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const points = [];
+        const markers = [];
+        
+        mapData.forEach((point, index) => {
+            const lat = parseFloat(point.latitude);
+            const lng = parseFloat(point.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) return;
+            
+            points.push([lat, lng]);
+            
+            // Create marker with custom icon
+            const marker = L.marker([lat, lng]).addTo(map);
+            
+            // Popup with tower info
+            marker.bindPopup(`
+                <b>Tower:</b> ${point.tower || 'N/A'}<br>
+                <b>Sector:</b> ${point.sector || 'N/A'}<br>
+                <b>Time:</b> ${point.time || 'N/A'}<br>
+                <b>Index:</b> #${index + 1}
+            `);
+            
+            markers.push(marker);
+            
+            // Add circle to show tower coverage
+            L.circle([lat, lng], {
+                radius: 500,
+                color: '#c9a84c',
+                fillColor: '#c9a84c',
+                fillOpacity: 0.1
+            }).addTo(map);
+        });
+        
+        // Draw movement path if there are points
+        if (points.length > 1) {
+            const polyline = L.polyline(points, {
+                color: '#ff003c',
+                weight: 2,
+                opacity: 0.7
+            }).addTo(map);
+            
+            map.fitBounds(polyline.getBounds());
+        } else if (points.length === 1) {
+            map.setView(points[0], 14);
+        }
+        
+        // Clear session storage after use (optional)
+        // sessionStorage.removeItem('filteredMapData');
+    </script>
+</body>
+</html>

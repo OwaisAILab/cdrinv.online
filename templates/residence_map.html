@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Residence Zone Map</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { width: 100%; height: 100vh; }
+
+        .legend {
+            background: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .legend-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-swatch {
+            width: 24px; height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* Rank badge inside popups */
+        .rank-badge {
+            display: inline-block;
+            background: #c0392b;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 2px 7px;
+            border-radius: 12px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+
+// ─── MAP SETUP ────────────────────────────────────────────────────────────────
+const map = L.map('map').setView([24.8607, 67.0011], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// ─── COLOUR PALETTE (one per ranked zone) ────────────────────────────────────
+const ZONE_COLORS = ['#e74c3c', '#c9a84c', '#2ecc71'];   // red, orange, green
+const ZONE_LABELS = ['#1 Highest', '#2 Medium', '#3 Lowest'];
+
+// ─── SECTOR ANGLE MAP ─────────────────────────────────────────────────────────
+// Typical GSM layout: Sector 1 = 0°, Sector 2 = 120°, Sector 3 = 240°
+// Each sector spans 120°
+const SECTOR_BEARING = {
+    'Sector 1': 0,
+    'Sector 2': 120,
+    'Sector 3': 240,
+    '':         0     // fallback: full circle if sector unknown
+};
+
+// ─── HELPER: draw a sector wedge as a polygon ─────────────────────────────────
+// lat/lon   – tower centre
+// bearing   – start angle in degrees (0 = North, clockwise)
+// spread    – angular width in degrees (120 for trisector)
+// radius    – radius in metres
+// color     – fill/stroke colour
+function drawSector(lat, lon, bearing, spread, radius, color) {
+    const points = [[lat, lon]];   // start at the centre
+
+    const steps = 32;   // arc smoothness
+    for (let i = 0; i <= steps; i++) {
+        const angle = bearing + (spread * i / steps);
+        const rad   = (angle - 90) * Math.PI / 180;   // convert to standard math angle
+
+        // Approximate metres → degrees
+        const dLat = (radius * Math.cos(rad)) / 111320;
+        const dLon = (radius * Math.sin(rad)) / (111320 * Math.cos(lat * Math.PI / 180));
+
+        points.push([lat + dLat, lon + dLon]);
+    }
+    points.push([lat, lon]);   // close back to centre
+
+    return L.polygon(points, {
+        color:       color,
+        fillColor:   color,
+        fillOpacity: 0.18,
+        weight:      1.8,
+        dashArray:   '4 3'
+    });
+}
+
+// ─── HELPER: draw three sectors for one BTS ──────────────────────────────────
+// If sector is known, draw only that sector; otherwise draw all three.
+function drawBTSSectors(lat, lon, sectorLabel, color, radius) {
+    const group = L.layerGroup();
+
+    const knownSectors = ['Sector 1', 'Sector 2', 'Sector 3'];
+
+    if (knownSectors.includes(sectorLabel)) {
+        // Draw ALL THREE sectors so the tower shape is always visible,
+        // but highlight the active sector with a slightly stronger fill.
+        knownSectors.forEach(s => {
+            const bearing = SECTOR_BEARING[s];
+            const isActive = (s === sectorLabel);
+            const poly = L.polygon([], {});   // placeholder – rebuild below
+
+            const points = [[lat, lon]];
+            const steps  = 32;
+            for (let i = 0; i <= steps; i++) {
+                const angle = bearing + (120 * i / steps);
+                const rad   = (angle - 90) * Math.PI / 180;
+                const dLat  = (radius * Math.cos(rad)) / 111320;
+                const dLon  = (radius * Math.sin(rad)) / (111320 * Math.cos(lat * Math.PI / 180));
+                points.push([lat + dLat, lon + dLon]);
+            }
+            points.push([lat, lon]);
+
+            L.polygon(points, {
+                color:       color,
+                fillColor:   color,
+                fillOpacity: isActive ? 0.28 : 0.08,
+                weight:      isActive ? 2.2 : 1.2,
+                dashArray:   isActive ? null : '4 3'
+            }).addTo(group);
+        });
+
+    } else {
+        // Unknown sector → draw full circle as fallback
+        L.circle([lat, lon], {
+            radius:      radius,
+            color:       color,
+            fillOpacity: 0.15,
+            weight:      2,
+            dashArray:   '4 3'
+        }).addTo(group);
+    }
+
+    return group;
+}
+
+// ─── LEGEND ───────────────────────────────────────────────────────────────────
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function() {
+    const div = L.DomUtil.create('div', 'legend');
+    div.innerHTML = `
+        <div class="legend-title">🏠 Residence Zones</div>
+        ${ZONE_COLORS.map((c, i) => `
+            <div class="legend-item">
+                <div class="legend-swatch" style="background:${c}"></div>
+                ${ZONE_LABELS[i]}
+            </div>`).join('')}
+        <hr style="margin:6px 0">
+        <div style="font-size:11px;color:#555">
+            <b>Solid wedge</b> = active sector<br>
+            <b>Faint wedge</b> = other sectors
+        </div>
+    `;
+    return div;
+};
+legend.addTo(map);
+
+// ─── LOAD DATA & RENDER ───────────────────────────────────────────────────────
+fetch('/residence-data')
+    .then(r => r.json())
+    .then(data => {
+        const bounds = [];
+
+        data
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3)
+            .forEach((zone, idx) => {
+
+                const lat    = parseFloat(zone.latitude);
+                const lng    = parseFloat(zone.longitude);
+                const color  = ZONE_COLORS[idx] || '#3498db';
+                const sector = zone.sector || '';
+                const rank   = idx + 1;
+
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                // ── BTS sector wedges ─────────────────────────────────────────
+                drawBTSSectors(lat, lng, sector, color, 500).addTo(map);
+
+                // ── Centre marker ─────────────────────────────────────────────
+                const icon = L.divIcon({
+                    html: `<div style="
+                        background:${color};
+                        color:white;
+                        width:26px;height:26px;
+                        border-radius:50%;
+                        display:flex;align-items:center;
+                        justify-content:center;
+                        font-weight:bold;font-size:13px;
+                        border:2px solid white;
+                        box-shadow:0 1px 4px rgba(0,0,0,0.4);
+                    ">${rank}</div>`,
+                    className: '',
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13]
+                });
+
+                L.marker([lat, lng], { icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="rank-badge">Rank #${rank}</div><br>
+                        <b>${zone.tower_address || 'Residence Zone'}</b><br>
+                        <b>Sector:</b> ${sector || '—'}<br>
+                        <b>Score:</b> ${zone.score}<br>
+                        <b>Lat:</b> ${lat.toFixed(5)}<br>
+                        <b>Lon:</b> ${lng.toFixed(5)}
+                    `);
+
+                bounds.push([lat, lng]);
+            });
+
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [60, 60] });
+        }
+    })
+    .catch(err => console.error('Failed to load residence data:', err));
+
+</script>
+</body>
+</html>

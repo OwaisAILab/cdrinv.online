@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>
+CDR Network Graph
+</title>
+
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+<style>
+
+#network {
+
+width:100%;
+height:95vh;
+
+border:1px solid #ccc;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>
+CDR Relationship Graph
+</h2>
+
+<div id="network"></div>
+
+<script>
+
+fetch("/network-data")
+
+.then(response => response.json())
+
+.then(data => {
+
+const nodes =
+new vis.DataSet(
+    data.nodes
+);
+
+const edges =
+new vis.DataSet(
+    data.edges
+);
+
+const container =
+document.getElementById(
+    "network"
+);
+
+const network =
+new vis.Network(
+
+    container,
+
+    {
+        nodes: nodes,
+        edges: edges
+    },
+
+    {
+
+        physics: {
+
+            enabled: true
+        },
+
+        nodes: {
+
+            scaling: {
+
+                min: 10,
+                max: 50
+            }
+        },
+
+        edges: {
+
+            scaling: {
+
+                min: 1,
+                max: 10
+            }
+        }
+    }
+);
+
+});
+
+</script>
+
+</body>
+</html>

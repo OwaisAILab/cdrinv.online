@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CDR Intelligence Portal — Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+
+/* ── GLOBAL READABILITY ──────────────────────────────────── */
+html { font-size: 16px; }
+body { font-size: 1rem; line-height: 1.6; }
+:root{--bg:#04100a;--surface:#091a10;--surface2:#0d2218;--border:#1e4030;--accent:#c9a84c;--accent2:#fff;--muted:#1e4030;--text:#fff;--dim:#888;--danger:#ff003c;--green:#00d68f;--mono:'Share Tech Mono',monospace;--sans:'Barlow',sans-serif;--cond:'Barlow Condensed',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(201,168,76,.012) 2px,rgba(201,168,76,.012) 4px);pointer-events:none;z-index:9999}
+/* header */
+header{padding:22px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:relative}
+header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-mark{width:38px;height:38px;border:2px solid var(--accent);display:grid;place-items:center;position:relative;animation:pulse-border 3s ease-in-out infinite}
+.logo-mark::before{content:'';position:absolute;inset:5px;background:var(--accent);opacity:.12}
+.logo-mark svg{position:relative;z-index:1}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}50%{box-shadow:0 0 0 8px rgba(201,168,76,0)}}
+.logo-title{font-family:var(--cond);font-size:1.3rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);line-height:1}
+.logo-sub{font-family:var(--mono);font-size: 0.90rem;color:var(--muted);letter-spacing:.2em;margin-top:3px}
+.header-right{font-family:var(--mono);font-size: 1.0rem;color:var(--dim)}
+.header-right a{color:var(--accent);text-decoration:none}
+.header-right a:hover{text-decoration:underline}
+/* main */
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.card{width:100%;max-width:520px;background:var(--surface);border:1px solid var(--border);padding:40px}
+.card-header{margin-bottom:32px;text-align:center}
+.card-title{font-family:var(--cond);font-size:1.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.card-sub{font-family:var(--mono);font-size: 0.95rem;color:var(--dim);letter-spacing:.15em;margin-top:6px}
+/* steps indicator */
+.steps{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--border)}
+.step{flex:1;padding:8px;text-align:center;font-family:var(--mono);font-size: 0.90rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;position:relative}
+.step.active{color:var(--accent);background:rgba(201,168,76,.07)}
+.step.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent)}
+/* form */
+.form-group{margin-bottom:20px}
+label{display:block;font-family:var(--mono);font-size: 0.95rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+input,select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size: 1.1rem;padding:12px 14px;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+select option{background:var(--surface2)}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* subscription cards */
+.sub-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.sub-card{border:1px solid var(--border);padding:16px;cursor:pointer;transition:all .2s;position:relative}
+.sub-card:hover{border-color:var(--accent)}
+.sub-card input[type=radio]{position:absolute;opacity:0;pointer-events:none}
+.sub-card.selected{border-color:var(--accent);background:rgba(201,168,76,.07)}
+.sub-card .plan-name{font-family:var(--cond);font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.sub-card .plan-duration{font-family:var(--mono);font-size: 1.0rem;color:var(--dim);margin-top:4px}
+.sub-card .plan-badge{display:inline-block;margin-top:8px;font-family:var(--mono);font-size: 0.85rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;background:var(--accent);color:#000}
+/* errors */
+.errors{background:rgba(255,0,60,.08);border:1px solid rgba(255,0,60,.3);padding:14px 16px;margin-bottom:20px;list-style:none}
+.errors li{font-family:var(--mono);font-size: 1.05rem;color:var(--danger);padding:2px 0}
+.errors li::before{content:'✖ ';opacity:.7}
+/* btn */
+.btn{width:100%;background:var(--accent);color:#000;border:none;font-family:var(--cond);font-size:1rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:14px;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn:hover{background:#d4a843;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+/* note */
+.note{font-family:var(--mono);font-size: 0.95rem;color:var(--dim);margin-top:18px;line-height:1.7;text-align:center;border-top:1px solid var(--border);padding-top:14px}
+.note strong{color:var(--accent)}
+/* footer */
+footer{text-align:center;padding:16px;font-family:var(--mono);font-size: 0.90rem;color:var(--muted);border-top:1px solid var(--border)}
+.req-item{font-family:var(--mono);font-size: 0.88rem;letter-spacing:.06em;color:var(--dim);transition:color .2s}
+.req-item.ok{color:var(--green,#00d68f)}
+.req-item .req-icon{display:inline-block;width:1.2em}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="4" stroke="#c9a84c" stroke-width="1.5"/>
+        <path d="M9 1v3M9 14v3M1 9h3M14 9h3" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-title">CDR Intelligence</div>
+      <div class="logo-sub">Authorized Access Only</div>
+    </div>
+  </div>
+  <div class="header-right">Already registered? <a href="/auth/login">Sign In →</a></div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Create Account</div>
+      <div class="card-sub">Investigation Officer Registration</div>
+    </div>
+
+    <div class="steps">
+      <div class="step active">01 · Register</div>
+      <div class="step">02 · Verify Email</div>
+      <div class="step">03 · Await Approval</div>
+      <div class="step">04 · Access</div>
+    </div>
+
+    {% if errors %}
+    <ul class="errors">
+      {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="POST" action="/auth/register" id="regForm">
+      <div class="row-2">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" value="{{ (form or {}).get('username','') }}" placeholder="officer_id" required autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" value="{{ (form or {}).get('email','') }}" placeholder="you@example.com" required/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div style="position:relative">
+          <input type="password" name="password" id="pwInput" placeholder="Min 8 chars, mixed case, number, symbol" required oninput="checkStrength(this.value)"/>
+          <button type="button" onclick="toggleVis('pwInput',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);font-family:var(--mono);font-size: 0.92rem;cursor:pointer;letter-spacing:.05em">show</button>
+        </div>
+        <!-- strength bar -->
+        <div style="margin-top:8px">
+          <div style="display:flex;gap:4px;margin-bottom:6px">
+            <div class="sbar" id="s1" style="flex:1;height:3px;background:var(--border);transition:background .3s"></div>
+            <div class="sbar" id="s2" style="flex:1;height:3px;background:var(--border);transition:background .3s"></div>
+            <div class="sbar" id="s3" style="flex:1;height:3px;background:var(--border);transition:background .3s"></div>
+            <div class="sbar" id="s4" style="flex:1;height:3px;background:var(--border);transition:background .3s"></div>
+            <div class="sbar" id="s5" style="flex:1;height:3px;background:var(--border);transition:background .3s"></div>
+          </div>
+          <div id="strengthLabel" style="font-family:var(--mono);font-size: 0.88rem;letter-spacing:.08em;color:var(--dim)"></div>
+        </div>
+        <!-- requirements checklist -->
+        <ul style="list-style:none;margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:3px 12px">
+          <li id="req-len"  class="req-item"><span class="req-icon">✗</span> Min 8 characters</li>
+          <li id="req-up"   class="req-item"><span class="req-icon">✗</span> Uppercase letter</li>
+          <li id="req-low"  class="req-item"><span class="req-icon">✗</span> Lowercase letter</li>
+          <li id="req-num"  class="req-item"><span class="req-icon">✗</span> Number (0–9)</li>
+          <li id="req-spec" class="req-item"><span class="req-icon">✗</span> Special character</li>
+        </ul>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <div style="position:relative">
+          <input type="password" name="confirm_password" id="cpwInput" placeholder="Re-enter password" required oninput="checkMatch()"/>
+          <button type="button" onclick="toggleVis('cpwInput',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);font-family:var(--mono);font-size: 0.92rem;cursor:pointer;letter-spacing:.05em">show</button>
+        </div>
+        <div id="matchMsg" style="font-family:var(--mono);font-size: 0.88rem;margin-top:6px;letter-spacing:.06em"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Transaction ID (you have paid to PK44MEZN0099110107413195 of Mezzan Bank)</label>
+        <input type="text" name="transaction_id" value="{{ (form or {}).get('transaction_id','') }}" placeholder="e.g. TXN-20250604-XXXX" required autocomplete="off"/>
+      </div>
+
+      <div class="form-group">
+        <label>Subscription Plan</label>
+
+        <!-- Live rate indicator -->
+        <div style="font-family:var(--mono);font-size:0.80rem;letter-spacing:0.08em;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+          <span id="reg-rate-dot" style="width:7px;height:7px;border-radius:50%;background:var(--border);display:inline-block;flex-shrink:0"></span>
+          <span id="reg-rate-display">Fetching live rate…</span>
+        </div>
+
+        <div class="sub-cards" id="subCards">
+
+          <!-- BASIC -->
+          <div class="sub-card" id="card1m" onclick="selectPlan('1_month')">
+            <input type="radio" name="subscription_type" value="1_month" id="plan1m"/>
+            <div class="plan-name">Basic</div>
+            <div class="plan-duration">1 Month · 30-day access</div>
+            <div style="font-family:var(--cond);font-size:1.15rem;font-weight:900;color:var(--accent);margin-top:8px" id="reg-price-1m">…</div>
+            <div style="font-family:var(--mono);font-size:0.75rem;color:var(--dim);margin-top:3px">100 CDRs max</div>
+            <span class="plan-badge">Basic</span>
+          </div>
+
+          <!-- STANDARD -->
+          <div class="sub-card" id="card6m" onclick="selectPlan('6_months')">
+            <input type="radio" name="subscription_type" value="6_months" id="plan6m"/>
+            <div class="plan-name">Standard</div>
+            <div class="plan-duration">6 Months · 180-day access</div>
+            <div style="font-family:var(--cond);font-size:1.15rem;font-weight:900;color:var(--accent);margin-top:8px" id="reg-price-6m">…</div>
+            <div style="font-family:var(--mono);font-size:0.75rem;color:var(--dim);margin-top:3px">Unlimited CDRs</div>
+            <span class="plan-badge">Standard</span>
+          </div>
+
+          <!-- EXTENDED -->
+          <div class="sub-card" id="card1y" onclick="selectPlan('1_year')">
+            <input type="radio" name="subscription_type" value="1_year" id="plan1y"/>
+            <div class="plan-name">Extended</div>
+            <div class="plan-duration">1 Year · 365-day access</div>
+            <div style="font-family:var(--cond);font-size:1.15rem;font-weight:900;color:var(--accent);margin-top:8px" id="reg-price-1y">…</div>
+            <div style="font-family:var(--mono);font-size:0.75rem;color:var(--dim);margin-top:3px">Unlimited CDRs · Geo-Fence</div>
+            <span class="plan-badge">Extended</span>
+          </div>
+
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Submit Registration →</button>
+    </form>
+
+    <div class="note">
+      After submission, an OTP will be sent to your email.<br>
+      Once verified, <strong>await admin approval</strong> (up to 30 min after payment confirmation).
+    </div>
+  </div>
+</main>
+
+<footer>CDR Intelligence Portal &nbsp;|&nbsp; Authorized Personnel Only</footer>
+
+<script>
+// ── USD base prices (edit here only) ──────────────────────
+const REG_PLANS = { "1_month": 3.6, "6_months": 20, "1_year": 40 };
+// ──────────────────────────────────────────────────────────
+
+function roundTo50(n) { return Math.ceil(n / 50) * 50; }
+function fmtPKR(n)    { return "Rs.\u200b" + roundTo50(n).toLocaleString("en-PK") + "/-"; }
+
+function setRegPrices(rate, live) {
+  document.getElementById("reg-price-1m").textContent = fmtPKR(REG_PLANS["1_month"]  * rate);
+  document.getElementById("reg-price-6m").textContent = fmtPKR(REG_PLANS["6_months"] * rate);
+  document.getElementById("reg-price-1y").textContent = fmtPKR(REG_PLANS["1_year"]   * rate);
+
+  const dot = document.getElementById("reg-rate-dot");
+  dot.style.background  = live ? "#4aad72" : "#c9a84c";
+  dot.style.animation   = live ? "pulse-border 2s ease-in-out infinite" : "none";
+  document.getElementById("reg-rate-display").textContent =
+    "1 USD = PKR\u00a0" + rate.toFixed(2) + (live ? "" : "\u00a0(offline rate)");
+}
+
+async function loadRegRate() {
+  try {
+    const r = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+    const d = await r.json();
+    if (d?.rates?.PKR) { setRegPrices(d.rates.PKR, true); return; }
+  } catch(_) {}
+  try {
+    const r = await fetch("https://api.frankfurter.app/latest?from=USD&to=PKR");
+    const d = await r.json();
+    if (d?.rates?.PKR) { setRegPrices(d.rates.PKR, true); return; }
+  } catch(_) {}
+  setRegPrices(278.50, false);
+}
+
+function selectPlan(val) {
+  ["1_month","6_months","1_year"].forEach(v => {
+    const cardId = { "1_month":"card1m", "6_months":"card6m", "1_year":"card1y" }[v];
+    document.getElementById(cardId).classList.toggle("selected", v === val);
+  });
+  const radioId = { "1_month":"plan1m", "6_months":"plan6m", "1_year":"plan1y" }[val];
+  document.getElementById(radioId).checked = true;
+}
+
+// Default selection + load prices
+selectPlan("6_months");
+loadRegRate();
+</script>
+
+<script>
+function toggleVis(id, btn) {
+  const f = document.getElementById(id);
+  f.type = f.type === 'password' ? 'text' : 'password';
+  btn.textContent = f.type === 'password' ? 'show' : 'hide';
+}
+
+const SPECIAL = new Set("!@#$%^&*()_+-=[]{}|;':\",.<>?/`~\\");
+const LEVELS  = ['','Weak','Fair','Good','Strong','Very Strong'];
+const COLORS  = ['','#c0392b','#e07060','#c9a84c','#4aad72','#2e7d4f'];
+
+function checkStrength(pw) {
+  const has = {
+    len:  pw.length >= 8,
+    up:   /[A-Z]/.test(pw),
+    low:  /[a-z]/.test(pw),
+    num:  /[0-9]/.test(pw),
+    spec: [...pw].some(c => SPECIAL.has(c)),
+  };
+  const score = Object.values(has).filter(Boolean).length;
+  const color = COLORS[score] || '#333';
+  const bars  = document.querySelectorAll('.sbar');
+  bars.forEach((b, i) => b.style.background = i < score ? color : 'var(--border)');
+  document.getElementById('strengthLabel').textContent = score > 0 ? LEVELS[score] : '';
+  document.getElementById('strengthLabel').style.color = color;
+
+  setReq('req-len',  has.len);
+  setReq('req-up',   has.up);
+  setReq('req-low',  has.low);
+  setReq('req-num',  has.num);
+  setReq('req-spec', has.spec);
+  checkMatch();
+}
+
+function setReq(id, ok) {
+  const el = document.getElementById(id);
+  const icon = el.querySelector('.req-icon');
+  icon.textContent = ok ? '✓' : '✗';
+  el.classList.toggle('ok', ok);
+}
+
+function checkMatch() {
+  const pw  = document.getElementById('pwInput').value;
+  const cpw = document.getElementById('cpwInput').value;
+  const el  = document.getElementById('matchMsg');
+  if (!cpw) { el.textContent = ''; return; }
+  if (pw === cpw) {
+    el.textContent = '✓ Passwords match';
+    el.style.color = '#4aad72';
+  } else {
+    el.textContent = '✗ Passwords do not match';
+    el.style.color = '#c0392b';
+  }
+}
+</script>
+
+</body>
+</html>

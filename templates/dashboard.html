@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>CDR Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #000000; /* Pure Black for maximum contrast */
+      --surface:   #121212; /* Dark Grey */
+      --surface2:  #1e1e1e;
+      --border:    #333333;
+      
+      --accent:    #c9a84c; /* Fire Orange */
+      --accent2:   #ffffff; /* Bold White */
+      --accent3:   #707070; /* Concrete Grey */
+      
+      --muted:     #404040;
+      --text:      #ffffff;
+      --text-dim:  #a0a0a0;
+      --danger:    #ff003c;
+
+      --mono:      'Share Tech Mono', monospace;
+      --sans:      'Barlow', sans-serif;
+      --cond:      'Barlow Condensed', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,180,80,0.012) 2px,
+        rgba(0,180,80,0.012) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Noise grain */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.4;
+    }
+
+    /* === HEADER === */
+    header {
+      position: relative;
+      padding: 28px 40px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .logo-mark {
+      width: 42px; height: 42px;
+      border: 2px solid var(--accent);
+      display: grid; place-items: center;
+      position: relative;
+      animation: pulse-border 3s ease-in-out infinite;
+    }
+    .logo-mark::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      background: var(--accent);
+      opacity: 0.15;
+    }
+    .logo-mark svg { position: relative; z-index: 1; }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,180,80,0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(0,180,80,0); }
+    }
+    .header-title h1 {
+      font-family: var(--cond);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .header-title p {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .status-pill {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent3);
+      letter-spacing: 0.1em;
+    }
+    .status-pill .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent3);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+    .timestamp {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-dim);
+    }
+    
+    /* === MAIN GRID === */
+    main {
+      padding: 32px 40px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto;
+      gap: 20px;
+    }
+
+    /* === CARD === */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      padding: 24px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 40%, transparent 100%);
+      opacity: 0.5;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Staggered delays */
+    .card:nth-child(1)  { animation-delay: 0.05s; }
+    .card:nth-child(2)  { animation-delay: 0.1s; }
+    .card:nth-child(3)  { animation-delay: 0.15s; }
+    .card:nth-child(4)  { animation-delay: 0.2s; }
+    .card:nth-child(5)  { animation-delay: 0.25s; }
+    .card:nth-child(6)  { animation-delay: 0.3s; }
+    .card:nth-child(7)  { animation-delay: 0.35s; }
+
+    /* Corner decorations */
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 24px; height: 24px;
+      border-top: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .card-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-label::before {
+      content: '';
+      display: inline-block;
+      width: 12px; height: 1px;
+      background: var(--accent);
+    }
+
+    /* Span rules */
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+
+    /* === SUMMARY STATS === */
+    #summary-card { grid-column: span 3; }
+    .summary-inner {
+      display: flex;
+      gap: 0;
+      align-items: stretch;
+    }
+    .stat-block {
+      flex: 1;
+      padding: 20px 32px;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-number {
+      font-family: var(--cond);
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      position: relative;
+    }
+    .stat-number::after {
+      content: attr(data-unit);
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 4px;
+      letter-spacing: 0.1em;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+    .stat-bar {
+      margin-top: 12px;
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-bar-fill {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      animation: barGrow 1.2s ease forwards;
+      transform-origin: left;
+    }
+
+
+    @keyframes barGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+    /* === RESIDENCE === */
+    .zone-item {
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      transition: border-color 0.2s;
+      cursor: default;
+    }
+    .zone-item:hover { border-color: var(--accent); }
+    .zone-item:last-of-type { margin-bottom: 0; }
+    .zone-addr {
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .zone-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .zone-tag {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .zone-score {
+      font-family: var(--cond);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: right;
+      line-height: 1;
+    }
+    .zone-score-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      text-align: right;
+    }
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-decoration: none;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      border: 1px solid var(--accent);
+      transition: background 0.2s, color 0.2s;
+    }
+    .map-link:hover { background: var(--accent); color: var(--bg); }
+
+    /* === WORKPLACE === */
+    .kv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .kv-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+    }
+    .kv-key {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+    .kv-val {
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .kv-val.accent { color: var(--accent2); }
+    .kv-val.score  { color: var(--accent); font-family: var(--cond); font-size: 1.4rem; }
+
+    /* === MOVEMENT === */
+    .radius-ring {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+    .ring-visual {
+      position: relative;
+      width: 72px; height: 72px;
+      flex-shrink: 0;
+    }
+    .ring-visual svg { width: 100%; height: 100%; }
+    .ring-visual .ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--cond);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .ring-visual .ring-unit {
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .ring-text h3 {
+      font-family: var(--cond);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .ring-text p {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .route-list { margin-top: 10px; }
+    .route-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(26,58,85,0.6);
+      font-size: 0.8rem;
+    }
+    .route-item:last-child { border-bottom: none; }
+    .route-rank {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--accent2);
+      width: 20px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .route-towers {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .route-count {
+      font-family: var(--cond);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* === RELATIONSHIP === */
+    .rel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .rel-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 14px;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .rel-item:hover { border-color: var(--accent2); transform: translateY(-2px); }
+    .rel-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .rel-val {
+      font-family: var(--cond);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent2);
+      line-height: 1;
+    }
+    .rel-key {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* === CONTACTS TABLE === */
+    .contacts-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+    thead tr {
+      background: rgba(0,180,80,0.06);
+      border-bottom: 1px solid var(--accent);
+    }
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.6rem;
+      color: var(--accent);
+      font-weight: 400;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(26,58,85,0.5);
+      transition: background 0.15s;
+      cursor: default;
+    }
+    tbody tr:hover { background: rgba(0,180,80,0.04); }
+    tbody td {
+      padding: 11px 16px;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    tbody td:first-child { color: var(--accent2); }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(0,180,80,0.08);
+      border: 1px solid rgba(0,180,80,0.2);
+      border-radius: 2px;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    /* === SECTION HEADER SHARED === */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-family: var(--cond);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .section-title span { color: var(--accent); }
+    .section-badge {
+      font-family: var(--mono);
+      font-size: 0.58rem;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    /* === SCROLLBAR === */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0; }
+
+    @media (max-width: 480px) {
+      header { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+      .header-right { flex-wrap: wrap; gap: 8px; }
+      .header-right a, .header-right button { font-size: .55rem !important; padding: 4px 8px !important; }
+    }
+
+
+    /* === RESPONSIVE === */
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr 1fr; padding: 20px; }
+      .span-3 { grid-column: span 2; }
+      .span-2 { grid-column: span 2; }
+      header { padding: 20px; flex-wrap: wrap; gap: 12px; }
+    }
+    @media (max-width: 600px) {
+      main { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+      .span-3, .span-2 { grid-column: span 1; }
+      .summary-inner { flex-direction: column; }
+      .stat-block { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 900;
+    }
+    #sidebar {
+      position: fixed; top: 0; right: -280px; width: 260px; height: 100vh;
+      background: var(--surface); border-left: 1px solid var(--border);
+      z-index: 1000; transition: right 0.25s ease;
+      display: flex; flex-direction: column; padding: 0;
+    }
+    #sidebar.open { right: 0; }
+    .sb-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sb-title {
+      font-family: var(--cond); font-size: 0.75rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--dim);
+    }
+    .sb-close {
+      background: none; border: none; color: var(--dim); cursor: pointer;
+      font-size: 1.1rem; padding: 0; line-height: 1;
+    }
+    .sb-close:hover { color: var(--text); }
+    .sb-nav { flex: 1; padding: 12px 0; }
+    .sb-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 20px; cursor: pointer;
+      font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.05em;
+      color: var(--dim); text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    .sb-item:hover { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+    .sb-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,214,143,0.04); }
+    .sb-item.danger { color: var(--danger); }
+    .sb-item.danger:hover { background: rgba(255,0,60,0.06); border-left-color: var(--danger); }
+    .sb-sep { height: 1px; background: var(--border); margin: 8px 20px; }
+    .sb-icon { width: 16px; text-align: center; flex-shrink: 0; }
+    /* hamburger button */
+    .menu-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--dim); cursor: pointer; padding: 6px 10px;
+      font-size: 1rem; transition: all 0.2s; margin-left: 10px;
+    }
+    .menu-btn:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-header">
+    <span class="sb-title">Navigation</span>
+    <button class="sb-close" onclick="closeSidebar()">✕</button>
+  </div>
+  <nav class="sb-nav">
+    <a class="sb-item active" href="/dashboard">
+      <span class="sb-icon">📊</span> Single CDR Analysis
+    </a>
+    <a class="sb-item" href="/upload">
+      <span class="sb-icon">⬆</span> Upload CDR
+    </a>
+    <div class="sb-sep"></div>
+    <a class="sb-item" href="/upload?tab=dual">
+      <span class="sb-icon">🔗</span> Dual CDR Analysis
+    </a>
+    <div class="sb-sep"></div>
+    <a class="sb-item" href="/">
+      <span class="sb-icon">🏠</span> Main Screen
+    </a>
+    <div class="sb-sep"></div>
+    <a class="sb-item danger" href="/auth/logout">
+      <span class="sb-icon">⏻</span> Logout
+    </a>
+  </nav>
+</div>
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="3" fill="#2e7d4f"/>
+        <path d="M10 2 L10 6 M10 14 L10 18 M2 10 L6 10 M14 10 L18 10" stroke="#2e7d4f" stroke-width="1.5"/>
+        <circle cx="10" cy="10" r="7" stroke="#2e7d4f" stroke-width="0.5" stroke-dasharray="2 3"/>
+      </svg>
+    </div>
+    <div class="header-title">
+      <h1>CDR Intelligence</h1>
+      <p>// SINGLE SUBJECT ANALYSIS MODULE v3.1</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><div class="dot"></div>ANALYSIS ACTIVE</div>
+    <div class="timestamp" id="clock">—</div>
+  </div>
+  <button onclick="exportPDF()" style="
+  font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em;
+  padding:8px 16px; background:transparent;
+  border:1px solid var(--accent); color:var(--accent);
+  cursor:pointer; text-transform:uppercase;
+  transition:background 0.2s, color 0.2s;
+" onmouseover="this.style.background='var(--accent)';this.style.color='var(--bg)'"
+   onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">
+  ⬇ Export PDF
+</button>
+  <button class="menu-btn" onclick="openSidebar()" title="Menu">☰</button>
+</header>
+<!-- Date Filter Section -->
+<div class="card span-3" style="margin-bottom: 20px;">
+    <div class="card-label">Daily Movement Map</div>
+    <div class="section-header">
+        <div class="section-title"><span>📅</span> View Tower Activity on a Specific Date</div>
+        <div class="section-badge">SELECT DATE</div>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; max-width: 280px;">
+            <label style="font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--dim); display: block; margin-bottom: 5px;">SELECT DATE</label>
+            <input type="date" id="singleDate" style="width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px; font-family: var(--mono); font-size: 0.85rem;">
+        </div>
+        <div>
+            <button onclick="filterMapByDate()" style="background: var(--accent); color: #000; border: none; font-family: var(--cond); font-size: 0.9rem; font-weight: 700; letter-spacing: 0.1em; padding: 10px 24px; cursor: pointer; text-transform: uppercase;">
+                🗺️ Show on Map
+            </button>
+        </div>
+        <div>
+            <button onclick="resetMapFilter()" style="background: transparent; border: 1px solid var(--border); color: var(--dim); font-family: var(--mono); font-size: 0.8rem; padding: 10px 20px; cursor: pointer;">
+                Reset
+            </button>
+        </div>
+    </div>
+    <div id="dateFilterInfo" style="margin-top: 12px; font-family: var(--mono); font-size: 0.7rem; color: var(--accent3);"></div>
+</div>
+<main id="app">
+  <!-- JS will populate this -->
+</main>
+
+<script>
+/* ── LIVE CLOCK ── */
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour12: false}) + ' PKST';
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* ── MOCK DATA (mirrors your /dashboard-data schema) ── */
+const MOCK = {
+  summary: { records: 4812, contacts: 143, towers: 67 },
+  residence: [
+    { tower_address: "Gulshan-e-Iqbal, Block 13-D, Karachi", sector: "SEC-7A", score: 91 },
+    { tower_address: "F-8/2 Markaz, Islamabad Capital Territory", sector: "SEC-3B", score: 74 }
+  ],
+  workplace: {
+    tower_address: "I.I. Chundrigar Road, PIFC Tower, Karachi",
+    sector: "CBZ-1",
+    score: 87,
+    days: "Mon–Fri",
+    hours: "09:00–18:00"
+  },
+  movement_radius: { radius_km: 18.4 },
+  route_frequency: [
+    { rank: 1, route: "T-112 → T-115 → T-120", count: 214 },
+    { rank: 2, route: "T-088 → T-091", count: 178 },
+    { rank: 3, route: "T-045 → T-049 → T-052", count: 122 }
+  ],
+  relationship: {
+    unique_callers: 143,
+    avg_call_duration: "4m 12s",
+    night_calls_pct: "18%",
+    reciprocity_score: 0.72,
+    cluster_size: 8,
+    bridge_contacts: 3
+  },
+  top_contacts: [
+    { contact_number: "+92-300-XXXXXXX", total_calls: 312, total_duration_seconds: 78000, night_calls: 47, relationship_score: 80, risk_level: "HIGH" },
+    { contact_number: "+92-321-XXXXXXX", total_calls: 287, total_duration_seconds: 65100, night_calls: 12, relationship_score: 65, risk_level: "MEDIUM" },
+    { contact_number: "+92-333-XXXXXXX", total_calls: 201, total_duration_seconds: 51720, night_calls:  3, relationship_score: 50, risk_level: "MEDIUM" },
+    { contact_number: "+92-345-XXXXXXX", total_calls: 189, total_duration_seconds: 43500, night_calls:  0, relationship_score: 40, risk_level: "LOW" },
+    { contact_number: "+92-311-XXXXXXX", total_calls: 154, total_duration_seconds: 32880, night_calls:  1, relationship_score: 35, risk_level: "LOW" }
+  ]
+};
+fetch('/dashboard-data')
+  .then(r => r.json())
+  .then(data => {
+
+      console.log("DASHBOARD DATA:");
+      console.log(data);
+
+      render(data);
+  });
+
+/* ── RENDER ── */
+function render(data) {
+  document.getElementById('app').innerHTML = `
+    ${summaryHTML(data)}
+    ${residenceHTML(data)}
+    ${workplaceHTML(data)}
+    ${movementHTML(data)}
+    ${relationshipHTML(data)}
+    ${contactsHTML(data)}
+  `;
+}
+
+function summaryHTML(d) {
+  const s = d.summary;
+  const bars = [
+    { val: Math.min(s.records / 6000, 1), color: 'var(--accent)' },
+    { val: Math.min(s.contacts / 200, 1), color: 'var(--accent2)' },
+    { val: Math.min(s.towers / 100, 1),   color: 'var(--accent3)' }
+  ];
+  const items = [
+    { num: s.records.toLocaleString(), unit: 'REC', label: 'Total CDR Records', bar: bars[0] },
+    { num: s.contacts.toLocaleString(), unit: 'IDs', label: 'Unique Contacts', bar: bars[1] },
+    { num: s.towers.toLocaleString(), unit: 'BTS', label: 'Towers Identified', bar: bars[2] }
+  ];
+  return `
+  <div class="card span-3" id="summary-card">
+    <div class="card-label">Subject Summary</div>
+    <div class="summary-inner">
+      ${items.map(i => `
+        <div class="stat-block">
+          <div class="stat-number" data-unit="${i.unit}">${i.num}</div>
+          <div class="stat-label">${i.label}</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:${i.bar.val*100}%;background:${i.bar.color}"></div></div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function residenceHTML(d) {
+  const zones = (d.residence || []).slice(0, 2);
+  return `
+  <div class="card span-2">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> Residence Intelligence</div>
+      <div class="section-badge">ZONE ANALYSIS</div>
+    </div>
+    ${zones.map((z, i) => `
+      <div class="zone-item">
+        <div>
+          <div class="zone-addr">${z.tower_address}</div>
+          <div class="zone-meta">
+            <span class="zone-tag">SECTOR: ${z.sector}</span>
+            <span class="zone-tag">RANK #${i+1}</span>
+          </div>
+        </div>
+        <div>
+          <div class="zone-score">${z.score}</div>
+          <div class="zone-score-label">CONFIDENCE</div>
+        </div>
+      </div>
+    `).join('')}
+    <a class="map-link" href="/residence-map">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 11 L5 1 L9 7 L11 5" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="5" r="1.5" fill="currentColor"/></svg>
+      Open Residence Map
+    </a>
+  </div>`;
+}
+
+
+function movementHTML(d) {
+  const km = (d.movement_radius || {}).max_distance_km || 0;
+  const routes = d.route_frequency || [];
+  const pct = Math.min(km / 50, 1);
+  const circ = 2 * Math.PI * 28; // r=28
+  const dash = pct * circ;
+  return `
+  <div class="card span-2">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> Movement Intelligence</div>
+      <div class="section-badge">ROUTE FREQ</div>
+    </div>
+    <div class="radius-ring">
+      <div class="ring-visual">
+        <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="36" cy="36" r="28" stroke="var(--border)" stroke-width="3"/>
+          <circle cx="36" cy="36" r="28" stroke="var(--accent)" stroke-width="3"
+            stroke-dasharray="${dash} ${circ}"
+            stroke-dashoffset="${circ / 4}"
+            stroke-linecap="butt"
+            style="transition: stroke-dasharray 1s ease"/>
+        </svg>
+        <div class="ring-label">${km}<div class="ring-unit">KM</div></div>
+      </div>
+      <div class="ring-text">
+        <h3>Movement Radius</h3>
+        <p>Geographic activity perimeter<br>based on tower triangulation</p>
+        <a class="map-link" href="/map" style="margin-top:10px;display:inline-flex">Open Movement Map</a>
+      </div>
+    </div>
+    <div class="route-list">
+      ${routes.slice(0,10).map((r, i) => `
+      <div class="route-item">
+
+        <span class="route-rank">
+          #${i+1}
+        </span>
+
+        <span class="route-towers">
+          ${r.from} → ${r.to}
+        </span>
+
+        <span class="route-count">
+          ${r.frequency}
+        </span>
+
+      </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function workplaceHTML(d) {
+
+    const places = d.workplace || [];
+
+    return `
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>◈</span> Workplace Intelligence
+        </div>
+      </div>
+
+      ${places.slice(0,5).map(p => `
+        <div class="kv-item">
+          <div class="kv-val">
+            ${p.tower_address}
+          </div>
+
+          <div class="kv-key">
+            Visits: ${p.visits}
+          </div>
+        </div>
+      `).join("")}
+
+    </div>
+    `;
+}
+
+function relationshipHTML(d) {
+
+    const rel = d.relationship || [];
+
+    return `
+    <div class="card">
+
+      <div class="section-header">
+        <div class="section-title">
+          <span>◈</span> Relationship Intelligence
+        </div>
+      </div>
+
+      ${rel.slice(0,5).map(r => `
+
+        <div class="kv-item">
+
+          <div class="kv-val">
+            ${r.contact_number}
+          </div>
+
+          <div class="kv-key">
+            Calls: ${r.total_calls}
+          </div>
+
+          <div class="kv-key">
+            Score: ${r.relationship_score}
+          </div>
+
+          <div class="kv-key">
+            Risk: ${r.risk_level}
+          </div>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+    `;
+}
+
+function contactsHTML(d) {
+  const contacts = (d.top_contacts || []).slice().sort((a, b) => (b.night_calls ?? 0) - (a.night_calls ?? 0));
+
+  // Night-call intensity: colour scale from neutral → amber → red
+  function nightColor(n) {
+    if (n === 0)  return 'var(--text-dim)';
+    if (n <= 3)   return '#f0c040';   // amber
+    if (n <= 9)   return '#e07820';   // orange
+    return '#e03030';                  // red
+  }
+  function nightLabel(n) {
+    if (n === 0) return '—';
+    if (n <= 3)  return 'Low';
+    if (n <= 9)  return 'Moderate';
+    return 'High';
+  }
+
+  return `
+  <div class="card span-3">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> Top Contacts</div>
+      <div class="section-badge">${contacts.length} RESULTS</div>
+    </div>
+    <div class="contacts-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Contact Number</th>
+            <th>Total Calls/SMS</th>
+            <th>Total Duration</th>
+            <th title="Calls between 22:00 – 06:00">🌙 Night Calls/SMS</th>
+            <th>Relationship</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${contacts.map((c, i) => {
+            const pct        = Math.round((c.total_calls / (contacts[0]?.total_calls || 1)) * 100);
+            const nightCount = c.night_calls ?? 0;
+            const nightPct   = c.total_calls > 0 ? Math.round((nightCount / c.total_calls) * 100) : 0;
+            const color      = nightColor(nightCount);
+            return `
+            <tr>
+              <td style="color:var(--text-dim)">${String(i+1).padStart(2,'0')}</td>
+              <td>${c.contact_number}</td>
+              <td><span class="badge">${c.total_calls}</span></td>
+              <td>${Math.round((c.total_duration_seconds || 0)/60)} min</td>
+              <td style="white-space:nowrap">
+                <span style="
+                  font-weight:600;
+                  color:${color};
+                  font-size:13px;
+                ">${nightCount === 0 ? '—' : nightCount}</span>
+                ${nightCount > 0 ? `
+                <span style="
+                  font-size:10px;
+                  color:${color};
+                  opacity:0.85;
+                  margin-left:3px;
+                ">(${nightPct}%)</span>
+                <div style="
+                  width:60px;height:3px;
+                  background:var(--border);
+                  border-radius:2px;
+                  margin-top:3px;
+                  position:relative;
+                ">
+                  <div style="
+                    position:absolute;top:0;left:0;bottom:0;
+                    width:${Math.min(nightPct,100)}%;
+                    background:${color};
+                    border-radius:2px;
+                    animation:barGrow 1s ease forwards;
+                  "></div>
+                </div>` : ''}
+              </td>
+              <td>
+                <div style="width:100%;background:var(--border);height:3px;position:relative;min-width:80px">
+                  <div style="position:absolute;top:0;left:0;bottom:0;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:barGrow 1s ease forwards"></div>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ── BOOT: try real endpoint, fallback to mock ── */
+fetch('/dashboard-data')
+  .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+  .then(data => { window._dashData = data; render(data); })
+  .catch(() => {window._dashData = MOCK; render(MOCK); });
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const d = window._dashData;  // store render data globally (see step 4)
+  let y = 15;
+
+  // Header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 123, 0);
+  doc.text('CDR Intelligence — Single Subject Analysis', 14, y);
+  y += 7;
+  doc.setFontSize(8);
+  doc.setTextColor(160, 160, 160);
+  doc.text('Generated: ' + new Date().toLocaleString(), 14, y);
+  y += 10;
+
+  // Summary stats
+  doc.setFontSize(11); doc.setTextColor(255,255,255);
+  doc.setFillColor(30,30,30);
+  doc.rect(14, y, 269, 7, 'F');
+  doc.text('SUMMARY', 16, y + 5);
+  y += 12;
+  doc.autoTable({
+    startY: y,
+    head: [['Total Records', 'Unique Towers', 'Unique Contacts', 'Total Night Calls', 'Total Duration']],
+    body: [[
+      d.summary?.records || 0,
+      d.summary?.towers || 0,
+      d.summary?.contacts || 0,
+      (d.top_contacts || []).reduce((s, c) => s + (c.night_calls ?? 0), 0),
+      Math.round((d.top_contacts || []).reduce((s, c) => s + (c.total_duration_seconds ?? 0), 0) / 60) + ' min',
+      
+    ]],
+    headStyles:          { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+    bodyStyles:          { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+    alternateRowStyles:  { fillColor: [245,245,245] },
+    styles:              { fontSize: 8 },
+    theme:               'grid',
+  });
+  y = doc.lastAutoTable.finalY + 10;
+
+  // Top Contacts
+  doc.setFontSize(11); doc.setTextColor(255,123,0);
+  doc.text('TOP CONTACTS', 14, y); y += 4;
+  const contacts = (d.top_contacts || [])
+    .slice()
+    .sort((a,b) => (b.night_calls ?? 0) - (a.night_calls ?? 0));
+  doc.autoTable({
+    startY: y,
+    head: [['#', 'Contact Number', 'Total Calls', 'Duration (min)', 'Night Calls', 'Night %', 'Risk']],
+    body: contacts.map((c, i) => {
+      const night = c.night_calls ?? 0;
+      const pct = c.total_calls > 0 ? Math.round((night / c.total_calls) * 100) : 0;
+      return [
+        i + 1,
+        c.contact_number,
+        c.total_calls,
+        Math.round((c.total_duration_seconds || 0) / 60),
+        night,
+        pct + '%',
+        c.risk_level || '—'
+      ];
+    }),
+    theme: 'grid',
+    headStyles:          { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+    bodyStyles:          { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+    alternateRowStyles:  { fillColor: [245,245,245] },
+    styles:              { fontSize: 8 },
+  });
+  y = doc.lastAutoTable.finalY + 10;
+
+  // Residence zones (new page if little space left)
+  if (y > 160) { doc.addPage(); y = 15; }
+  doc.setFontSize(11); doc.setTextColor(255,123,0);
+  doc.text('RESIDENCE ZONES', 14, y); y += 4;
+  doc.autoTable({
+    startY: y,
+    head: [['Rank', 'Tower / Area', 'Sector', 'Score', 'Lat', 'Lon']],
+    body: (d.residence || []).slice(0,3).map((r, i) => [
+      i + 1,
+      r.tower_address || '—',
+      r.sector || '—',
+      r.score,
+      parseFloat(r.latitude || 0).toFixed(5),
+      parseFloat(r.longitude || 0).toFixed(5)
+    ]),
+    headStyles:          { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+    bodyStyles:          { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+    alternateRowStyles:  { fillColor: [245,245,245] },
+    styles:              { fontSize: 8 },
+    theme:               'grid',
+  });
+
+  doc.save('CDR_Single_Analysis_' + Date.now() + '.pdf');
+}
+// ── DAILY MAP FILTER ────────────────────────────────────────────────
+fetch('/dashboard-data')
+    .then(r => r.json())
+    .then(data => {
+        if (data.date_range && data.date_range.min_date) {
+            const picker = document.getElementById('singleDate');
+            picker.min = data.date_range.min_date;
+            picker.max = data.date_range.max_date;
+            picker.value = data.date_range.min_date;
+            document.getElementById('dateFilterInfo').innerHTML =
+                `📅 CDR period: <b>${data.date_range.min_date}</b> → <b>${data.date_range.max_date}</b>`;
+        }
+    });
+
+function filterMapByDate() {
+    const selectedDate = document.getElementById('singleDate').value;
+    const infoDiv = document.getElementById('dateFilterInfo');
+
+    if (!selectedDate) {
+        infoDiv.innerHTML = '⚠️ Please select a date first.';
+        infoDiv.style.color = 'var(--danger)';
+        return;
+    }
+
+    infoDiv.innerHTML = '⏳ Loading towers for ' + selectedDate + '...';
+    infoDiv.style.color = 'var(--accent)';
+
+    fetch(`/filter-map-data?start_date=${selectedDate}&end_date=${selectedDate}`)
+        .then(r => r.json())
+        .then(filteredData => {
+            if (filteredData.length === 0) {
+                infoDiv.innerHTML = `⚠️ No tower activity recorded on <b>${selectedDate}</b>.`;
+                infoDiv.style.color = 'var(--danger)';
+                return;
+            }
+
+            infoDiv.innerHTML = `✓ ${filteredData.length} tower hit(s) on <b>${selectedDate}</b> — opening map...`;
+            infoDiv.style.color = 'var(--green)';
+
+            sessionStorage.setItem('filteredMapData', JSON.stringify(filteredData));
+            sessionStorage.setItem('filterDate', selectedDate);
+
+            window.open('/filtered-map', '_blank');
+
+            setTimeout(() => {
+                document.getElementById('dateFilterInfo').innerHTML =
+                    `📅 Last viewed: <b>${selectedDate}</b> (${filteredData.length} towers)`;
+            }, 3000);
+        })
+        .catch(err => {
+            console.error(err);
+            infoDiv.innerHTML = '❌ Network error — check browser console.';
+            infoDiv.style.color = 'var(--danger)';
+        });
+}
+
+function resetMapFilter() {
+    sessionStorage.removeItem('filteredMapData');
+    sessionStorage.removeItem('filterDate');
+    document.getElementById('singleDate').value = '';
+    document.getElementById('dateFilterInfo').innerHTML = '';
+}
+</script>
+<script>
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').style.display = 'block';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').style.display = 'none';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+</script>
+</body>
+</html>

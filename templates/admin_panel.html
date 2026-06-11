@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CDR Intelligence Portal — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+html{font-size:16px}
+body{font-size:1rem;line-height:1.6}
+:root{
+  --bg:#04100a;--surface:#0a0a0a;--surface2:#0d2218;--surface3:#112b1a;
+  --border:#222;--accent:#c9a84c;--text:#fff;--dim:#888;--muted:#333;
+  --danger:#ff003c;--green:#00d68f;--yellow:#ffd600;--blue:#00bfff;
+  --mono:'Share Tech Mono',monospace;--sans:'Barlow',sans-serif;--cond:'Barlow Condensed',sans-serif
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(201,168,76,.01) 2px,rgba(201,168,76,.01) 4px);pointer-events:none;z-index:9999}
+
+/* ── Header ── */
+header{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:100}
+header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),#fff,transparent)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:34px;height:34px;border:2px solid var(--accent);display:grid;place-items:center;position:relative}
+.logo-mark::before{content:'';position:absolute;inset:4px;background:var(--accent);opacity:.1}
+.logo-title{font-family:var(--cond);font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.admin-badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;background:rgba(201,168,76,.15);color:var(--accent);border:1px solid rgba(201,168,76,.3);padding:3px 8px;margin-left:8px}
+.header-right{display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:.65rem}
+.header-right a{color:var(--dim);text-decoration:none}
+.header-right a:hover{color:var(--accent)}
+
+main{flex:1;padding:28px 32px;max-width:1400px;width:100%;margin:0 auto}
+
+/* ── SUMMARY CARDS ── */
+.cards-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin-bottom:36px}
+@media(max-width:1200px){.cards-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+
+.stat-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--surface2) 0%,var(--surface3) 100%);
+  border:1px solid var(--border);
+  padding:20px 18px 16px;
+  transition:transform .2s, border-color .2s, box-shadow .2s;
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+
+/* colour accents per card type */
+.card-total   { border-color:rgba(201,168,76,.25); }
+.card-total::after   { background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+.card-total   .card-icon { color:var(--accent); }
+.card-total   .card-num  { color:var(--accent); }
+
+.card-active  { border-color:rgba(0,214,143,.2); }
+.card-active::after  { background:linear-gradient(90deg,transparent,var(--green),transparent); }
+.card-active  .card-icon { color:var(--green); }
+.card-active  .card-num  { color:var(--green); }
+
+.card-pending { border-color:rgba(255,214,0,.2); }
+.card-pending::after { background:linear-gradient(90deg,transparent,var(--yellow),transparent); }
+.card-pending .card-icon { color:var(--yellow); }
+.card-pending .card-num  { color:var(--yellow); }
+
+.card-expired { border-color:rgba(136,136,136,.2); }
+.card-expired::after { background:linear-gradient(90deg,transparent,var(--dim),transparent); }
+.card-expired .card-icon { color:var(--dim); }
+.card-expired .card-num  { color:var(--dim); }
+
+.card-rejected{ border-color:rgba(255,0,60,.2); }
+.card-rejected::after{ background:linear-gradient(90deg,transparent,var(--danger),transparent); }
+.card-rejected .card-icon { color:var(--danger); }
+.card-rejected .card-num  { color:var(--danger); }
+
+.card-monthly { border-color:rgba(0,191,255,.25); }
+.card-monthly::after { background:linear-gradient(90deg,transparent,var(--blue),transparent); }
+.card-monthly .card-icon { color:var(--blue); }
+.card-monthly .card-num  { color:var(--blue); }
+
+.card-annual  { border-color:rgba(201,168,76,.4); }
+.card-annual::after  { background:linear-gradient(90deg,transparent,#e8c55a,var(--accent),transparent); }
+.card-annual  .card-icon { color:#e8c55a; }
+.card-annual  .card-num  { color:#e8c55a; }
+
+.card-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.card-icon{font-size:.9rem;line-height:1}
+.card-num{font-family:var(--cond);font-size:2rem;font-weight:900;letter-spacing:-.02em;line-height:1}
+.card-sub{font-family:var(--mono);font-size:.55rem;color:var(--dim);margin-top:4px;letter-spacing:.06em}
+
+/* Subtle shimmer on income cards */
+.card-monthly,.card-annual{background:linear-gradient(135deg,var(--surface2) 0%,#0e2820 60%,var(--surface3) 100%)}
+
+/* ── Section header ── */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.section-title{font-family:var(--cond);font-size:1.1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:10px}
+.count-badge{font-family:var(--mono);font-size:.65rem;background:var(--accent);color:#000;padding:2px 8px}
+
+/* ── Search + Filter bar ── */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:220px}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
+#userSearch{
+  width:100%;background:var(--surface2);color:var(--text);
+  border:1px solid var(--border);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;
+  padding:8px 12px 8px 34px;outline:none;
+  transition:border-color .2s;
+}
+#userSearch:focus{border-color:rgba(201,168,76,.5)}
+#userSearch::placeholder{color:var(--muted)}
+
+.filter-select{
+  background:var(--surface2);color:var(--dim);
+  border:1px solid var(--border);
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.04em;
+  padding:8px 12px;outline:none;cursor:pointer;
+  transition:border-color .2s;
+}
+.filter-select:focus{border-color:rgba(201,168,76,.5);color:var(--text)}
+
+.filter-label{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+
+#clearFilters{
+  background:transparent;color:var(--dim);border:1px solid var(--muted);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 14px;cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+#clearFilters:hover{border-color:var(--accent);color:var(--accent)}
+
+#matchCount{font-family:var(--mono);font-size:.6rem;color:var(--dim);letter-spacing:.06em;white-space:nowrap}
+
+/* ── Sortable headers ── */
+thead th{cursor:pointer;user-select:none}
+thead th .th-inner{display:inline-flex;align-items:center;gap:4px}
+thead th .sort-icon{opacity:.35;font-size:.6rem;transition:opacity .15s}
+thead th.sorted-asc .sort-icon::after{content:'▲';opacity:1}
+thead th.sorted-desc .sort-icon::after{content:'▼';opacity:1}
+thead th:not(.sorted-asc):not(.sorted-desc) .sort-icon::after{content:'⇅'}
+
+/* ── Table ── */
+.pending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:40px}
+.user-card{background:var(--surface2);border:1px solid var(--border);padding:20px;position:relative;transition:border-color .2s}
+.user-card:hover{border-color:rgba(201,168,76,.3)}
+.user-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow)}
+.user-card.is-renewal::before{background:var(--green)}
+.user-card.is-upgrade::before{background:var(--blue)}
+.uc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.uc-name{font-family:var(--cond);font-size:1rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.uc-status{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid}
+.uc-status.pending{color:var(--yellow);border-color:rgba(255,214,0,.4)}
+.uc-field{font-family:var(--mono);font-size:.62rem;color:var(--dim);margin-bottom:5px;display:flex;gap:8px}
+.uc-field .key{color:var(--muted);min-width:90px}
+.uc-field .val{color:var(--text)}
+.req-badge{display:inline-block;font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid;margin-top:6px}
+.req-new{color:var(--yellow);border-color:rgba(255,214,0,.4)}
+.req-renewal{color:var(--green);border-color:rgba(0,214,143,.4)}
+.req-upgrade{color:var(--blue);border-color:rgba(0,191,255,.4)}
+.sub-tag{display:inline-block;font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;background:rgba(201,168,76,.1);color:var(--accent);border:1px solid rgba(201,168,76,.3);padding:2px 6px;margin-top:4px}
+.sub-tag-new{background:rgba(0,191,255,.1);color:var(--blue);border-color:rgba(0,191,255,.3)}
+.uc-actions{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.btn-approve{flex:1;background:rgba(0,214,143,.12);color:var(--green);border:1px solid rgba(0,214,143,.3);font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:9px;cursor:pointer;transition:all .2s}
+.btn-approve:hover{background:rgba(0,214,143,.2);border-color:var(--green)}
+.btn-reject{flex:1;background:rgba(255,0,60,.08);color:var(--danger);border:1px solid rgba(255,0,60,.25);font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:9px;cursor:pointer;transition:all .2s}
+.btn-reject:hover{background:rgba(255,0,60,.15);border-color:var(--danger)}
+
+.table-wrap{background:var(--surface2);border:1px solid var(--border);overflow-x:auto;margin-bottom:32px}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.65rem}
+thead th{background:var(--surface3);text-align:left;padding:12px 16px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);border-bottom:1px solid var(--border);white-space:nowrap}
+thead th:hover{color:var(--accent)}
+tbody td{padding:11px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+tbody tr.hidden-row{display:none}
+
+.status-pill{display:inline-block;padding:2px 8px;border:1px solid;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase}
+.pill-active{color:var(--green);border-color:rgba(0,214,143,.4)}
+.pill-pending{color:var(--yellow);border-color:rgba(255,214,0,.4)}
+.pill-rejected{color:var(--danger);border-color:rgba(255,0,60,.4)}
+.pill-expired{color:var(--dim);border-color:var(--muted)}
+.empty-state{padding:40px;text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+
+#noResults{display:none;padding:30px;text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+
+footer{text-align:center;padding:14px;font-family:var(--mono);font-size:.6rem;color:var(--muted);border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="4" stroke="#c9a84c" stroke-width="1.5"/>
+        <path d="M9 1v3M9 14v3M1 9h3M14 9h3" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center">
+        <span class="logo-title">CDR Intelligence</span>
+        <span class="admin-badge">Admin</span>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="/upload">← Portal</a>
+    <a href="/auth/admin/logout">Logout</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       EXECUTIVE SUMMARY CARDS
+  ══════════════════════════════════════════ -->
+  <div class="cards-grid">
+
+    <div class="stat-card card-total">
+      <div class="card-label"><span class="card-icon">◈</span> Total Users</div>
+      <div class="card-num">{{ total_users }}</div>
+      <div class="card-sub">All registered accounts</div>
+    </div>
+
+    <div class="stat-card card-active">
+      <div class="card-label"><span class="card-icon">●</span> Active</div>
+      <div class="card-num">{{ active_count }}</div>
+      <div class="card-sub">Subscriptions live</div>
+    </div>
+
+    <div class="stat-card card-pending">
+      <div class="card-label"><span class="card-icon">◌</span> Pending</div>
+      <div class="card-num">{{ pending_count }}</div>
+      <div class="card-sub">Awaiting approval</div>
+    </div>
+
+    <div class="stat-card card-expired">
+      <div class="card-label"><span class="card-icon">◎</span> Expired</div>
+      <div class="card-num">{{ expired_count }}</div>
+      <div class="card-sub">Subscription lapsed</div>
+    </div>
+
+    <div class="stat-card card-rejected">
+      <div class="card-label"><span class="card-icon">✕</span> Rejected</div>
+      <div class="card-num">{{ rejected_count }}</div>
+      <div class="card-sub">Admin rejected</div>
+    </div>
+
+    <div class="stat-card card-monthly">
+      <div class="card-label"><span class="card-icon">◷</span> Monthly Income</div>
+      <div class="card-num" style="font-size:1.4rem">PKR {{ '{:,}'.format(monthly_income) }}</div>
+      <div class="card-sub">{{ now.strftime('1 %b') if now else '1st' }} – today</div>
+    </div>
+
+    <div class="stat-card card-annual">
+      <div class="card-label"><span class="card-icon">◈</span> Annual Income</div>
+      <div class="card-num" style="font-size:1.4rem">PKR {{ '{:,}'.format(annual_income) }}</div>
+      <div class="card-sub">Fiscal year (Jul 1)</div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PENDING APPROVALS
+  ══════════════════════════════════════════ -->
+  <div class="section-head">
+    <div class="section-title">
+      Pending Approvals
+      <span class="count-badge">{{ pending | length }}</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:16px;margin-bottom:18px;font-family:var(--mono);font-size:.6rem;color:var(--dim)">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--yellow);margin-right:5px;vertical-align:middle"></span>New Registration</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);margin-right:5px;vertical-align:middle"></span>Renewal</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:5px;vertical-align:middle"></span>Upgrade</span>
+  </div>
+
+  {% if pending %}
+  <div class="pending-grid">
+    {% for u in pending %}
+    {% set rt = u.pending_request_type %}
+    <div class="user-card {% if rt == 'renewal' %}is-renewal{% elif rt == 'upgrade' %}is-upgrade{% endif %}">
+      <div class="uc-header">
+        <div class="uc-name">{{ u.username }}</div>
+        <div class="uc-status pending">Pending</div>
+      </div>
+      <div class="uc-field"><span class="key">Email</span><span class="val">{{ u.email }}</span></div>
+      <div class="uc-field"><span class="key">Txn ID</span><span class="val">{{ u.transaction_id }}</span></div>
+      <div class="uc-field"><span class="key">Submitted</span><span class="val">{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else '—' }}</span></div>
+      <div style="margin-top:8px">
+        {% if not rt %}<span class="req-badge req-new">▸ New Registration</span>
+        {% elif rt == 'renewal' %}<span class="req-badge req-renewal">↺ Renewal</span>
+        {% elif rt == 'upgrade' %}<span class="req-badge req-upgrade">↑ Plan Upgrade</span>
+        {% endif %}
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="sub-tag">{{ PLAN_LABELS.get(u.subscription_type.value, u.subscription_type.value) }}</span>
+        {% if u.pending_plan and u.pending_plan != u.subscription_type.value %}
+          <span style="font-family:var(--mono);font-size:.6rem;color:var(--dim)">→</span>
+          <span class="sub-tag sub-tag-new">{{ PLAN_LABELS.get(u.pending_plan, u.pending_plan) }}</span>
+        {% endif %}
+      </div>
+      <div class="uc-actions">
+        <form method="POST" action="/auth/admin/approve/{{ u.id }}" style="flex:1">
+          <button type="submit" class="btn-approve" style="width:100%">✓ Approve</button>
+        </form>
+        <form method="POST" action="/auth/admin/reject/{{ u.id }}" style="flex:1">
+          <button type="submit" class="btn-reject" style="width:100%">✗ Reject</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="table-wrap">
+    <div class="empty-state">No pending approvals</div>
+  </div>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════════
+       ALL USERS TABLE
+  ══════════════════════════════════════════ -->
+  <div class="section-head" style="margin-top:8px">
+    <div class="section-title">All Users</div>
+    <span id="matchCount" style="font-family:var(--mono);font-size:.6rem;color:var(--dim)"></span>
+  </div>
+
+  <!-- Search + Filter toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="6" stroke="#888" stroke-width="1.8"/>
+        <path d="M13.5 13.5L18 18" stroke="#888" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <input type="text" id="userSearch" placeholder="Search by username or email…" autocomplete="off"/>
+    </div>
+
+    <span class="filter-label">Status:</span>
+    <select id="statusFilter" class="filter-select">
+      <option value="">All</option>
+      <option value="active">Active</option>
+      <option value="pending">Pending</option>
+      <option value="expired">Expired</option>
+      <option value="rejected">Rejected</option>
+    </select>
+
+    <span class="filter-label">Plan:</span>
+    <select id="planFilter" class="filter-select">
+      <option value="">All Plans</option>
+      <option value="basic">Basic (1 Month)</option>
+      <option value="standard">Standard (6 Months)</option>
+      <option value="extended">Extended (1 Year)</option>
+    </select>
+
+    <button id="clearFilters">✕ Clear</button>
+  </div>
+
+  <div class="table-wrap">
+    {% if all_users %}
+    <table id="usersTable">
+      <thead>
+        <tr>
+          <th data-col="0"><span class="th-inner">#<span class="sort-icon"></span></span></th>
+          <th data-col="1"><span class="th-inner">Username<span class="sort-icon"></span></span></th>
+          <th data-col="2"><span class="th-inner">Email<span class="sort-icon"></span></span></th>
+          <th data-col="3"><span class="th-inner">Transaction ID<span class="sort-icon"></span></span></th>
+          <th data-col="4"><span class="th-inner">Plan<span class="sort-icon"></span></span></th>
+          <th data-col="5"><span class="th-inner">Uploads<span class="sort-icon"></span></span></th>
+          <th data-col="6"><span class="th-inner">Status<span class="sort-icon"></span></span></th>
+          <th data-col="7"><span class="th-inner">Sub Expires<span class="sort-icon"></span></span></th>
+          <th data-col="8"><span class="th-inner">Registered<span class="sort-icon"></span></span></th>
+          <th>Change Status</th>
+        </tr>
+      </thead>
+      <tbody id="usersBody">
+        {% for u in all_users %}
+        {% if u.subscription_type.value == '1_month' %}{% set plan_label = 'Basic' %}
+        {% elif u.subscription_type.value == '6_months' %}{% set plan_label = 'Standard' %}
+        {% else %}{% set plan_label = 'Extended' %}{% endif %}
+        {% if u.status.value == 'active' %}{% set status_slug = 'active' %}
+        {% elif u.status.value == 'pending_payment' %}{% set status_slug = 'pending' %}
+        {% elif u.status.value == 'rejected' %}{% set status_slug = 'rejected' %}
+        {% else %}{% set status_slug = 'expired' %}{% endif %}
+        <tr
+          data-username="{{ u.username | lower }}"
+          data-email="{{ u.email | lower }}"
+          data-status="{{ status_slug }}"
+          data-plan="{{ plan_label | lower }}"
+        >
+          <td>{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.transaction_id }}</td>
+          <td>{{ plan_label }}</td>
+          <td>
+            {% if u.subscription_type.value == '1_month' %}
+              {{ u.uploads_used }}/{{ u.cdr_limit or 30 }}
+            {% else %}∞{% endif %}
+          </td>
+          <td>
+            {% if u.status.value == 'active' %}
+              <span class="status-pill pill-active">Active</span>
+            {% elif u.status.value == 'pending_payment' %}
+              <span class="status-pill pill-pending">Pending</span>
+            {% elif u.status.value == 'rejected' %}
+              <span class="status-pill pill-rejected">Rejected</span>
+            {% else %}
+              <span class="status-pill pill-expired">{{ u.status.value }}</span>
+            {% endif %}
+          </td>
+          <td>{{ u.subscription_end.strftime('%Y-%m-%d') if u.subscription_end else '—' }}</td>
+          <td>{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '—' }}</td>
+          <td>
+            <form method="POST" action="/auth/admin/change-status/{{ u.id }}" style="display:flex;gap:4px;align-items:center;">
+              <select name="new_status" style="background:#1a1a1a;color:#ccc;border:1px solid #333;font-family:monospace;font-size:0.7rem;padding:4px 6px;">
+                <option value="active" {% if u.status.value == 'active' %}selected{% endif %}>Active</option>
+                <option value="pending_payment" {% if u.status.value == 'pending_payment' %}selected{% endif %}>Pending</option>
+                <option value="rejected" {% if u.status.value == 'rejected' %}selected{% endif %}>Rejected</option>
+                <option value="expired" {% if u.status.value == 'expired' %}selected{% endif %}>Expired</option>
+              </select>
+              <button type="submit" style="background:#c9a84c;color:#000;border:none;font-family:monospace;font-size:0.65rem;font-weight:700;padding:4px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Set</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div id="noResults">No users match the current filters</div>
+    {% else %}
+    <div class="empty-state">No users found</div>
+    {% endif %}
+  </div>
+
+</main>
+
+<footer>CDR Intelligence Portal &nbsp;|&nbsp; Admin Console</footer>
+
+<script>
+(function(){
+  const searchInput  = document.getElementById('userSearch');
+  const statusFilter = document.getElementById('statusFilter');
+  const planFilter   = document.getElementById('planFilter');
+  const clearBtn     = document.getElementById('clearFilters');
+  const matchCount   = document.getElementById('matchCount');
+  const noResults    = document.getElementById('noResults');
+  const tbody        = document.getElementById('usersBody');
+  if (!tbody) return;
+
+  function applyFilters() {
+    const q      = searchInput.value.trim().toLowerCase();
+    const status = statusFilter.value.toLowerCase();
+    const plan   = planFilter.value.toLowerCase();
+
+    const rows  = tbody.querySelectorAll('tr');
+    let visible = 0;
+
+    rows.forEach(row => {
+      const username = row.dataset.username || '';
+      const email    = row.dataset.email    || '';
+      const rowSt    = row.dataset.status   || '';
+      const rowPlan  = row.dataset.plan     || '';
+
+      const matchQ      = !q      || username.includes(q) || email.includes(q);
+      const matchStatus = !status || rowSt.includes(status);
+      const matchPlan   = !plan   || rowPlan.includes(plan);
+
+      const show = matchQ && matchStatus && matchPlan;
+      row.classList.toggle('hidden-row', !show);
+      if (show) visible++;
+    });
+
+    matchCount.textContent = q || status || plan
+      ? `${visible} of ${rows.length} user${rows.length !== 1 ? 's' : ''}` : '';
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  statusFilter.addEventListener('change', applyFilters);
+  planFilter.addEventListener('change', applyFilters);
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    statusFilter.value = '';
+    planFilter.value = '';
+    applyFilters();
+  });
+
+  // ── Column sorting ──
+  const table = document.getElementById('usersTable');
+  if (!table) return;
+  let sortCol = -1, sortAsc = true;
+
+  table.querySelectorAll('thead th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = parseInt(th.dataset.col);
+      if (sortCol === col) { sortAsc = !sortAsc; }
+      else { sortCol = col; sortAsc = true; }
+
+      table.querySelectorAll('thead th').forEach(h => h.classList.remove('sorted-asc','sorted-desc'));
+      th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => {
+        const av = (a.cells[col]?.textContent || '').trim();
+        const bv = (b.cells[col]?.textContent || '').trim();
+        const an = parseFloat(av), bn = parseFloat(bv);
+        const cmp = (!isNaN(an) && !isNaN(bn)) ? an - bn : av.localeCompare(bv);
+        return sortAsc ? cmp : -cmp;
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+})();
+</script>
+</body>
+</html>
