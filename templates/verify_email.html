@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CDR Intelligence Portal — Verify Email</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
-<style>
+{% extends "base.html" %}
 
-/* ── GLOBAL READABILITY ──────────────────────────────────── */
-html { font-size: 16px; }
-body { font-size: 1rem; line-height: 1.6; }
+{% block title %}Verify Email | CDR Intelligence Portal{% endblock %}
+
+{% block head_extra %}
+<style>
+html{font-size:16px}
+body{font-size:1rem;line-height:1.6}
 :root{--bg:#04100a;--surface:#091a10;--surface2:#0d2218;--border:#1e4030;--accent:#c9a84c;--muted:#1e4030;--text:#fff;--dim:#888;--danger:#ff003c;--green:#00d68f;--mono:'Share Tech Mono',monospace;--sans:'Barlow',sans-serif;--cond:'Barlow Condensed',sans-serif}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
@@ -36,7 +32,6 @@ h2{font-family:var(--cond);font-size:1.5rem;font-weight:900;letter-spacing:.1em;
 .sub{font-family:var(--mono);font-size:.65rem;color:var(--dim);text-align:center;margin-bottom:28px;line-height:1.6}
 .error{background:rgba(255,0,60,.08);border:1px solid rgba(255,0,60,.3);padding:12px 14px;margin-bottom:20px;font-family:var(--mono);font-size:.75rem;color:var(--danger)}
 .error::before{content:'✖  '}
-/* OTP input row */
 .otp-row{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
 .otp-row input{width:48px;height:58px;background:var(--surface2);border:1px solid var(--border);color:var(--accent);font-family:var(--mono);font-size:1.6rem;font-weight:bold;text-align:center;outline:none;transition:border-color .2s;caret-color:var(--accent)}
 .otp-row input:focus{border-color:var(--accent);background:rgba(201,168,76,.05)}
@@ -46,9 +41,16 @@ h2{font-family:var(--cond);font-size:1.5rem;font-weight:900;letter-spacing:.1em;
 #resendBtn{background:none;border:none;color:var(--accent);cursor:pointer;font-family:var(--mono);font-size:.65rem;letter-spacing:.05em;text-decoration:underline}
 #resendBtn:disabled{color:var(--muted);cursor:not-allowed;text-decoration:none}
 footer{text-align:center;padding:16px;font-family:var(--mono);font-size:.6rem;color:var(--muted);border-top:1px solid var(--border)}
+@media(max-width:480px){
+  header{padding:14px 16px}
+  .card{padding:28px 20px}
+  .otp-row input{width:42px;height:52px;font-size:1.3rem}
+  h2{font-size:1.2rem}
+}
 </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
 <header>
   <div class="logo">
     <div class="logo-mark">
@@ -138,7 +140,6 @@ document.getElementById('otpForm').addEventListener('submit', e => {
   if (code.length < 6) { e.preventDefault(); alert('Please enter the complete 6-digit OTP.'); }
 });
 
-// Countdown + resend
 let secs = 60;
 const cdEl = document.getElementById('countdown');
 const resendBtn = document.getElementById('resendBtn');
@@ -163,5 +164,4 @@ async function resendOTP() {
 }
 digits[0].focus();
 </script>
-</body>
-</html>
+{% endblock %}

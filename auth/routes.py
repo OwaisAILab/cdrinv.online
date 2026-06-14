@@ -165,12 +165,10 @@ def register():
             db.commit()
             db.refresh(user)
 
-        # Now we have a user object attached to the session.
-        # Collect needed data before closing the session.
+        # Capture data before closing session
         user_id = user.id
         user_email = user.email
         user_username = user.username
-
         _notify_whatsapp(username, email, f"NEW REG | {subscription_type}")
         db.close()
 
@@ -179,8 +177,12 @@ def register():
 
     except Exception as e:
         db.close()
-        raise e
-
+        import traceback
+        traceback.print_exc()
+        return render_template("register.html",
+                               errors=[str(e)],
+                               form={"username": username, "email": email, "transaction_id": transaction_id}), 500
+    
 # ── EMAIL OTP VERIFICATION ────────────────────────────────────────────────
 
 @auth_bp.route("/verify-email", methods=['GET'])
@@ -866,3 +868,8 @@ def subscribe_page():
 # ── Helper to register blueprint ─────────────────────────────────────────
 def init_auth_routes(app):
     app.register_blueprint(auth_bp)
+
+
+@auth_bp.route("/blog")
+def blog():
+    return render_template("blog.html")

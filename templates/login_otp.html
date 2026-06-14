@@ -1,17 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"/>
-<meta http-equiv="Pragma" content="no-cache"/>
-<title>CDR Intelligence Portal — Login OTP</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;600&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
-<style>
+{% extends "base.html" %}
 
-/* ── GLOBAL READABILITY ──────────────────────────────────── */
-html { font-size: 16px; }
-body { font-size: 1rem; line-height: 1.6; }
+{% block title %}Login OTP | CDR Intelligence Portal{% endblock %}
+
+{% block head_extra %}
+<style>
 :root{--bg:#04100a;--surface:#091a10;--surface2:#0d2218;--border:#1e4030;--accent:#c9a84c;--muted:#1e4030;--text:#fff;--dim:#888;--danger:#ff003c;--mono:'Share Tech Mono',monospace;--cond:'Barlow Condensed',sans-serif}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
@@ -43,7 +35,6 @@ h2{font-family:var(--cond);font-size:1.5rem;font-weight:900;letter-spacing:.1em;
 .back-link{display:block;margin-top:16px;font-size:.62rem;color:var(--dim);text-decoration:none}
 .back-link:hover{color:var(--dim)}
 .back-link a{color:var(--accent);text-decoration:none}
-/* progress bar */
 .timer-bar-wrap{height:2px;background:var(--border);margin-bottom:24px;overflow:hidden}
 .timer-bar{height:100%;background:var(--accent);transition:width 1s linear}
 footer{text-align:center;padding:16px;font-size:.6rem;color:var(--muted);border-top:1px solid var(--border)}
@@ -53,10 +44,10 @@ footer{text-align:center;padding:16px;font-size:.6rem;color:var(--muted);border-
   .otp-row input{width:42px;height:52px;font-size:1.3rem}
   h2{font-size:1.2rem}
 }
-
 </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
 <header>
   <div class="logo">
     <div class="logo-mark">
@@ -141,8 +132,7 @@ document.getElementById('otpForm').addEventListener('submit', e => {
   if (code.length < 6) { e.preventDefault(); alert('Please enter the complete 6-digit code.'); }
 });
 
-// Timer bar + countdown
-const TOTAL = 600; // 10 minutes
+const TOTAL = 600;
 let remaining = TOTAL;
 const bar = document.getElementById('timerBar');
 const cdEl = document.getElementById('countdown');
@@ -154,7 +144,6 @@ const mainTimer = setInterval(() => {
   if (remaining <= 0) { clearInterval(mainTimer); bar.style.background = 'var(--danger)'; }
 }, 1000);
 
-// Resend countdown (60s)
 let secs = 60;
 const resendTimer = setInterval(() => {
   secs--;
@@ -177,13 +166,9 @@ async function resendOTP() {
 }
 
 digits[0].focus();
-
-// Prevent back button from reaching dashboard after OTP screen
 history.replaceState(null, '', window.location.href);
 window.addEventListener('popstate', function() {
   history.replaceState(null, '', window.location.href);
 });
-
 </script>
-</body>
-</html>
+{% endblock %}

@@ -1,10 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CDR Intelligence Portal — Secure Investigation Platform</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>CDR Intelligence Portal - Advanced CDR Analysis Software | SAMOM SOLUTIONS INC.</title>
+
+    <meta name="description"
+          content="CDR Intelligence Portal by SAMOM SOLUTIONS INC. provides secure Call Detail Record analysis, link analysis, geolocation intelligence, call pattern detection, and investigative reporting tools.">
+
+    <meta name="keywords"
+          content="CDR Analysis, Call Detail Records, Telecom Intelligence, Link Analysis, Investigation Software, Geolocation Analysis, Intelligence Platform, Digital Forensics">
+
+    <meta name="author" content="SAMOM SOLUTIONS INC.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="CDR Intelligence Portal">
+    <meta property="og:description"
+          content="Secure Call Detail Record analysis and intelligence platform for investigators and analysts.">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='images/icon.png') }}">
+    
+      <!-- Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "CDR Intelligence Portal",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Web",
+      "description": "CDR analysis software for telecom intelligence and investigation.",
+      "provider": {
+        "@type": "Organization",
+        "name": "SAMOM SOLUTIONS INC."
+      }
+    }
+    </script>
+</head>
 <style>
 
 /* ── GLOBAL READABILITY ──────────────────────────────────── */
@@ -102,6 +138,38 @@ nav::after {
   font-size: 0.82rem; letter-spacing: 0.2em;
   color: var(--dim); margin-top: 2px;
 }
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  list-style: none;
+  display: none;
+  min-width: 180px;
+  z-index: 999;
+}
+
+.nav-dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li a {
+  display: block;
+  padding: 10px 14px;
+  color: var(--dim);
+  text-decoration: none;
+  font-family: var(--mono);
+}
+
+.dropdown-menu li a:hover {
+  color: var(--accent);
+  background: var(--surface2);
+}
 
 .nav-links {
   display: flex; align-items: center; gap: 32px;
@@ -149,6 +217,14 @@ nav::after {
   transform: translateY(-1px);
 }
 
+.section-light {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 96px 48px;
+}
 /* ── HERO ──────────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
@@ -354,7 +430,6 @@ nav::after {
 .stats-inner {
   max-width: 1200px; margin: 0 auto;
   display: grid; grid-template-columns: repeat(4,1fr);
-  divide: var(--border);
 }
 .stat-item {
   padding: 32px 24px;
@@ -629,26 +704,94 @@ nav::after {
 }
 .btn-plan-filled:hover { background: var(--accent-l); }
 
-/* ── LIVE RATE BAR ──────────────────────────────────────────────────────────── */
-.rate-bar {
-  max-width: 1060px; margin: 32px auto 0;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  padding: 10px 20px;
+
+/* Contact section */
+.contact-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px;
 }
-.rate-bar-inner {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  font-family: var(--mono); font-size: 0.88rem; letter-spacing: 0.08em;
+.contact-form-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
 }
-.rate-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--dim); flex-shrink: 0;
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
-.rate-dot-live    { background: var(--green-l); animation: blink 2s infinite; }
-.rate-dot-offline { background: var(--accent); }
-.rate-label { color: var(--dim); text-transform: uppercase; }
-.rate-value { color: var(--accent); font-weight: 600; }
-.rate-updated { color: var(--muted); margin-left: auto; font-size: 0.82rem; }
+.contact-section .form-group {
+    margin-bottom: 20px;
+}
+.contact-section label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+}
+.contact-section input,
+.contact-section select,
+.contact-section textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.contact-section input:focus,
+.contact-section select:focus,
+.contact-section textarea:focus {
+    border-color: var(--accent);
+}
+.btn-contact {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: var(--cond);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: auto;
+    margin-top: 8px;
+}
+.btn-contact:hover {
+    background: var(--accent-l);
+    transform: translateY(-1px);
+}
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.alert-success {
+    background: rgba(0,200,83,0.1);
+    border: 1px solid rgba(0,200,83,0.3);
+    color: #00c853;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+}
+.alert-error {
+    background: rgba(255,0,60,0.1);
+    border: 1px solid rgba(255,0,60,0.3);
+    color: #ff003c;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+}
 
 /* ── CTA BANNER ─────────────────────────────────────────────────────────────── */
 .cta-section {
@@ -725,7 +868,6 @@ footer {
   footer { flex-direction: column; gap: 12px; text-align: center; }
 }
 </style>
-</head>
 <body>
 
 <!-- ── NAV ──────────────────────────────────────────────────────────────────── -->
@@ -748,7 +890,16 @@ footer {
     <li><a href="#features">Capabilities</a></li>
     <li><a href="#how">How It Works</a></li>
     <li><a href="#pricing">Subscription</a></li>
+    <li class="nav-dropdown">
+  <a href="#">More ▾</a>
+  <ul class="dropdown-menu">
+    <li><a href="/faq">FAQ</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/knowledge">Knowledge Base</a></li>
+    <li><a href="/#contact">Contact</a></li>
   </ul>
+</li>
+</ul>
 
   <div class="nav-cta">
     <a href="/auth/login" class="btn-outline">Sign In</a>
@@ -767,17 +918,15 @@ footer {
       </div>
 
       <h1 class="hero-title">
-        CDR
-        <span class="highlight">Intelligence</span>
+        CDR Analysis Software
+        <span class="highlight">Intelligence Platform</span>
       </h1>
       <p class="hero-subtitle">Investigation Analytics Platform</p>
 
       <div class="hero-divider"></div>
 
       <p class="hero-desc">
-        A secure, government-grade platform for licensed investigation officers.
-        Analyse call data records, map networks, trace movement patterns and
-        generate court-ready intelligence reports — all in one controlled environment.
+        CDR analysis software by SAMOM SOLUTIONS INC. is a secure intelligence platform designed for analyzing Call Detail Records, mapping communication networks, and performing geolocation-based investigation for law enforcement and telecom analysts.
       </p>
 
       <div class="hero-actions">
@@ -846,7 +995,15 @@ footer {
     </div>
   </div>
 </section>
+<section class="section">
+  <h2 class="section-title">What is CDR Analysis Software?</h2>
 
+  <p class="section-desc">
+    CDR analysis software is used to examine Call Detail Records (CDR) generated by telecom operators.
+    It helps investigators identify communication patterns, suspect networks, call frequency, and location trails.
+    SAMOM SOLUTIONS INC. provides a secure web-based CDR Intelligence Portal for advanced digital investigation workflows.
+  </p>
+</section>
 <!-- ── STATS BANNER ──────────────────────────────────────────────────────────── -->
 <div class="stats-banner">
   <div class="stats-inner">
@@ -872,11 +1029,14 @@ footer {
 <!-- ── FEATURES ──────────────────────────────────────────────────────────────── -->
 <div id="features">
   <div class="section">
-    <div class="section-label">// Platform Capabilities</div>
-    <h2 class="section-title">Built for<br>Investigation Officers</h2>
-    <p class="section-desc">
-      Every tool designed around real investigative workflows. Secure, auditable, and built to produce intelligence that stands up in court.
-    </p>
+  <div class="section-label">// Overview</div>
+  <h2 class="section-title">CDR Intelligence Overview</h2>
+
+  <p class="section-desc">
+    CDR analysis software processes Call Detail Records generated by telecom operators.
+    It helps investigators identify communication patterns, detect networks, track locations,
+    and analyze call behavior for intelligence and forensic investigations.
+  </p>
 
     <div class="features-grid">
       <!-- 1 -->
@@ -1138,63 +1298,132 @@ function formatPKR(amount) {
 }
 
 function applyPrices(rate, isLive) {
-  // ── Rate bar ──────────────────────────────────────
-  const dot      = document.getElementById("rate-dot");
-  const rateDisp = document.getElementById("rate-display");
-  const updated  = document.getElementById("rate-updated");
 
-  dot.className = "rate-dot " + (isLive ? "rate-dot-live" : "rate-dot-offline");
-  rateDisp.textContent = "1 USD = PKR\u00a0" + rate.toFixed(2)
-                        + (isLive ? "" : "  (offline fallback)");
+  document.getElementById("rate-dot").className =
+    "rate-dot " + (isLive ? "rate-dot-live" : "rate-dot-offline");
+
+  document.getElementById("rate-display").textContent =
+    "1 USD = PKR " + rate.toFixed(2);
 
   const now = new Date();
-  updated.textContent =
-    "updated\u00a0" +
-    now.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" }) +
-    "\u00a0·\u00a0" +
-    now.toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" });
+  document.getElementById("rate-updated").textContent =
+    now.toLocaleString("en-PK");
 
-  // ── Basic ─────────────────────────────────────────
-  const basicPKR = PLANS.basic.usd * rate;
   document.getElementById("price-basic").textContent =
-    formatPKR(basicPKR);
+    formatPKR(PLANS.basic.usd * rate);
 
-  // ── Standard ──────────────────────────────────────
-  const stdPKR = PLANS.standard.usd * rate;
   document.getElementById("price-standard").textContent =
-    formatPKR(stdPKR);
-
-  // ── Extended ──────────────────────────────────────
-  // Saving = what 12 months of Standard would cost minus Extended price
-  const extPKR  = PLANS.extended.usd * rate;
-  const stdYear = PLANS.standard.usd * 2 * rate;   // 2 × 6-month Standard
-  const savedPKR = roundTo50(stdYear) - roundTo50(extPKR);
+    formatPKR(PLANS.standard.usd * rate);
 
   document.getElementById("price-extended").textContent =
-    formatPKR(extPKR);
+    formatPKR(PLANS.extended.usd * rate);
 }
 
+/**
+ * 🔥 IMPORTANT FIX:
+ * NO EXTERNAL API CALLS HERE ANYMORE
+ * WE ONLY CALL YOUR BACKEND
+ */
 async function loadRate() {
-  // ── Primary: exchangerate-api (free, no API key required) ──
   try {
-    const res  = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+    const res = await fetch("/api/rate");  // YOUR BACKEND
     const data = await res.json();
-    if (data?.rates?.PKR) { applyPrices(data.rates.PKR, true); return; }
-  } catch (_) {}
 
-  // ── Secondary: frankfurter.app ──────────────────────────────
-  try {
-    const res  = await fetch("https://api.frankfurter.app/latest?from=USD&to=PKR");
-    const data = await res.json();
-    if (data?.rates?.PKR) { applyPrices(data.rates.PKR, true); return; }
-  } catch (_) {}
+    if (data?.rate) {
+      applyPrices(data.rate, data.source === "live");
+      return;
+    }
+  } catch (e) {
+    console.log("Rate API failed, using fallback");
+  }
 
-  // ── Final fallback: hardcoded rate ──────────────────────────
+  // FINAL SAFETY FALLBACK (ONLY IF SERVER ALSO FAILS)
   applyPrices(278.50, false);
 }
 
+// Auto load
 loadRate();
+
+
 </script>
+
+<div id="faq" class="section-light">
+  <div class="how-inner">
+
+    <div class="section-label">// Frequently Asked Questions</div>
+    <h2 class="section-title">FAQ</h2>
+
+    <h3 style="color:#fff;margin-top:20px;">What is CDR analysis software?</h3>
+    <p class="section-desc">
+      It is a tool used to analyze Call Detail Records to identify communication patterns and relationships between phone numbers.
+    </p>
+
+    <h3 style="color:#fff;margin-top:20px;">Who uses this system?</h3>
+    <p class="section-desc">
+      Law enforcement agencies, intelligence units, and telecom analysts use CDR intelligence platforms for investigations.
+    </p>
+
+    <h3 style="color:#fff;margin-top:20px;">Is the platform secure?</h3>
+    <p class="section-desc">
+      Yes. The system uses OTP authentication, encrypted sessions, and audit logging for security.
+    </p>
+
+    <h3 style="color:#fff;margin-top:20px;">Where to contact if any issues arise?</h3>
+    <p class="section-desc">
+      You can contact our support team via the contact form below.
+    </p>
+
+    <h3 style="color:#fff;margin-top:20px;">What if I am not satisfied with the service?</h3>
+    <p class="section-desc">
+      You can request a refund within 3 days of purchase if eligible.
+    </p>
+
+  </div> <!-- how-inner close -->
+</div> <!-- faq close -->
+
+<!-- ── CONTACT US SECTION ── -->
+{% if contact_success %}
+    <div class="alert-success" style="margin-bottom: 20px;">{{ contact_success }}</div>
+{% elif contact_error %}
+    <div class="alert-error" style="margin-bottom: 20px;">{{ contact_error }}</div>
+{% endif %}
+
+<section id="contact" class="contact-section">
+    <div class="section-label">// Get In Touch</div>
+    <h2 class="section-title">Contact <span>Us</span></h2>
+    <p class="section-desc" style="margin-bottom: 32px;">We value your feedback. Reach out to us for any inquiries, suggestions, or support.</p>
+
+    <div class="contact-form-wrap">
+        <form id="contactForm" action="/contact" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" required placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" required placeholder="you@example.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select name="type" required>
+                    <option value="" disabled selected>— Select —</option>
+                    <option value="Suggestion">Suggestion</option>
+                    <option value="Complaint">Complaint</option>
+                    <option value="Enquiry">Enquiry</option>
+                    <option value="Correction">Correction</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message / Details</label>
+                <textarea name="message" rows="5" required placeholder="Please provide full details..."></textarea>
+            </div>
+            <button type="submit" class="btn-contact">Send Message</button>
+            <div id="contactFormStatus" style="margin-top: 12px; font-family: var(--mono); font-size: 0.8rem;"></div>
+        </form>
+    </div>
+</section>
 
 <!-- ── CTA ───────────────────────────────────────────────────────────────────── -->
 <div class="cta-section">
@@ -1217,11 +1446,10 @@ loadRate();
   <div class="footer-meta">
     Authorized Personnel Only
     <span>|</span>
-    All sessions are logged and monitored
+    Unauthorised Access is a criminal offence
     <span>|</span>
-    Unauthorized access is a criminal offence
+    © 2025 SAMOM SOLUTIONS INC.
   </div>
-  <div class="footer-right">© 2025 CDR Intelligence Portal</div>
 </footer>
 
 </body>

@@ -10,13 +10,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from auth.database import engine, Base, SessionLocal
 from auth.models import User, UserStatus, SubscriptionType
 from auth.routes import auth_bp, init_auth_routes
-from auth.utils import decode_token, _now
+from auth.utils import decode_token, _now, _send_email
 
 # ── Core analysis modules ─────────────────────────────────────────────────
 from core.normalizer import normalize_dataframe
 from core.timeline import (
     most_contacted, hourly_activity, silent_periods,
-    silent_period_residence_analysis
+    silent_period_residence_analysis, imei_switch_timeline, non_mobile_summary,
+    imsi_switch_timeline
 )
 from core.map_utils import generate_map_data
 from core.comparison import same_tower_same_time, common_contacts
@@ -44,17 +45,18 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 def inject_request():
     return dict(request=request)
 
-# ── Global state (same as original) ──────────────────────────────────────
+# ── Global state ──────────────────────────────────────────────────────────
 latest_normalized_df = None
+latest_non_mobile_df = None
+latest_data_sessions_df = None
 latest_dashboard_data = {}
 latest_map_data = []
 latest_residence_data = []
 latest_comparison_data = {}
 latest_network_data = {}
 
-# ── Helper: get current user as a dict (no detached instance) ────────────
+# ── Helper: get current user as a dict ────────────────────────────────────
 def get_current_user():
-    """Returns dict with user data or aborts 401."""
     token = request.cookies.get("access_token")
     if not token:
         abort(401)
@@ -71,7 +73,6 @@ def get_current_user():
             abort(401)
         if user.subscription_end and user.subscription_end < _now():
             abort(401)
-        # Return only needed data as a dict
         user_data = {
             'id': user.id,
             'username': user.username,
@@ -113,6 +114,51 @@ def home():
 def subscribe_page():
     return render_template("subscribe.html")
 
+@app.route("/blog")
+def blog_page():
+    # Create a simple blog.html or redirect
+    return render_template("blog.html") if os.path.exists("templates/blog.html") else redirect("/")
+
+@app.route("/faq")
+def faq_page():
+    return redirect("/#faq")
+
+@app.route("/knowledge")
+def knowledge_page():
+    return redirect("/#knowledge")
+
+@app.route("/api/rate")
+def exchange_rate():
+    return jsonify({"rate": 278.50, "source": "fallback"})
+
+# ── Contact form (POST only) ─────────────────────────────────────────────
+@app.route("/contact", methods=['POST'])
+def contact_submit():
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip()
+    contact_type = request.form.get("type", "").strip()
+    message = request.form.get("message", "").strip()
+
+    if not all([name, email, contact_type, message]):
+        return render_template("landing.html", contact_error="All fields are required."), 400
+
+    subject = f"CDR Portal Contact: {contact_type} from {name}"
+    body_html = f"""
+    <div style="font-family:monospace;background:#04100a;color:#e8f0eb;padding:24px;">
+        <h2 style="color:#c9a84c;">New Contact Form Submission</h2>
+        <p><strong>Name:</strong> {name}</p>
+        <p><strong>Email:</strong> {email}</p>
+        <p><strong>Type:</strong> {contact_type}</p>
+        <p><strong>Message:</strong></p>
+        <p style="background:#0d2218;padding:16px;border-left:3px solid #c9a84c;">{message.replace(chr(10), '<br>')}</p>
+    </div>
+    """
+    success = _send_email("muhammadmeethani@gmail.com", subject, body_html)
+    if success:
+        return render_template("landing.html", contact_success="Thank you! Your message has been sent.")
+    else:
+        return render_template("landing.html", contact_error="Failed to send. Please try again later."), 500
+
 @app.route("/upload")
 def upload_page():
     user = get_current_user()
@@ -122,7 +168,7 @@ def upload_page():
 
 @app.route("/upload-cdr/", methods=['POST'])
 def upload_cdr():
-    global latest_normalized_df, latest_map_data, latest_network_data, latest_residence_data, latest_dashboard_data
+    global latest_normalized_df, latest_non_mobile_df, latest_data_sessions_df, latest_map_data, latest_network_data, latest_residence_data, latest_dashboard_data
     user = get_current_user()
 
     if user['subscription_type'] == SubscriptionType.ONE_MONTH:
@@ -141,13 +187,12 @@ def upload_cdr():
 
     try:
         df = read_uploaded_file(temp_path, filename)
-        normalized_df = normalize_dataframe(df)
+        normalized_df, non_mobile_df, data_sessions_df = normalize_dataframe(df)
         latest_normalized_df = normalized_df
+        latest_non_mobile_df = non_mobile_df
+        latest_data_sessions_df = data_sessions_df
 
-        # Run all analyses
-        most_contacts = most_contacted(normalized_df)
-        hourly = hourly_activity(normalized_df)
-        silent_stats = silent_periods(normalized_df)
+        # Run analyses (keep your existing implementation)
         latest_map_data = generate_map_data(normalized_df)
         latest_network_data = build_network_data(normalized_df)
         latest_residence_data = silent_period_residence_analysis(normalized_df)
@@ -162,10 +207,7 @@ def upload_cdr():
             dates_clean = dates_clean[dates_clean.astype(str).str.strip() != '']
             if len(dates_clean) > 0:
                 try:
-                    date_range = {
-                        "min_date": str(dates_clean.min()),
-                        "max_date": str(dates_clean.max())
-                    }
+                    date_range = {"min_date": str(dates_clean.min()), "max_date": str(dates_clean.max())}
                 except Exception:
                     pass
 
@@ -173,20 +215,26 @@ def upload_cdr():
             "summary": {
                 "records": len(normalized_df),
                 "contacts": normalized_df["contact_number"].nunique(),
-                "towers": normalized_df["tower_address"].nunique()
+                "towers": normalized_df["tower_address"].nunique(),
+                "non_mobile_contacts": len(non_mobile_df),
+                "data_sessions": len(data_sessions_df),
+                "imei_switches": int(normalized_df["imei_switch"].sum()) if "imei_switch" in normalized_df.columns else 0,
+                "imsi_switches": int(normalized_df["imsi_switch"].sum()) if "imsi_switch" in normalized_df.columns else 0
             },
             "date_range": date_range,
             "top_contacts": relationship_scores,
             "hourly": hourly_activity(normalized_df),
             "residence": latest_residence_data,
             "workplace": workplace_data,
-            "silent_periods": silent_stats,
+            "silent_periods": silent_periods(normalized_df),
             "route_frequency": route_frequencies,
             "movement_radius": movement_radius,
-            "relationship": relationship_scores
+            "relationship": relationship_scores,
+            "imei_timeline": imei_switch_timeline(normalized_df),
+            "imsi_timeline": imsi_switch_timeline(normalized_df),
+            "non_mobile_summary": non_mobile_summary(non_mobile_df)
         }
 
-        # Increment upload counter for Basic users
         if user['subscription_type'] == SubscriptionType.ONE_MONTH:
             db = SessionLocal()
             try:
@@ -227,8 +275,8 @@ def compare_cdrs():
     try:
         df1 = read_uploaded_file(path1, file1.filename)
         df2 = read_uploaded_file(path2, file2.filename)
-        norm1 = normalize_dataframe(df1)
-        norm2 = normalize_dataframe(df2)
+        norm1, non_mobile1, data_sessions1 = normalize_dataframe(df1)
+        norm2, non_mobile2, data_sessions2 = normalize_dataframe(df2)
 
         direct = direct_contacts(norm1, norm2)
         meetings = same_tower_same_time(norm1, norm2)
@@ -242,6 +290,10 @@ def compare_cdrs():
             "status": "success",
             "cdr_1_records": int(len(norm1)),
             "cdr_2_records": int(len(norm2)),
+            "cdr_1_non_mobile_contacts": int(len(non_mobile1)),
+            "cdr_2_non_mobile_contacts": int(len(non_mobile2)),
+            "cdr_1_data_sessions": int(len(data_sessions1)),
+            "cdr_2_data_sessions": int(len(data_sessions2)),
             "possible_meetings": meetings,
             "common_contacts": common,
             "direct_relationship": direct,
@@ -249,7 +301,6 @@ def compare_cdrs():
             "meeting_hotspots": hotspots,
             "hotspot_history": hotspot_history
         }
-
         return redirect("/comparison-dashboard", code=303)
 
     except Exception as e:
@@ -259,6 +310,7 @@ def compare_cdrs():
             if os.path.exists(p):
                 os.remove(p)
 
+# ── JSON endpoints ────────────────────────────────────────────────────────
 @app.route("/dashboard-data")
 def dashboard_data():
     return jsonify(latest_dashboard_data)
@@ -270,6 +322,18 @@ def map_data():
 @app.route("/residence-data")
 def residence_data():
     return jsonify(latest_residence_data)
+
+@app.route("/non-mobile-data")
+def non_mobile_data():
+    if latest_non_mobile_df is None:
+        return jsonify([])
+    return jsonify(latest_non_mobile_df.to_dict(orient="records"))
+
+@app.route("/data-sessions-data")
+def data_sessions_data():
+    if latest_data_sessions_df is None:
+        return jsonify([])
+    return jsonify(latest_data_sessions_df.to_dict(orient="records"))
 
 @app.route("/compare-dashboard-data")
 def compare_dashboard_data():
@@ -298,6 +362,7 @@ def filter_map_data():
         filtered = df
     return jsonify(generate_map_data(filtered))
 
+# ── Protected HTML pages ─────────────────────────────────────────────────
 @app.route("/dashboard")
 def dashboard():
     get_current_user()

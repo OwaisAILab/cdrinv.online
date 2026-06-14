@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"/>
-<meta http-equiv="Pragma" content="no-cache"/>
-<title>CDR Intelligence Portal — Login</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+{% extends "base.html" %}
+
+{% block title %}Login | CDR Intelligence Portal{% endblock %}
+
+{% block head_extra %}
 <style>
 html{font-size:16px}
 body{font-size:1rem;line-height:1.6}
@@ -72,6 +68,9 @@ footer{text-align:center;padding:16px;font-family:var(--mono);font-size:.9rem;co
   .btn{padding:13px}
 }
 </style>
+{% endblock %}
+
+{% block content %}
 </head>
 <body>
 <header>
@@ -152,7 +151,7 @@ footer{text-align:center;padding:16px;font-family:var(--mono);font-size:.9rem;co
 </main>
 
 <footer>CDR Intelligence Portal &nbsp;|&nbsp; Authorized Personnel Only</footer>
-
+{% endblock %}
 <script>
 history.replaceState(null, '', window.location.href);
 window.addEventListener('popstate', function() {

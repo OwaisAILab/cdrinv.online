@@ -54,6 +54,17 @@ def build_network_data(df):
         )
 
     # -----------------------------------
+    # OWNER IMEI SWITCH COUNT
+    # -----------------------------------
+    owner_imei_switches = 0
+
+    if "imei_switch" in df.columns:
+
+        owner_imei_switches = int(
+            df["imei_switch"].sum()
+        )
+
+    # -----------------------------------
     # NIGHT CONTACTS
     # -----------------------------------
     night_contacts = set()
@@ -179,6 +190,13 @@ def build_network_data(df):
                 "CDR OWNER"
             )
 
+            if owner_imei_switches > 0:
+
+                title += (
+                    f"<br>⚠ Handset changed "
+                    f"{owner_imei_switches} time(s)"
+                )
+
         # NIGHT CONTACT
         elif node_id in night_contacts:
 
@@ -301,5 +319,8 @@ def build_network_data(df):
             vis_edges,
 
         "top_associates":
-            associates[:20]
+            associates[:20],
+
+        "owner_imei_switches":
+            owner_imei_switches
     }

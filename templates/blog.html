@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CDR Intelligence Blog | Knowledge & Insights</title>
+
+<style>
+/* ───────── SOFT THEME VARIABLES ───────── */
+:root {
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --soft: #eef3f8;
+  --text: #1f2a37;
+  --muted: #6b7280;
+  --primary: #2b6cb0;
+  --accent: #f59e0b;
+  --border: #e5e7eb;
+  --shadow: 0 8px 25px rgba(0,0,0,0.06);
+  --radius: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ───────── HEADER ───────── */
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+  color: var(--primary);
+  letter-spacing: 1px;
+}
+
+nav a {
+  margin-left: 18px;
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: var(--primary);
+}
+
+/* ───────── HERO ───────── */
+.hero {
+  padding: 60px 40px;
+  text-align: center;
+  background: linear-gradient(135deg, #ffffff, #eef3f8);
+}
+
+.hero h1 {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  color: var(--muted);
+  max-width: 700px;
+  margin: auto;
+}
+
+/* ───────── SEARCH ───────── */
+.search-box {
+  margin-top: 25px;
+}
+
+.search-box input {
+  width: 320px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  outline: none;
+}
+
+.search-box input:focus {
+  border-color: var(--primary);
+}
+
+/* ───────── LAYOUT ───────── */
+.container {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 25px;
+  padding: 40px;
+}
+
+/* ───────── SIDEBAR ───────── */
+.sidebar {
+  background: var(--card);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  height: fit-content;
+}
+
+.sidebar h3 {
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.category {
+  display: block;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--soft);
+}
+
+.category:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* ───────── BLOG GRID ───────── */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 18px;
+}
+
+.tag {
+  font-size: 12px;
+  color: white;
+  background: var(--primary);
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ───────── FEATURED POST ───────── */
+.featured {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: row;
+}
+
+.featured img {
+  width: 45%;
+  height: 100%;
+}
+
+.featured .card-body {
+  width: 55%;
+}
+
+/* ───────── FOOTER ───────── */
+footer {
+  text-align: center;
+  padding: 25px;
+  margin-top: 40px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+/* ───────── RESPONSIVE ───────── */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .featured {
+    flex-direction: column;
+  }
+
+  .featured img,
+  .featured .card-body {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">CDR Intelligence Blog</div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/blog">Blog</a>
+    <a href="/knowledge">Knowledge Base</a>
+    <a href="/contact">Contact</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>CDR Intelligence Insights</h1>
+  <p>
+    Learn how advanced CDR analysis helps investigators uncover communication patterns, networks, and movement intelligence in seconds.
+  </p>
+
+  <div class="search-box">
+    <input type="text" placeholder="Search blog articles..." />
+  </div>
+</section>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h3>Categories</h3>
+    <a class="category" href="#">Single CDR Analysis</a>
+    <a class="category" href="#">Dual CDR Analysis</a>
+    <a class="category" href="#">Network Intelligence</a>
+    <a class="category" href="#">Geolocation Forensics</a>
+    <a class="category" href="#">System Updates</a>
+  </aside>
+
+  <!-- BLOG -->
+  <section class="blog-grid">
+
+    <!-- FEATURED -->
+    <div class="card featured">
+      <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5" />
+      <div class="card-body">
+        <span class="tag">Featured</span>
+        <h3>How Single CDR Analysis Reveals Hidden Movement Patterns</h3>
+        <p>
+          Learn how our system processes raw telecom data to identify locations, contacts, and behavioral patterns within seconds using advanced parsing algorithms.
+        </p>
+      </div>
+    </div>
+
+    <!-- BLOG 1 -->
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b" />
+      <div class="card-body">
+        <span class="tag">Single CDR</span>
+        <h3>Understanding Contact Networks</h3>
+        <p>Explore how investigators identify top contacts and communication frequency patterns.</p>
+      </div>
+    </div>
+
+    <!-- BLOG 2 -->
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216" />
+      <div class="card-body">
+        <span class="tag">Geolocation</span>
+        <h3>Mapping Tower Data for Movement Tracking</h3>
+        <p>Visualizing mobile tower pings to trace real-world movement paths.</p>
+      </div>
+    </div>
+
+    <!-- BLOG 3 -->
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c" />
+      <div class="card-body">
+        <span class="tag">Dual CDR</span>
+        <h3>Relationship Detection Between Two Numbers</h3>
+        <p>Find hidden connections and shared contacts between two independent datasets.</p>
+      </div>
+    </div>
+
+    <!-- BLOG 4 -->
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71" />
+      <div class="card-body">
+        <span class="tag">Analytics</span>
+        <h3>Risk Scoring in CDR Intelligence Systems</h3>
+        <p>How behavioral scoring helps flag suspicious communication patterns.</p>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  © 2026 CDR Intelligence Portal | Knowledge Base & Blog System
+</footer>
+
+</body>
+</html>

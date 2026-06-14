@@ -24,6 +24,123 @@ def format_duration(seconds):
 
 
 # -----------------------------------
+# IMEI SWITCH TIMELINE
+# -----------------------------------
+def imei_switch_timeline(df):
+    """
+    Returns a list of handset-change events for the CDR owner, based
+    on the imei_switch flag added by normalizer.flag_imei_switches().
+
+    Each entry includes the date/time of the switch, the new IMEI,
+    and the IMEI used immediately before (when available).
+    """
+
+    if "imei_switch" not in df.columns:
+        return []
+
+    temp = df.copy()
+
+    flagged = temp[temp["imei_switch"] == True]
+
+    if len(flagged) == 0:
+        return []
+
+    results = []
+
+    for idx, row in flagged.iterrows():
+
+        results.append({
+            "call_date":     row.get("call_date", ""),
+            "call_time":     row.get("call_time", ""),
+            "new_imei":      str(row.get("imei", "")),
+            "previous_imei": str(row.get("previous_imei", "")),
+            "imei_switch_count": int(row.get("imei_switch_count", 0)),
+        })
+
+    return results
+
+
+# -----------------------------------
+# NON-MOBILE CONTACT SUMMARY
+# -----------------------------------
+def non_mobile_summary(non_mobile_df):
+    """
+    Summarises the non-mobile/service contacts frame (hex-encoded
+    SMS sender IDs, bank/service short codes, etc.) returned as the
+    second element of normalize_dataframe().
+
+    Groups by contact_number (the original sender identifier),
+    counting occurrences and total duration, sorted by frequency.
+    """
+
+    if non_mobile_df is None or len(non_mobile_df) == 0:
+        return []
+
+    if "contact_number" not in non_mobile_df.columns:
+        return []
+
+    temp = non_mobile_df.copy()
+
+    temp["duration"] = pd.to_numeric(
+        temp["duration"],
+        errors="coerce"
+    ).fillna(0) if "duration" in temp.columns else 0
+
+    grouped = (
+        temp.groupby("contact_number")
+        .agg(
+            occurrences=("contact_number", "count"),
+            total_duration=("duration", "sum") if "duration" in temp.columns else ("contact_number", "count")
+        )
+        .reset_index()
+    )
+
+    grouped = grouped.sort_values(
+        by="occurrences",
+        ascending=False
+    )
+
+    return grouped.head(30).to_dict(orient="records")
+
+
+# -----------------------------------
+# IMSI SWITCH TIMELINE
+# -----------------------------------
+def imsi_switch_timeline(df):
+    """
+    Returns a list of SIM-change events for the CDR owner, based on
+    the imsi_switch flag added by normalizer.flag_imsi_switches().
+
+    Each entry includes the date/time of the switch, the new IMSI,
+    and the IMSI used immediately before (when available).
+    """
+
+    if "imsi_switch" not in df.columns:
+        return []
+
+    temp = df.copy()
+
+    flagged = temp[temp["imsi_switch"] == True]
+
+    if len(flagged) == 0:
+        return []
+
+    results = []
+
+    for idx, row in flagged.iterrows():
+
+        results.append({
+            "call_date":     row.get("call_date", ""),
+            "call_time":     row.get("call_time", ""),
+            "new_imsi":      str(row.get("imsi", "")),
+            "previous_imsi": str(row.get("previous_imsi", "")),
+            "imsi_switch_count": int(row.get("imsi_switch_count", 0)),
+        })
+
+    return results
+
+
+# -----------------------------------
 # MOST CONTACTED
 # -----------------------------------
 def most_contacted(df):

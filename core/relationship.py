@@ -69,6 +69,19 @@ def direct_contacts(df1, df2):
         errors="coerce"
     ).fillna(0).sum()
 
+    # ── IMEI-switch context ────────────────────────────────────────
+    # Surface whether either number changed handsets during the
+    # period covered by this CDR — useful context for investigators
+    # when evaluating a relationship.
+    cdr_1_imei_switches = 0
+    cdr_2_imei_switches = 0
+
+    if "imei_switch" in df1.columns:
+        cdr_1_imei_switches = int(df1["imei_switch"].sum())
+
+    if "imei_switch" in df2.columns:
+        cdr_2_imei_switches = int(df2["imei_switch"].sum())
+
     return {
 
         "cdr_1_owner": owner_1,
@@ -82,6 +95,10 @@ def direct_contacts(df1, df2):
         "cdr_1_to_cdr_2_duration_seconds": int(duration_1),
 
         "cdr_2_to_cdr_1_duration_seconds": int(duration_2),
+
+        "cdr_1_imei_switches": cdr_1_imei_switches,
+
+        "cdr_2_imei_switches": cdr_2_imei_switches,
 
         "direct_relationship": (
             len(calls_1_to_2) > 0
@@ -294,6 +311,19 @@ def relationship_score_engine(
         )
 
     # -----------------------------------
+    # IMEI SWITCH CONTEXT (informational)
+    # -----------------------------------
+    cdr_1_switches = direct_relation.get("cdr_1_imei_switches", 0)
+    cdr_2_switches = direct_relation.get("cdr_2_imei_switches", 0)
+
+    if cdr_1_switches > 0 or cdr_2_switches > 0:
+
+        reasons.append(
+            "Handset (IMEI) change detected during CDR period — "
+            f"CDR1: {cdr_1_switches}, CDR2: {cdr_2_switches}"
+        )
+
+    # -----------------------------------
     # LIMIT SCORE
     # -----------------------------------
     if score > 100:
@@ -469,6 +499,17 @@ def relationship_intelligence(df):
         elif night_calls >= 1:
             score += 10
 
+        # ------------------------
+        # IMEI SWITCH CONTEXT
+        # ------------------------
+        imei_switches_during_contact = 0
+
+        if "imei_switch" in person.columns:
+
+            imei_switches_during_contact = int(
+                person["imei_switch"].sum()
+            )
+
         results.append({
 
             "contact_number":
@@ -482,6 +523,9 @@ def relationship_intelligence(df):
 
             "night_calls":
                 int(night_calls),
+
+            "imei_switches_during_contact":
+                imei_switches_during_contact,
 
             "relationship_score":
                 int(score),

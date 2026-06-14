@@ -70,9 +70,20 @@ _JAZZ_NEW_COLS    = {"calltype", "aparty", "bparty"}
 _JAZZ_OLD_COLS    = {"call_type", "a_party", "b_party", "date_and_time"}
 _WARID_COLS       = {"call_type", "a_party", "b_party", "date_&_time"}
 _ZONG_COLS        = {"msisdn", "strt_tm", "bnumber", "cell_id"}
-_UFONE_COLS       = {"a_number", "b_number", "start_time", "end_time", "direction"}
+# "direction" is optional — some Ufone exports only have "type" (no
+# separate Direction column). Match on the columns that are always
+# present, then handle "direction" as optional downstream.
+_UFONE_COLS       = {"a_number", "b_number", "start_time", "end_time", "type"}
 _TELENOR_COLS     = {"msisdn", "b_party", "call_start_dt_tm",
                      "inbound_outbound_ind", "call_network_volume"}
+
+# Variant seen on some CDRs: instead of B PARTY + INBOUND_OUTBOUND_IND,
+# the file provides CALL_ORIG_NUM / CALL_DIALED_NUM and the direction
+# is carried in CALL_TYPE (OUTGOING/INCOMING). MSISDN is always the
+# A-party (owner); the B-party is whichever of orig/dialed is NOT the
+# MSISDN, selected based on direction.
+_TELENOR_ORIG_DIALED_COLS = {"msisdn", "call_orig_num", "call_dialed_num",
+                              "call_start_dt_tm", "call_network_volume"}
 
 
 def detect_operator(columns: list[str]) -> str:
@@ -87,6 +98,9 @@ def detect_operator(columns: list[str]) -> str:
 
     if _TELENOR_COLS.issubset(col_set):
         return "telenor"
+
+    if _TELENOR_ORIG_DIALED_COLS.issubset(col_set):
+        return "telenor_orig_dialed"
 
     if _ZONG_COLS.issubset(col_set):
         return "zong"
@@ -193,6 +207,21 @@ _MAP_TELENOR = {
     "location":              "tower_address",
 }
 
+_MAP_TELENOR_ORIG_DIALED = {
+    "msisdn":                "owner_number",
+    # contact_number is resolved separately based on call_type direction
+    "imsi":                  "imsi",
+    "imei":                  "imei",
+    "call_start_dt_tm":      "datetime",
+    "call_type":             "direction",          # OUTGOING / INCOMING
+    "call_network_volume":   "duration",
+    "cell_site_id":          "cell_id",
+    "lat":                   "latitude",
+    "longitude":             "longitude",
+    "location":              "tower_address",
+    "call_type_dup1":        "call_type",          # GSM / SMS / DATA etc.
+}
+
 OPERATOR_MAPS = {
     "jazz":     _MAP_JAZZ,
     "jazz_old": _MAP_JAZZ_OLD,
@@ -200,6 +229,7 @@ OPERATOR_MAPS = {
     "zong":     _MAP_ZONG,
     "ufone":    _MAP_UFONE,
     "telenor":  _MAP_TELENOR,
+    "telenor_orig_dialed": _MAP_TELENOR_ORIG_DIALED,
 }
 
 
@@ -299,13 +329,208 @@ def _clean_col_name(col: str) -> str:
 
 
 # -----------------------------------
+# NORMALIZE MOBILE NUMBER FORMAT
+# -----------------------------------
+
+def normalize_mobile_number(value: str) -> str:
+    """
+    Standardise mobile numbers to the '92XXXXXXXXXX' (12-digit) format.
+
+    Handles:
+      - '03XXXXXXXXX'  (11 digits, leading 0)        -> '92XXXXXXXXXX'
+      - '3XXXXXXXXX'   (10 digits, missing leading 0,
+                        seen in some Zong exports)    -> '92XXXXXXXXXX'
+      - '92XXXXXXXXXX' (already 12 digits)            -> unchanged
+      - anything else (shortcodes, hex, text)         -> unchanged
+    """
+    val = str(value).strip()
+    if not val.isdigit():
+        return val
+
+    if val.startswith("92") and len(val) == 12:
+        return val
+    if val.startswith("03") and len(val) == 11:
+        return "92" + val[1:]
+    if val.startswith("3") and len(val) == 10:
+        return "92" + val
+
+    return val
+
+
+# -----------------------------------
+# NON-MOBILE / SERVICE CONTACT DETECTION
+# -----------------------------------
+
+def is_non_mobile_contact(value: str) -> bool:
+    """
+    Return True if the raw (pre-clean_number) contact value does NOT
+    look like a normal Pakistani mobile number — e.g. hex-encoded
+    SMS sender IDs, alphanumeric short codes, bank/service names,
+    or short numeric codes (shortcodes).
+
+    A normal mobile number (raw) is digits-only (possibly with a
+    leading '+') and either:
+      - starts with '92' or '03', OR
+      - is exactly 10 digits starting with '3' (some Zong exports
+        drop the leading '0', e.g. '3001234567')
+    """
+    raw = str(value).strip()
+    if not raw:
+        return False
+
+    digits_only = raw.lstrip("+")
+    if not digits_only.isdigit():
+        return True
+
+    if digits_only.startswith(("92", "03")):
+        return False
+
+    # 10-digit numbers starting with '3' (missing leading 0): treat as mobile
+    if len(digits_only) == 10 and digits_only.startswith("3"):
+        return False
+
+    return True
+
+
+# -----------------------------------
+# IMEI-SWITCH DETECTION
+# -----------------------------------
+
+# -----------------------------------
+# IMEI / IMSI SWITCH DETECTION
+# -----------------------------------
+
+def _flag_identity_switches(normalized: pd.DataFrame, id_col: str, prefix: str) -> pd.DataFrame:
+    """
+    Generic handset/SIM-swap detector.
+
+    Within each owner_number group (sorted by datetime), flag rows
+    where the value in `id_col` (e.g. 'imei' or 'imsi') differs from
+    the value used in the previous row for that owner.
+
+    Adds three columns (named using `prefix`, e.g. 'imei' / 'imsi'):
+      - {prefix}_switch       : bool, True when a new value first
+                                appears (excluding the first row)
+      - {prefix}_switch_count : int, running count of distinct
+                                values seen so far (1-based)
+      - previous_{prefix}     : str, the value used immediately
+                                before this row (chronologically)
+
+    Always groups by 'owner_number' only (never by `id_col` itself —
+    grouping by the identity field being tracked would defeat the
+    purpose, e.g. when id_col == 'imsi').
+
+    Safe no-op if `id_col` or 'datetime' columns are missing/empty.
+    """
+    switch_col  = f"{prefix}_switch"
+    count_col   = f"{prefix}_switch_count"
+    prev_col    = f"previous_{prefix}"
+
+    if id_col not in normalized.columns or normalized.empty:
+        normalized[switch_col] = False
+        normalized[count_col]  = 1
+        normalized[prev_col]   = ""
+        return normalized
+
+    normalized = normalized.copy()
+    normalized[switch_col] = False
+    normalized[count_col]  = 1
+    normalized[prev_col]   = ""
+
+    group_cols = []
+    if "owner_number" in normalized.columns:
+        group_cols.append("owner_number")
+
+    sort_cols = group_cols + (["datetime"] if "datetime" in normalized.columns else [])
+
+    def _process(frame_idx, frame):
+        seen_vals = []
+        switch_flags = []
+        switch_counts = []
+        previous_vals = []
+        last_val = ""
+        for val in frame[id_col]:
+            val = str(val).strip()
+            if val and val not in seen_vals:
+                seen_vals.append(val)
+                switch_flags.append(len(seen_vals) > 1)
+            else:
+                switch_flags.append(False)
+            switch_counts.append(max(len(seen_vals), 1))
+            previous_vals.append(last_val)
+            if val:
+                last_val = val
+
+        normalized.loc[frame_idx, switch_col] = switch_flags
+        normalized.loc[frame_idx, count_col]  = switch_counts
+        normalized.loc[frame_idx, prev_col]   = previous_vals
+
+    if not group_cols:
+        # No grouping key — treat whole frame as one group
+        ordered = normalized.sort_values(by=sort_cols) if sort_cols else normalized
+        _process(ordered.index, ordered)
+        return normalized
+
+    for _, group_idx in normalized.groupby(group_cols, dropna=False).groups.items():
+        group = normalized.loc[group_idx]
+        if sort_cols and "datetime" in normalized.columns:
+            group = group.sort_values(by="datetime")
+        _process(group.index, group)
+
+    return normalized
+
+
+def flag_imei_switches(normalized: pd.DataFrame) -> pd.DataFrame:
+    """Detect handset (IMEI) changes for the CDR owner. See
+    _flag_identity_switches for column details (imei_switch,
+    imei_switch_count, previous_imei)."""
+    return _flag_identity_switches(normalized, "imei", "imei")
+
+
+def flag_imsi_switches(normalized: pd.DataFrame) -> pd.DataFrame:
+    """Detect SIM (IMSI) changes for the CDR owner. See
+    _flag_identity_switches for column details (imsi_switch,
+    imsi_switch_count, previous_imsi)."""
+    return _flag_identity_switches(normalized, "imsi", "imsi")
+
+
+# -----------------------------------
 # NORMALIZE DATAFRAME  (main entry point)
 # -----------------------------------
 
-def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+def normalize_dataframe(df: pd.DataFrame):
+    """
+    Returns a tuple: (normalized_df, non_mobile_contacts_df)
+
+      normalized_df          : the standard 13(+)-column unified CDR,
+                                with mobile contacts only (as before),
+                                plus new imei_switch / imei_switch_count
+                                columns.
+      non_mobile_contacts_df : rows whose contact_number (raw, before
+                                clean_number) was NOT a normal mobile
+                                number — e.g. hex-encoded SMS sender
+                                IDs, bank/service short codes. These
+                                are excluded from the main analysis
+                                but kept for review (financial /
+                                service profiling).
+    """
 
     # ── 1. Normalise column names ─────────────────────────────────
     df.columns = [_clean_col_name(c) for c in df.columns]
+
+    # De-duplicate column names (e.g. 'CALL TYPE' and 'CALL_TYPE' both
+    # clean to 'call_type'). Keep the first occurrence, drop later
+    # duplicates by suffixing with _dupN so they don't collide.
+    seen = {}
+    new_cols = []
+    for c in df.columns:
+        if c not in seen:
+            seen[c] = 0
+            new_cols.append(c)
+        else:
+            seen[c] += 1
+            new_cols.append(f"{c}_dup{seen[c]}")
+    df.columns = new_cols
 
     print("\nDetected Columns:")
     print(df.columns.tolist())
@@ -344,6 +569,35 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                 lambda v: normalize_direction(str(v))
             )
 
+    # Telenor (orig/dialed variant): resolve contact_number using
+    # MSISDN as A-party. B-party is whichever of CALL_ORIG_NUM /
+    # CALL_DIALED_NUM is NOT the MSISDN, chosen by direction:
+    #   OUTGOING -> contact = call_dialed_num
+    #   INCOMING -> contact = call_orig_num
+    # Falls back to "the field that differs from MSISDN" if the
+    # direction value is unrecognised.
+    if operator == "telenor_orig_dialed":
+        msisdn = df["msisdn"].astype(str).str.strip() if "msisdn" in df.columns else pd.Series([""] * len(df))
+        orig   = df["call_orig_num"].astype(str).str.strip()   if "call_orig_num"   in df.columns else pd.Series([""] * len(df))
+        dialed = df["call_dialed_num"].astype(str).str.strip() if "call_dialed_num" in df.columns else pd.Series([""] * len(df))
+        direction_raw = df["call_type"].astype(str).str.strip().str.upper() if "call_type" in df.columns else pd.Series([""] * len(df))
+        sub_type_raw  = df["call_type_dup1"].astype(str).str.strip().str.upper() if "call_type_dup1" in df.columns else pd.Series([""] * len(df))
+
+        contact_numbers = []
+        for m, o, d, dirn, sub in zip(msisdn, orig, dialed, direction_raw, sub_type_raw):
+            if sub in ("GPRS", "DATA"):
+                # Data/internet session — no real B-party
+                contact_numbers.append("")
+            elif dirn == "OUTGOING":
+                contact_numbers.append(d)
+            elif dirn == "INCOMING":
+                contact_numbers.append(o)
+            else:
+                # Unknown direction: pick whichever field differs from MSISDN
+                contact_numbers.append(d if d != m else o)
+
+        df["_resolved_contact_number"] = contact_numbers
+
     # ── 5. Map columns to unified schema ─────────────────────────
     col_map = OPERATOR_MAPS.get(operator, {})
     normalized = pd.DataFrame()
@@ -358,9 +612,26 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     print(f"\nAfter column mapping: {len(normalized)} rows, "
           f"{normalized.columns.tolist()}")
 
+    # Telenor (orig/dialed variant): plug in the resolved contact number
+    if operator == "telenor_orig_dialed" and "_resolved_contact_number" in df.columns:
+        normalized["contact_number"] = df["_resolved_contact_number"].values
+
     # ── 6. Post-map direction fix ─────────────────────────────────
     if operator == "ufone":
         normalized["direction"] = df["_unified_direction"].values
+    elif operator == "telenor_orig_dialed":
+        # 'direction' currently holds raw OUTGOING/INCOMING (from CALL_TYPE)
+        # 'call_type' (from CALL_TYPE dup) holds GSM/SMS/DATA etc.
+        base_dir = normalized["direction"].astype(str).str.strip().str.upper()
+        sub_type = normalized["call_type"].astype(str).str.strip().str.upper() if "call_type" in normalized.columns else pd.Series([""] * len(normalized))
+
+        resolved_direction = []
+        for bd, st in zip(base_dir, sub_type):
+            if st == "SMS" and bd in ("INCOMING", "OUTGOING"):
+                resolved_direction.append(normalize_direction(f"{st.lower()} - {bd.lower()}"))
+            else:
+                resolved_direction.append(normalize_direction(bd))
+        normalized["direction"] = resolved_direction
     elif "call_type" in normalized.columns:
         normalized["direction"] = normalized["call_type"].apply(
             lambda v: normalize_direction(str(v))
@@ -373,55 +644,111 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         normalized["direction"] = ""
 
     # ── 7. Clean numeric / phone fields ──────────────────────────
+    # Keep a raw copy of contact_number BEFORE clean_number strips
+    # non-digit characters, so we can detect hex/alpha sender IDs.
+    if "contact_number" in normalized.columns:
+        normalized["_raw_contact_number"] = normalized["contact_number"]
+
     for col in ("owner_number", "contact_number", "imei", "imsi"):
         if col in normalized.columns:
             normalized[col] = normalized[col].map(clean_number)
 
-    # ── 8. Keep only mobile contacts (92 / 03 prefix) ────────────
-    if "contact_number" in normalized.columns:
-        normalized = normalized[
-            normalized["contact_number"]
-            .astype(str)
-            .str.startswith(("92", "03"), na=False)
-        ]
+    # Re-normalise owner/contact numbers into the 92XXXXXXXXXX format
+    # (handles 03XXXXXXXXX and 10-digit-no-leading-zero variants)
+    for col in ("owner_number", "contact_number"):
+        if col in normalized.columns:
+            normalized[col] = normalized[col].map(normalize_mobile_number)
 
-    print(f"After mobile filter: {len(normalized)}")
+    # ── 8. Split out data-session rows (no real B-party) ───────────
+    # Some Telenor (orig/dialed) files contain GPRS/internet rows with
+    # contact_number resolved to "" — these aren't calls/SMS to another
+    # party, keep them separate.
+    data_sessions = pd.DataFrame()
+    if "contact_number" in normalized.columns:
+        empty_contact_mask = normalized["contact_number"].astype(str).str.strip() == ""
+        if empty_contact_mask.any():
+            data_sessions = normalized[empty_contact_mask].copy()
+            normalized = normalized[~empty_contact_mask].copy()
+
+    # ── 8b. Split out non-mobile contacts (hex/service sender IDs) ──
+    non_mobile = pd.DataFrame()
+    if "_raw_contact_number" in normalized.columns:
+        is_non_mobile_mask = normalized["_raw_contact_number"].apply(is_non_mobile_contact)
+
+        non_mobile = normalized[is_non_mobile_mask].copy()
+        normalized = normalized[~is_non_mobile_mask].copy()
+
+        # Also catch rows where contact_number simply doesn't start
+        # with 92/03 after cleaning (covers cases the raw check missed)
+        if "contact_number" in normalized.columns:
+            still_invalid_mask = ~normalized["contact_number"].astype(str).str.startswith(("92", "03"), na=False)
+            non_mobile = pd.concat([non_mobile, normalized[still_invalid_mask]], ignore_index=True)
+            normalized = normalized[~still_invalid_mask].copy()
+
+        # Restore the human-readable sender/contact identifier for the
+        # non-mobile frame, then drop the helper column from both frames
+        if not non_mobile.empty:
+            non_mobile["contact_number"] = non_mobile["_raw_contact_number"]
+        non_mobile = non_mobile.drop(columns=["_raw_contact_number"], errors="ignore")
+        normalized = normalized.drop(columns=["_raw_contact_number"], errors="ignore")
+    elif "contact_number" in normalized.columns:
+        # Fallback to original behaviour if contact_number was never present
+        mask = normalized["contact_number"].astype(str).str.startswith(("92", "03"), na=False)
+        non_mobile = normalized[~mask].copy()
+        normalized = normalized[mask].copy()
+
+    print(f"After mobile filter: {len(normalized)} "
+          f"(non-mobile/service contacts set aside: {len(non_mobile)})")
 
     # ── 9. Parse datetime ─────────────────────────────────────────
-    if "datetime" in normalized.columns:
-        normalized["raw_datetime"] = normalized["datetime"].astype(str)
+    for frame in (normalized, non_mobile, data_sessions):
+        if frame is normalized and "datetime" not in frame.columns:
+            continue
+        if frame is not normalized and ("datetime" not in frame.columns or frame.empty):
+            continue
 
+        frame["raw_datetime"] = frame["datetime"].astype(str)
+        frame["datetime"] = pd.to_datetime(
+            frame["raw_datetime"],
+            errors="coerce",
+            dayfirst=False,
+            format="mixed",
+        )
+        frame["call_date"] = frame["datetime"].dt.strftime("%Y-%m-%d")
+        frame["call_time"] = frame["datetime"].dt.strftime("%H:%M:%S")
+
+    if "datetime" in normalized.columns:
         sample_size = min(10, len(normalized))
         if sample_size > 0:
             print("\nRandom datetime samples:")
             print(normalized["raw_datetime"].sample(sample_size).tolist())
 
-        normalized["datetime"] = pd.to_datetime(
-            normalized["raw_datetime"],
-            errors="coerce",
-            dayfirst=False,
-        )
-
         bad_rows = normalized[normalized["datetime"].isna()]
         print(f"\nInvalid datetime count: {len(bad_rows)}")
 
-        normalized["call_date"] = normalized["datetime"].dt.strftime("%Y-%m-%d")
-        normalized["call_time"] = normalized["datetime"].dt.strftime("%H:%M:%S")
+    # ── 10. Extract lat / long from tower address ──────────────────
+    for frame in (normalized, non_mobile, data_sessions):
+        if "tower_address" in frame.columns and not frame.empty:
+            if (
+                "latitude"  not in frame.columns
+                or "longitude" not in frame.columns
+            ):
+                towers, lats, lngs = extract_lat_long(frame["tower_address"])
+                frame["tower_address"] = towers
+                frame["latitude"]      = lats
+                frame["longitude"]     = lngs
 
-    # ── 10. Extract lat / long from tower address ─────────────────
-    if "tower_address" in normalized.columns:
-        if (
-            "latitude"  not in normalized.columns
-            or "longitude" not in normalized.columns
-        ):
-            towers, lats, lngs = extract_lat_long(normalized["tower_address"])
-            normalized["tower_address"] = towers
-            normalized["latitude"]      = lats
-            normalized["longitude"]     = lngs
-
-    # ── 11. Sector ────────────────────────────────────────────────
+    # ── 11. Sector ───────────────────────────────────────────────────
     if "cell_id" in normalized.columns:
         normalized["sector"] = normalized["cell_id"].map(get_sector)
+    if "cell_id" in non_mobile.columns and not non_mobile.empty:
+        non_mobile["sector"] = non_mobile["cell_id"].map(get_sector)
+    if "cell_id" in data_sessions.columns and not data_sessions.empty:
+        data_sessions["sector"] = data_sessions["cell_id"].map(get_sector)
+
+    # ── 11.5. IMEI-switch detection ──────────────────────────────────
+    normalized = flag_imei_switches(normalized)
+    normalized = flag_imsi_switches(normalized)
 
     # ── 12. Ensure all final columns exist ────────────────────────
     FINAL_COLUMNS = [
@@ -438,6 +765,12 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         "tower_address",
         "latitude",
         "longitude",
+        "imei_switch",
+        "imei_switch_count",
+        "previous_imei",
+        "imsi_switch",
+        "imsi_switch_count",
+        "previous_imsi",
     ]
 
     # Add missing columns as empty strings so downstream code
@@ -448,8 +781,61 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     normalized = normalized[FINAL_COLUMNS]
 
+    # non_mobile frame keeps a simplified schema (no imei_switch cols —
+    # not meaningful for service/sender IDs)
+    NON_MOBILE_COLUMNS = [
+        "owner_number",
+        "contact_number",   # original sender ID / hex string / short code
+        "call_date",
+        "call_time",
+        "duration",
+        "direction",
+        "cell_id",
+        "sector",
+        "tower_address",
+        "latitude",
+        "longitude",
+    ]
+    for col in NON_MOBILE_COLUMNS:
+        if col not in non_mobile.columns:
+            non_mobile[col] = ""
+    if not non_mobile.empty:
+        non_mobile = non_mobile[NON_MOBILE_COLUMNS]
+    else:
+        non_mobile = pd.DataFrame(columns=NON_MOBILE_COLUMNS)
+
+    # data_sessions: GPRS/internet rows — no contact_number, but keep
+    # cell/tower/time info for location-history purposes
+    DATA_SESSION_COLUMNS = [
+        "owner_number",
+        "imei",
+        "imsi",
+        "call_date",
+        "call_time",
+        "duration",
+        "cell_id",
+        "sector",
+        "tower_address",
+        "latitude",
+        "longitude",
+    ]
+    for col in DATA_SESSION_COLUMNS:
+        if col not in data_sessions.columns:
+            data_sessions[col] = ""
+    if not data_sessions.empty:
+        data_sessions = data_sessions[DATA_SESSION_COLUMNS]
+    else:
+        data_sessions = pd.DataFrame(columns=DATA_SESSION_COLUMNS)
+
     print(f"\nFINAL ROWS: {len(normalized)}")
-    return normalized
+    if "imei_switch" in normalized.columns:
+        print(f"IMEI switches detected: {int(normalized['imei_switch'].sum())}")
+    if "imsi_switch" in normalized.columns:
+        print(f"IMSI switches detected: {int(normalized['imsi_switch'].sum())}")
+    print(f"Non-mobile/service contacts: {len(non_mobile)}")
+    print(f"Data sessions (GPRS/internet): {len(data_sessions)}")
+
+    return normalized, non_mobile, data_sessions
 
 
 # -----------------------------------
@@ -499,7 +885,7 @@ def read_cdr_excel(filepath: str, sheet_name=0) -> pd.DataFrame:
 
     Usage:
         df = read_cdr_excel("path/to/cdr.xlsx")
-        result = normalize_dataframe(df)
+        normalized, non_mobile = normalize_dataframe(df)
     """
     # Peek at first 7 rows without any header assumption
     peek = pd.read_excel(
