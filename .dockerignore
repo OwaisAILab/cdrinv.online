@@ -1,0 +1,39 @@
+# Git
+.git/
+.gitignore
+
+# Python virtual environment (never include in Docker)
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Local SQLite DB (Fly.io uses /data volume)
+cdr_portal.db
+
+# Local upload temp files
+uploads/
+
+# Logs
+logs/
+*.log
+
+# Dev / IDE
+.env
+.env.*
+.vscode/
+.idea/
+*.DS_Store
+
+# Duplicate main file
+"main (1).py"
+
+# Test / tools
+temporary.py
+db_tool.py

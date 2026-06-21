@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login | CDR Intelligence Portal{% endblock %}
+
+{% block head_extra %}
+<style>
+/* ── GLOBAL READABILITY ──────────────────────────────────── */
+html { font-size: 16px; }
+body { font-size: 1rem; line-height: 1.6; }
+:root{--bg:#04100a;--surface:#091a10;--surface2:#0d2218;--border:#1e4030;--accent:#c9a84c;--text:#fff;--dim:#888;--muted:#444;--danger:#ff003c;--mono:'Share Tech Mono',monospace;--cond:'Barlow Condensed',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(201,168,76,.01) 2px,rgba(201,168,76,.01) 4px);pointer-events:none}
+.card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);padding:44px;text-align:center;position:relative}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.logo-mark{width:52px;height:52px;border:2px solid var(--accent);display:grid;place-items:center;margin:0 auto 20px;position:relative;animation:pulse 3s ease-in-out infinite}
+.logo-mark::before{content:'';position:absolute;inset:6px;background:var(--accent);opacity:.1}
+.logo-mark svg{position:relative;z-index:1}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}50%{box-shadow:0 0 0 10px rgba(201,168,76,0)}}
+h1{font-family:var(--cond);font-size:1.2rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.sub{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:32px}
+.form-group{margin-bottom:20px;text-align:left}
+label{display:block;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+input[type=password]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.9rem;padding:12px 14px;outline:none;transition:border-color .2s;letter-spacing:.2em}
+input[type=password]:focus{border-color:var(--accent)}
+.btn{width:100%;background:var(--accent);color:#000;border:none;font-family:var(--cond);font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:14px;cursor:pointer;transition:all .2s}
+.btn:hover{background:#d4a843}
+.error{background:rgba(255,0,60,.08);border:1px solid rgba(255,0,60,.3);padding:10px 12px;margin-bottom:16px;font-size:.7rem;color:var(--danger)}
+.back{display:block;margin-top:16px;font-size:.6rem;color:var(--muted);text-decoration:none;letter-spacing:.08em}
+.back:hover{color:var(--dim)}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="logo-mark">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <rect x="3" y="10" width="16" height="10" rx="1" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M7 10V7a4 4 0 018 0v3" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="11" cy="15" r="1.5" fill="#c9a84c"/>
+    </svg>
+  </div>
+  <h1>Admin Access</h1>
+  <p class="sub">CDR Intelligence Portal</p>
+
+  {% if error %}<div class="error">✖  {{ error }}</div>{% endif %}
+
+  <form method="POST" action="/auth/admin/login">
+    <div class="form-group">
+      <label>Admin Secret Key</label>
+      <input type="password" name="secret" placeholder="••••••••••••" autofocus required/>
+    </div>
+    <button type="submit" class="btn">Authenticate →</button>
+  </form>
+  <a href="/auth/login" class="back">← Back to user login</a>
+</div>
+{% endblock %}

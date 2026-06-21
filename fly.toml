@@ -1,0 +1,60 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  fly.toml — CDR Intelligence Portal
+#  Fly.io app configuration
+#
+#  Replace "cdr-intelligence-portal" with your actual app name chosen during
+#  `fly launch` (must be globally unique on fly.io)
+# ─────────────────────────────────────────────────────────────────────────────
+
+app = "cdr-intelligence-portal"
+primary_region = "sin"   # Singapore — closest to Pakistan with good latency
+                         # Alternatives: bom (Mumbai), dxb (Dubai)
+
+[build]
+  dockerfile = "Dockerfile"
+
+# ── HTTP service ──────────────────────────────────────────────────────────────
+[[services]]
+  internal_port = 8080
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type       = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  # Health check — Fly.io will restart the container if this fails
+  [[services.http_checks]]
+    interval      = 15000   # ms
+    timeout       = 5000
+    grace_period  = "10s"
+    method        = "GET"
+    path          = "/"
+    protocol      = "http"
+    restart_limit = 3
+
+# ── Persistent volume for SQLite DB + uploads ─────────────────────────────────
+[mounts]
+  source      = "cdr_data"
+  destination = "/data"
+
+# ── Resource sizing (free tier) ───────────────────────────────────────────────
+[[vm]]
+  cpu_kind = "shared"
+  cpus     = 1
+  memory   = "512mb"   # Enough for pandas/numpy; bump to 1gb if OOM
+
+# ── Environment variables (non-secret) ───────────────────────────────────────
+[env]
+  PYTHONUNBUFFERED = "1"
+  UPLOAD_FOLDER    = "/data/uploads"
+  DATABASE_URL     = "sqlite:////data/cdr_portal.db"
+  # FLASK_SECRET_KEY  ← set via `fly secrets set` (see README)

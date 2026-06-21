@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CDR Movement Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- LEAFLET -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .info-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+            max-width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+<!-- ── LANGUAGE SWITCHER (EN / UR / SD) ─────────────────────────────────── -->
+<style>
+  .lang-switcher-wrapper{position:fixed;bottom:18px;right:18px;z-index:99999;background:rgba(4,16,10,.92);backdrop-filter:blur(12px);padding:6px 14px;border-radius:6px;border:1px solid #1e4030;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+  .lang-switcher-wrapper .lang-icon{color:#c9a84c;font-size:.9rem;font-family:'Share Tech Mono',monospace}
+  .goog-te-banner-frame{display:none !important}
+  .goog-te-menu-frame{z-index:999999 !important}
+  .goog-te-gadget{font-family:'Share Tech Mono',monospace !important;font-size:.85rem !important;color:#6a9a78 !important}
+  .lang-switcher-wrapper .goog-te-gadget{display:inline-block !important}
+  .goog-te-gadget .goog-te-combo{background:#0d2218 !important;color:#e8f0eb !important;border:1px solid #1e4030 !important;padding:6px 12px !important;border-radius:4px !important;font-family:'Share Tech Mono',monospace !important;font-size:.85rem !important;cursor:pointer !important;outline:none !important}
+  .goog-te-gadget .goog-te-combo:focus{border-color:#c9a84c !important}
+  .goog-logo-link{display:none !important}
+  .goog-te-gadget span{display:none !important}
+  body{top:0 !important;position:relative}
+  @media (max-width:640px){.lang-switcher-wrapper{bottom:10px;right:10px;padding:4px 10px}.lang-switcher-wrapper .lang-icon{font-size:.7rem}.goog-te-gadget .goog-te-combo{font-size:.7rem !important;padding:4px 8px !important}}
+</style>
+<div class="lang-switcher-wrapper">
+  <span class="lang-icon">🌐</span>
+  <div id="google_translate_element"></div>
+</div>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,ur,sd',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var observer = new MutationObserver(function() {
+        var banner = document.querySelector('.goog-te-banner-frame');
+        if (banner) banner.style.display = 'none';
+        document.body.style.top = '0px';
+        document.body.style.position = 'relative';
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+
+    <div class="info-box">
+        <h3>CDR Investigation Map</h3>
+        <p>Tower movement visualization</p>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        // -----------------------------------
+        // INITIALIZE MAP (With Canvas optimization)
+        // -----------------------------------
+        const map = L.map('map', {
+            preferCanvas: true // 🚀 CRITICAL: Instantly speeds up 2000+ points
+        }).setView([24.8607, 67.0011], 11);
+
+        // -----------------------------------
+        // OPENSTREETMAP TILE LAYER
+        // -----------------------------------
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // -----------------------------------
+        // FETCH MAP DATA
+        // -----------------------------------
+        fetch('/map-data')
+        .then(response => response.json())
+        .then(data => {
+            
+            console.log("MAP DATA:", data);
+            console.log("TOTAL POINTS:", data.length);    
+            
+            let movementPoints = [];
+
+            data.forEach((point, index) => {
+                const lat = parseFloat(point.latitude);
+                const lng = parseFloat(point.longitude);
+
+                // Skip broken/invalid coordinates
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                movementPoints.push([lat, lng]);
+
+                // -----------------------------------
+                // OPTIMIZED MARKER (CircleMarker instead of L.marker)
+                // -----------------------------------
+                const pinPoint = L.circleMarker([lat, lng], {
+                    radius: 6,
+                    fillColor: '#ff3333', // Custom red pin center
+                    color: '#ffffff',     // White outline
+                    weight: 1.5,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+
+                // -----------------------------------
+                // POPUP (Stays fully functional)
+                // -----------------------------------
+                pinPoint.bindPopup(`
+                    <b>Tower:</b> ${point.tower || 'N/A'}<br>
+                    <b>Sector:</b> ${point.sector || 'N/A'}<br>
+                    <b>Contact:</b> ${point.contact || 'N/A'}<br>
+                    <b>Direction:</b> ${point.direction || 'N/A'}<br>
+                    <b>DateTime:</b> ${point.datetime || 'N/A'}
+                `);
+
+                // -----------------------------------
+                // OPTIMIZED TOWER RADIUS
+                // -----------------------------------
+                // Since canvas is active, standard circles render fast, 
+                // but setting a lower fillOpacity ensures overlapping cells stay legible.
+                L.circle([lat, lng], {
+                    radius: 800, 
+                    color: '#30a5ff',
+                    weight: 1,
+                    fillColor: '#30a5ff',
+                    fillOpacity: 0.03 // Low opacity preserves view clarity on overlapping ranges
+                }).addTo(map);
+            });
+
+            // -----------------------------------
+            // MOVEMENT PATH (Optimized for performance)
+            // -----------------------------------
+            if (movementPoints.length > 0) {
+                const polyline = L.polyline(movementPoints, {
+                    color: '#0055ff',  // Clean blue tracking line
+                    weight: 3,
+                    smoothFactor: 1.5, // 🚀 Simplifies path calculation at higher zoom levels
+                    opacity: 0.7
+                }).addTo(map);
+
+                // Automatically frame all 2,000 points into view
+                map.fitBounds(polyline.getBounds());
+            }
+        })
+        .catch(error => {
+            console.error('Map Data Error:', error);
+        });
+    </script>
+</body>
+</html>

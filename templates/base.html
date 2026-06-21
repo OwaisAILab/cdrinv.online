@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}CDR Intelligence Portal{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <!-- ── LANGUAGE SWITCHER (EN / UR / SD) ─────────────────────────────────── -->
+    <style>
+      .lang-switcher-wrapper{position:fixed;bottom:18px;right:18px;z-index:99999;background:rgba(4,16,10,.92);backdrop-filter:blur(12px);padding:6px 14px;border-radius:6px;border:1px solid #1e4030;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+      .lang-switcher-wrapper .lang-icon{color:#c9a84c;font-size:.9rem;font-family:'Share Tech Mono',monospace}
+      .goog-te-banner-frame{display:none !important}
+      .goog-te-menu-frame{z-index:999999 !important}
+      .goog-te-gadget{font-family:'Share Tech Mono',monospace !important;font-size:.85rem !important;color:#6a9a78 !important}
+      .lang-switcher-wrapper .goog-te-gadget{display:inline-block !important}
+      .goog-te-gadget .goog-te-combo{background:#0d2218 !important;color:#e8f0eb !important;border:1px solid #1e4030 !important;padding:6px 12px !important;border-radius:4px !important;font-family:'Share Tech Mono',monospace !important;font-size:.85rem !important;cursor:pointer !important;outline:none !important}
+      .goog-te-gadget .goog-te-combo:focus{border-color:#c9a84c !important}
+      .goog-logo-link{display:none !important}
+      .goog-te-gadget span{display:none !important}
+      body{top:0 !important;position:relative}
+      @media (max-width:640px){.lang-switcher-wrapper{bottom:10px;right:10px;padding:4px 10px}.lang-switcher-wrapper .lang-icon{font-size:.7rem}.goog-te-gadget .goog-te-combo{font-size:.7rem !important;padding:4px 8px !important}}
+    </style>
+    <div class="lang-switcher-wrapper">
+      <span class="lang-icon">🌐</span>
+      <div id="google_translate_element"></div>
+    </div>
+    <script type="text/javascript">
+    function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,ur,sd', // Only show English, Urdu, Sindhi
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+    }, 'google_translate_element');
+    }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var observer = new MutationObserver(function() {
+            var banner = document.querySelector('.goog-te-banner-frame');
+            if (banner) banner.style.display = 'none';
+            document.body.style.top = '0px';
+            document.body.style.position = 'relative';
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+    </script>
+    {% block content %}{% endblock %}
+</body>

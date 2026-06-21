@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Operational Intelligence | CDR Intelligence Portal{% endblock %}
+
+{% block head_extra %}
+<style>
+:root {
+  --bg: #04100a;
+  --surface: #091a10;
+  --surface2: #0d2218;
+  --border: #1e4030;
+  --accent: #c9a84c;
+  --danger: #ff003c;
+  --success: #00c853;
+  --warning: #f0c040;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Barlow', sans-serif;
+  --cond: 'Barlow Condensed', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: #e8f0eb;
+  font-family: var(--sans);
+  min-height: 100vh;
+}
+
+/* --- HEADER --- */
+.header {
+  background: rgba(4,16,10,0.95);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-title {
+  font-family: var(--cond);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.header-title span { color: #6a9a78; font-weight: 400; }
+.header-actions a {
+  color: var(--dim);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+}
+.header-actions a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* --- MAIN LAYOUT --- */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+/* --- ALERT BANNER --- */
+.alert-banner {
+  background: linear-gradient(135deg, #1a0a0a, #2d0f0f);
+  border: 1px solid var(--danger);
+  border-left: 6px solid var(--danger);
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  border-radius: 4px;
+  animation: pulse-border 2s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--danger); }
+  50% { border-color: #ff6644; }
+}
+.alert-banner .title {
+  font-family: var(--cond);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--danger);
+  letter-spacing: 0.08em;
+}
+.alert-banner .details {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: #e8d0d0;
+  margin-top: 4px;
+}
+
+/* --- GRID LAYOUT --- */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px 24px;
+  position: relative;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.4;
+}
+.card-title {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 12px;
+}
+.card-value {
+  font-family: var(--cond);
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--accent);
+}
+.card-sub {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--dim);
+  margin-top: 4px;
+}
+
+/* --- RECOMMENDATIONS --- */
+.recommendation {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface2);
+}
+.recommendation.critical { border-left-color: var(--danger); }
+.recommendation.urgent { border-left-color: var(--warning); }
+.recommendation.high { border-left-color: var(--accent); }
+.recommendation .priority {
+  font-family: var(--mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.priority-critical { background: rgba(255,0,60,0.15); color: var(--danger); border: 1px solid rgba(255,0,60,0.3); }
+.priority-immediate { background: rgba(240,192,64,0.12); color: var(--warning); border: 1px solid rgba(240,192,64,0.3); }
+.priority-high { background: rgba(201,168,76,0.1); color: var(--accent); border: 1px solid rgba(201,168,76,0.3); }
+.recommendation .action {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .header-title { font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-title">🎯 OPERATIONAL <span>INTELLIGENCE</span></div>
+  <div class="header-actions">
+    <a href="/dashboard">← Dashboard</a>
+    <a href="/auth/logout">Logout</a>
+  </div>
+</header>
+
+<main class="main">
+
+  {% if intel.status == 'no_data' %}
+  <div class="alert-banner" style="border-color:var(--dim);">
+    <div class="title">📂 No CDR Loaded</div>
+    <div class="details">Upload a CDR first to enable operational tracking.</div>
+  </div>
+  {% else %}
+
+  <!-- ─── LAST SEEN ALERT ─── -->
+  {% if intel.last_seen.urgency == 'IMMEDIATE' %}
+  <div class="alert-banner">
+    <div class="title">🔴 IMMEDIATE ACTION REQUIRED</div>
+    <div class="details">
+      Suspect last seen <strong>{{ intel.last_seen.minutes_ago }} minutes ago</strong>
+      at <strong>{{ intel.last_seen.tower }}</strong>
+      {% if intel.last_seen.lat %}
+      ({{ intel.last_seen.lat }}, {{ intel.last_seen.lon }})
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ─── TOP STATS ─── -->
+  <div class="grid-3" style="margin-bottom: 24px;">
+    <div class="card">
+      <div class="card-title">Total Location Pings</div>
+      <div class="card-value">{{ intel.stats.total_pings }}</div>
+      <div class="card-sub">All sources merged</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Unique Towers</div>
+      <div class="card-value">{{ intel.stats.unique_towers }}</div>
+      <div class="card-sub">Movement footprint</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Max Speed</div>
+      <div class="card-value">{{ intel.stats.max_speed }} km/h</div>
+      <div class="card-sub">{% if intel.stats.max_speed > 80 %}🚨 FLEEING DETECTED{% else %}Normal movement{% endif %}</div>
+    </div>
+  </div>
+
+  <!-- ─── TACTICAL RECOMMENDATIONS ─── -->
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-title">🎯 TACTICAL RECOMMENDATIONS</div>
+    {% if intel.recommendations %}
+      {% for rec in intel.recommendations %}
+      <div class="recommendation {{ rec.priority | lower }}">
+        <span class="priority priority-{{ rec.priority | lower }}">
+          {{ rec.priority }}
+        </span>
+        <span class="action">{{ rec.action }}</span>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="recommendation" style="border-left-color:var(--dim);">
+        <span class="action" style="color:var(--dim);">No actionable recommendations at this time.</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ─── NIGHT RESIDENCE ─── -->
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-title">🏠 NIGHT RESIDENCE (11 PM - 5 AM)</div>
+    {% if intel.night_residence %}
+      {% for zone in intel.night_residence %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div>
+          <span style="font-family:var(--sans);font-weight:600;">{{ zone.tower_address }}</span>
+          <span style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);margin-left:12px;">
+            {{ zone.coverage_percentage }}% of nights
+          </span>
+        </div>
+        <span style="font-family:var(--cond);font-size:1.2rem;color:var(--accent);">
+          {{ zone.night_visits }} visits
+        </span>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="color:var(--dim);font-family:var(--mono);font-size:0.8rem;">
+        No significant night residence pattern detected.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ─── LAST SEEN DETAILS ─── -->
+  <div class="card">
+    <div class="card-title">📍 LAST SEEN DETAILS</div>
+    <div class="grid-2">
+      <div>
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);">Time</div>
+        <div style="font-family:var(--cond);font-size:1.2rem;color:var(--accent);">
+          {{ intel.last_seen.time }}
+        </div>
+        <div style="font-family:var(--mono);font-size:0.7rem;color:var(--dim);">
+          {{ intel.last_seen.minutes_ago }} minutes ago
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);">Tower</div>
+        <div style="font-family:var(--sans);font-size:0.9rem;">
+          {{ intel.last_seen.tower }}
+        </div>
+        {% if intel.last_seen.lat %}
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);margin-top:4px;">
+          Lat: {{ intel.last_seen.lat }}, Lon: {{ intel.last_seen.lon }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+
+</main>
+
+</body>
+</html>

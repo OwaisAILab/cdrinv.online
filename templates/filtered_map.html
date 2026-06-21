@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Filtered CDR Tower Map</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: monospace; }
+        #map { width: 100%; height: 100vh; }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid #c9a84c;
+            pointer-events: none;
+            font-family: monospace;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: #c9a84c;
+            color: black;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+        .close-btn:hover {
+            background: #d4a843;
+        }
+    </style>
+</head>
+<body>
+<!-- ── LANGUAGE SWITCHER (EN / UR / SD) ─────────────────────────────────── -->
+<style>
+  .lang-switcher-wrapper{position:fixed;bottom:18px;right:18px;z-index:99999;background:rgba(4,16,10,.92);backdrop-filter:blur(12px);padding:6px 14px;border-radius:6px;border:1px solid #1e4030;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+  .lang-switcher-wrapper .lang-icon{color:#c9a84c;font-size:.9rem;font-family:'Share Tech Mono',monospace}
+  .goog-te-banner-frame{display:none !important}
+  .goog-te-menu-frame{z-index:999999 !important}
+  .goog-te-gadget{font-family:'Share Tech Mono',monospace !important;font-size:.85rem !important;color:#6a9a78 !important}
+  .lang-switcher-wrapper .goog-te-gadget{display:inline-block !important}
+  .goog-te-gadget .goog-te-combo{background:#0d2218 !important;color:#e8f0eb !important;border:1px solid #1e4030 !important;padding:6px 12px !important;border-radius:4px !important;font-family:'Share Tech Mono',monospace !important;font-size:.85rem !important;cursor:pointer !important;outline:none !important}
+  .goog-te-gadget .goog-te-combo:focus{border-color:#c9a84c !important}
+  .goog-logo-link{display:none !important}
+  .goog-te-gadget span{display:none !important}
+  body{top:0 !important;position:relative}
+  @media (max-width:640px){.lang-switcher-wrapper{bottom:10px;right:10px;padding:4px 10px}.lang-switcher-wrapper .lang-icon{font-size:.7rem}.goog-te-gadget .goog-te-combo{font-size:.7rem !important;padding:4px 8px !important}}
+</style>
+<div class="lang-switcher-wrapper">
+  <span class="lang-icon">🌐</span>
+  <div id="google_translate_element"></div>
+</div>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,ur,sd',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var observer = new MutationObserver(function() {
+        var banner = document.querySelector('.goog-te-banner-frame');
+        if (banner) banner.style.display = 'none';
+        document.body.style.top = '0px';
+        document.body.style.position = 'relative';
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+    <button class="close-btn" onclick="window.close()">← Close Map</button>
+    <div class="info-panel" id="infoPanel">
+        Loading filtered towers...
+    </div>
+    <div id="map"></div>
+
+    <script>
+        // Get filtered data from sessionStorage
+        let mapData = [];
+        const storedData = sessionStorage.getItem('filteredMapData');
+        const filterDate = sessionStorage.getItem('filterDate') || 'unknown date';
+        
+        if (storedData) {
+            mapData = JSON.parse(storedData);
+            document.getElementById('infoPanel').innerHTML = `
+                📅 <b>${filterDate}</b><br>
+                📍 ${mapData.length} tower location${mapData.length !== 1 ? 's' : ''} active
+            `;
+        } else {
+            document.getElementById('infoPanel').innerHTML = '⚠️ No filtered data found';
+        }
+        
+        // Initialize map
+        const map = L.map('map').setView([24.8607, 67.0011], 11);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const points = [];
+        const markers = [];
+        
+        mapData.forEach((point, index) => {
+            const lat = parseFloat(point.latitude);
+            const lng = parseFloat(point.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) return;
+            
+            points.push([lat, lng]);
+            
+            // Create marker with custom icon
+            const marker = L.marker([lat, lng]).addTo(map);
+            
+            // Popup with tower info
+            marker.bindPopup(`
+                <b>Tower:</b> ${point.tower || 'N/A'}<br>
+                <b>Sector:</b> ${point.sector || 'N/A'}<br>
+                <b>Time:</b> ${point.time || 'N/A'}<br>
+                <b>Index:</b> #${index + 1}
+            `);
+            
+            markers.push(marker);
+            
+            // Add circle to show tower coverage
+            L.circle([lat, lng], {
+                radius: 500,
+                color: '#c9a84c',
+                fillColor: '#c9a84c',
+                fillOpacity: 0.1
+            }).addTo(map);
+        });
+        
+        // Draw movement path if there are points
+        if (points.length > 1) {
+            const polyline = L.polyline(points, {
+                color: '#ff003c',
+                weight: 2,
+                opacity: 0.7
+            }).addTo(map);
+            
+            map.fitBounds(polyline.getBounds());
+        } else if (points.length === 1) {
+            map.setView(points[0], 14);
+        }
+        
+        // Clear session storage after use (optional)
+        // sessionStorage.removeItem('filteredMapData');
+    </script>
+</body>
+</html>
