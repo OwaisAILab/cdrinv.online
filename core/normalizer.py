@@ -211,6 +211,9 @@ _MAP_JAZZ = {
     "imsi": "imsi",
     "imei": "imei",
     "sitelocation": "tower_address",
+    "site": "tower_address",
+    "Site": "tower_address",
+    "location": "tower_address",
 }
 _MAP_JAZZ_OLD = {
     "call_type": "call_type",
@@ -222,6 +225,9 @@ _MAP_JAZZ_OLD = {
     "imsi": "imsi",
     "imei": "imei",
     "sitelocation": "tower_address",
+    "site": "tower_address",
+    "Site": "tower_address",
+    "location": "tower_address",
 }
 _MAP_WARID = {
     "call_type": "call_type",
@@ -233,7 +239,9 @@ _MAP_WARID = {
     "imsi": "imsi",
     "imei": "imei",
     "sitelocation": "tower_address",
-    "site": "tower_address"
+    "site": "tower_address",
+    "Site": "tower_address",
+    "location": "tower_address",
 }
 _MAP_ZONG = {
     "call_type": "call_type",
@@ -242,8 +250,10 @@ _MAP_ZONG = {
     "bnumber": "contact_number",
     "cell_id": "cell_id",
     "imei": "imei",
-    "site_address": "tower_address",
+    "sitelocation": "tower_address",
     "site": "tower_address",
+    "Site": "tower_address",
+    "location": "tower_address",
     "lng": "longitude",
     "lat": "latitude",
 }
@@ -255,8 +265,10 @@ _MAP_UFONE = {
     "start_time": "datetime",
     "type": "call_type",
     "direction": "direction",
-    "location": "tower_address",
+    "sitelocation": "tower_address",
     "site": "tower_address",
+    "Site": "tower_address",
+    "location": "tower_address",
     "cell_id": "cell_id",
     "latitude": "latitude",
     "longtitude": "longitude",
@@ -276,8 +288,10 @@ _MAP_TELENOR = {
     "longtitude": "longitude",
     "longitude": "longitude",
     "call_type": "call_type",
+    "sitelocation": "tower_address",
+    "site": "tower_address",
+    "Site": "tower_address",
     "location": "tower_address",
-    "site": "tower_address"
 }
 _MAP_TELENOR_ORIG_DIALED = {
     "msisdn": "owner_number",
@@ -289,8 +303,10 @@ _MAP_TELENOR_ORIG_DIALED = {
     "cell_site_id": "cell_id",
     "lat": "latitude",
     "longitude": "longitude",
-    "location": "tower_address",
+    "sitelocation": "tower_address",
     "site": "tower_address",
+    "Site": "tower_address",
+    "location": "tower_address",
     "call_type_dup1": "call_type",      # GSM / SMS / DATA etc.
 }
 
@@ -352,19 +368,36 @@ def normalize_direction(call_type_val: str, direction_val: str = "") -> str:
 # -----------------------------------
 def extract_lat_long(tower_series: pd.Series):
     """
-    Parse  'name | lat | long [| extra]'  tower address strings.
+    Parse tower address strings that may contain coordinates.
+    Supports:
+        - "name | lat | lon"
+        - "name, \"description | lat | lon\""
+        - "name | lat | lon | extra"
     Returns (towers, latitudes, longitudes) as lists.
     """
     towers, latitudes, longitudes = [], [], []
     for value in tower_series:
         try:
-            parts = str(value).split("|")
-            if len(parts) >= 3:
-                towers.append(parts[0].strip())
-                latitudes.append(parts[1].strip())
-                longitudes.append(parts[2].strip())
+            val = str(value).strip()
+            # Check if it contains a pipe
+            if '|' in val:
+                # Split by pipe
+                parts = val.split('|')
+                # Clean lat/lon parts: remove quotes, extra spaces
+                lat_part = parts[1].strip().strip('"').strip()
+                lon_part = parts[2].strip().strip('"').strip()
+                # The first part may contain a comma and extra text; we want the site name.
+                # Try to extract first part before any comma.
+                name_part = parts[0].strip()
+                # If there is a comma, take the part before it
+                if ',' in name_part:
+                    name_part = name_part.split(',')[0].strip()
+                towers.append(name_part)
+                latitudes.append(lat_part)
+                longitudes.append(lon_part)
             else:
-                towers.append(value)
+                # No pipe: treat as plain tower address
+                towers.append(val)
                 latitudes.append("")
                 longitudes.append("")
         except Exception:
@@ -372,7 +405,6 @@ def extract_lat_long(tower_series: pd.Series):
             latitudes.append("")
             longitudes.append("")
     return towers, latitudes, longitudes
-
 
 # -----------------------------------
 # CLEAN COLUMN NAMES

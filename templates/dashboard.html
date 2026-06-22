@@ -745,6 +745,13 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
+const deviceInfoList = {{ device_info_list|tojson }};
+window._deviceInfoList = deviceInfoList;
+
+const networkInfoList = {{ network_info_list|tojson }};
+console.log("networkInfoList from Flask:", networkInfoList);
+window._networkInfoList = networkInfoList;
+
 const MOCK = {
   summary: { records: 4812, contacts: 143, towers: 67, non_mobile_contacts: 312, data_sessions: 0, imei_switches: 1, imsi_switches: 0 },
   imei_timeline: [
@@ -791,6 +798,8 @@ fetch('/dashboard-data')
 function render(data) {
   document.getElementById('app').innerHTML = `
     ${summaryHTML(data)}
+    ${deviceInfoHTML(window._deviceInfoList)}
+    ${networkInfoHTML(window._networkInfoList)}
     ${imeiTimelineHTML(data)}
     ${residenceHTML(data)}
     ${buildWorkplace(data)}
@@ -913,10 +922,19 @@ function movementHTML(d) {
   return `
   <div class="card span-2">
     <div class="section-header"><div class="section-title"><span>◈</span> Movement Intelligence</div><div class="section-badge">ROUTE FREQ</div></div>
-    <div class="radius-ring"><div class="ring-visual"><svg viewBox="0 0 72 72" fill="none"><circle cx="36" cy="36" r="28" stroke="var(--border)" stroke-width="3"/><circle cx="36" cy="36" r="28" stroke="var(--accent)" stroke-width="3" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${circ / 4}" stroke-linecap="butt" style="transition: stroke-dasharray 1s ease"/></svg><div class="ring-label">${km}<div class="ring-unit">KM</div></div></div><div class="ring-text"><h3>Movement Radius</h3><p>Geographic activity perimeter<br>based on tower triangulation</p><a class="map-link" href="/map" style="margin-top:10px;display:inline-flex">Open Movement Map</a></div></div>
+    <div class="radius-ring">
+      <div class="ring-visual"><svg viewBox="0 0 72 72" fill="none">...</svg><div class="ring-label">${km}<div class="ring-unit">KM</div></div></div>
+      <div class="ring-text">
+        <h3>Movement Radius</h3>
+        <p>Geographic activity perimeter<br>based on tower triangulation</p>
+        <a class="map-link" href="/map" style="margin-top:10px;display:inline-flex;">🗺️ Open Movement Map</a>
+        <a class="map-link" href="/routes-map" style="margin-top:10px;display:inline-flex;margin-left:10px;">🔁 Most Frequent Route</a>
+      </div>
+    </div>
     <div class="route-list">${routes.slice(0,10).map((r, i) => `<div class="route-item"><span class="route-rank">#${i+1}</span><span class="route-towers">${r.from} → ${r.to}</span><span class="route-count">${r.frequency}</span></div>`).join('')}</div>
   </div>`;
 }
+
 
 function buildWorkplace(data) {
     const places = data.workplace || [];
@@ -970,8 +988,12 @@ function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const d = window._dashData || MOCK;
+    // Get network and device info from globals
+    const networkInfoList = window._networkInfoList || [];
+    const deviceInfoList = window._deviceInfoList || [];
     let y = 15;
 
+    // ── Header ──────────────────────────────────────────────
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(255, 123, 0);
@@ -982,6 +1004,7 @@ function exportPDF() {
     doc.text('Generated: ' + new Date().toLocaleString(), 14, y);
     y += 10;
 
+    // ── SUMMARY ──────────────────────────────────────────────
     doc.setFontSize(11);
     doc.setTextColor(255, 255, 255);
     doc.setFillColor(30, 30, 30);
@@ -1005,6 +1028,56 @@ function exportPDF() {
       theme: 'grid'
     });
     y = doc.lastAutoTable.finalY + 10;
+
+    // ── SIM NETWORK IDENTITY ────────────────────────────────
+    if (networkInfoList.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFontSize(11);
+      doc.setTextColor(255, 123, 0);
+      doc.text('SIM NETWORK IDENTITY', 14, y);
+      y += 4;
+      const body = networkInfoList.map(info => {
+        const imsi = info.imsi || '';
+        const masked = imsi.length >= 10 ? imsi.slice(0, 4) + '****' + imsi.slice(-4) : imsi;
+        return [masked, info.mcc || '', info.mnc || '', info.network || ''];
+      });
+      doc.autoTable({
+        startY: y,
+        head: [['IMSI (masked)', 'MCC', 'MNC', 'Network']],
+        body: body,
+        theme: 'grid',
+        headStyles: { fillColor: false, textColor: [0, 0, 0], fontStyle: 'bold', lineColor: [0, 0, 0], lineWidth: 0.3 },
+        bodyStyles: { fillColor: false, textColor: [0, 0, 0], lineColor: [180, 180, 180], lineWidth: 0.2 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        styles: { fontSize: 8 }
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ── DEVICE IDENTITY ──────────────────────────────────────
+    if (deviceInfoList.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFontSize(11);
+      doc.setTextColor(255, 123, 0);
+      doc.text('DEVICE IDENTITY', 14, y);
+      y += 4;
+      const body = deviceInfoList.map(info => {
+        const imei = info.imei || '';
+        const masked = imei.length >= 10 ? imei.slice(0, 6) + '****' + imei.slice(-4) : imei;
+        return [masked, info.tac || '', info.brand || '', info.model || ''];
+      });
+      doc.autoTable({
+        startY: y,
+        head: [['IMEI (masked)', 'TAC', 'Brand', 'Model']],
+        body: body,
+        theme: 'grid',
+        headStyles: { fillColor: false, textColor: [0, 0, 0], fontStyle: 'bold', lineColor: [0, 0, 0], lineWidth: 0.3 },
+        bodyStyles: { fillColor: false, textColor: [0, 0, 0], lineColor: [180, 180, 180], lineWidth: 0.2 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        styles: { fontSize: 8 }
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
 
     // Workplace
     const workplace = d.workplace || [];
@@ -1239,5 +1312,56 @@ function resetMapFilter() { sessionStorage.removeItem('filteredMapData'); sessio
 function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebar-overlay').style.display = 'block'; }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').style.display = 'none'; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+function networkInfoHTML(networkInfoList) {
+    if (!networkInfoList || networkInfoList.length === 0) {
+        return '';
+    }
+    // Build rows for each network entry
+    let rows = '';
+    networkInfoList.forEach(info => {
+        const imsi = info.imsi || '';
+        const masked = imsi.length >= 10 ? imsi.slice(0, 4) + '****' + imsi.slice(-4) : imsi;
+        rows += `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">IMSI</span><br><span style="font-family: var(--mono); font-size: 0.8rem;">${masked}</span></div>
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">MCC</span><br><span style="font-family: var(--mono); font-size: 0.8rem;">${info.mcc}</span></div>
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">MNC</span><br><span style="font-family: var(--mono); font-size: 0.8rem;">${info.mnc}</span></div>
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">Network</span><br><span style="font-family: var(--sans); font-weight: 600;">${info.network}</span></div>
+        </div>
+        `;
+    });
+    return `
+    <div class="card span-3" style="border-color: var(--accent);">
+        <div class="card-label">SIM Network Identity (${networkInfoList.length} unique SIMs)</div>
+        ${rows}
+    </div>
+    `;
+}
+
+function deviceInfoHTML(deviceInfoList) {
+    if (!deviceInfoList || deviceInfoList.length === 0) {
+        return '';
+    }
+    let rows = '';
+    deviceInfoList.forEach(info => {
+        const imei = info.imei || '';
+        const masked = imei.length >= 10 ? imei.slice(0, 6) + '****' + imei.slice(-4) : imei;
+        rows += `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">IMEI</span><br><span style="font-family: var(--mono); font-size: 0.8rem;">${masked}</span></div>
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">TAC</span><br><span style="font-family: var(--mono); font-size: 0.8rem;">${info.tac}</span></div>
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">Brand</span><br><span style="font-family: var(--sans); font-weight: 600;">${info.brand}</span></div>
+            <div><span style="color: var(--dim); font-family: var(--mono); font-size: 0.6rem;">Model</span><br><span style="font-family: var(--sans); font-weight: 600;">${info.model}</span></div>
+        </div>
+        `;
+    });
+    return `
+    <div class="card span-3" style="border-color: var(--accent);">
+        <div class="card-label">Device Identity (${deviceInfoList.length} unique devices)</div>
+        ${rows}
+    </div>
+    `;
+}
 </script>
 {% endblock %}

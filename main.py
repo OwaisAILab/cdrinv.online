@@ -34,10 +34,13 @@ from core.operational_intel import (
     format_operational_report
 )
 
+from core.imsi_utils import load_plmn_database, get_network_info_from_imsi
+from core.tac_utils import load_tac_database, get_device_info_from_imei
+
 # ── Create tables if not exist ────────────────────────────────────────────
 Base.metadata.create_all(engine)
 
-load_dotenv()
+
 
 # ── Flask app setup ───────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -47,6 +50,11 @@ if not app.secret_key:
 app.config['UPLOAD_FOLDER'] = os.getenv("UPLOAD_FOLDER", "uploads")
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+
+load_dotenv()
+load_plmn_database()
+load_tac_database()
 
 # ── Make `request` available in all templates automatically ──────────────
 @app.context_processor
@@ -200,6 +208,45 @@ def upload_cdr():
         route_frequencies = route_frequency_analysis(normalized_df)
         movement_radius = movement_radius_analysis(normalized_df)
 
+        # ── Extract all unique IMSIs ────────────────────────────────
+        network_info_list = []
+        if 'imsi' in normalized_df.columns and len(normalized_df) > 0:
+            imsi_series = normalized_df['imsi'].dropna()
+            if len(imsi_series) > 0:
+                unique_imsis = imsi_series.unique()   # get all unique IMSIs
+                for imsi_val in unique_imsis:
+                    imsi_str = str(imsi_val).strip()
+                    if imsi_str:
+                        info = get_network_info_from_imsi(imsi_str)
+                        if info:
+                            network_info_list.append(info)
+                if network_info_list:
+                    print(f"✅ Found {len(network_info_list)} unique IMSI entries")
+                else:
+                    print("⚠️  No valid IMSI network info found")
+            else:
+                print("⚠️  IMSI column exists but all values are empty.")
+        else:
+            print("⚠️  IMSI column not found in normalized dataframe.")
+
+
+        # ── Extract all unique IMEIs for device info ────────────────
+        device_info_list = []
+        if 'imei' in normalized_df.columns and len(normalized_df) > 0:
+            imei_series = normalized_df['imei'].dropna()
+            if len(imei_series) > 0:
+                unique_imeis = imei_series.unique()
+                for imei_val in unique_imeis:
+                    imei_str = str(imei_val).strip()
+                    if imei_str:
+                        info = get_device_info_from_imei(imei_str)
+                        if info:   # info is never None now, but keep check
+                            device_info_list.append(info)
+                print(f"✅ Found {len(device_info_list)} unique IMEI entries")
+            else:
+                print("⚠️  IMEI column exists but all values are empty.")
+        else:
+            print("⚠️  IMEI column not found in normalized dataframe.")
         date_range = None
         if 'call_date' in normalized_df.columns:
             dates_clean = normalized_df['call_date'].dropna()
@@ -209,7 +256,8 @@ def upload_cdr():
                     date_range = {"min_date": str(dates_clean.min()), "max_date": str(dates_clean.max())}
                 except Exception:
                     pass
-
+        
+        
         dashboard_data = {
             "summary": {
                 "records": len(normalized_df),
@@ -244,6 +292,8 @@ def upload_cdr():
             'workplace_data': workplace_data,
             'dashboard_data': dashboard_data,
             'comparison_data': {},
+            'device_info_list': device_info_list,
+            'network_info_list': network_info_list,
             'is_trial': user['subscription_type'] == SubscriptionType.TRIAL
         }
 
@@ -409,10 +459,15 @@ def dashboard():
             trial_end = db_user.subscription_end
         finally:
             db.close()
+    
+    device_info_list = user_data.get('device_info_list', [])
+    network_info_list = user_data.get("network_info_list",[])
     return render_template("dashboard.html",
                            username=user['username'],
                            is_trial=is_trial,
-                           trial_end=trial_end)
+                           trial_end=trial_end,
+                           device_info_list=device_info_list,
+                           network_info_list=network_info_list)
 
 @app.route("/map")
 def map_page():
@@ -484,6 +539,61 @@ def workplace_data():
 def workplace_map():
     get_current_user()
     return render_template("workplace_map.html")
+
+@app.route("/routes-data")
+def routes_data():
+    user = get_current_user()
+    uid = user['id']
+    user_data = get_user_data(uid)
+    normalized_df = user_data.get('normalized')
+    if normalized_df is None or len(normalized_df) == 0:
+        return jsonify([])
+
+    # Build tower coordinates dictionary
+    tower_coords = {}
+    for _, row in normalized_df.iterrows():
+        addr = row.get('tower_address')
+        lat = row.get('latitude')
+        lon = row.get('longitude')
+        if addr and lat and lon:
+            try:
+                lat = float(lat)
+                lon = float(lon)
+                if addr not in tower_coords:
+                    tower_coords[addr] = (lat, lon)
+            except:
+                pass
+
+    # Get route frequencies
+    from core.movement import route_frequency_analysis
+    routes = route_frequency_analysis(normalized_df)
+
+    # Enrich with coordinates
+    enriched_routes = []
+    for route in routes:
+        from_addr = route.get('from')
+        to_addr = route.get('to')
+        if from_addr in tower_coords and to_addr in tower_coords:
+            from_lat, from_lon = tower_coords[from_addr]
+            to_lat, to_lon = tower_coords[to_addr]
+            enriched_routes.append({
+                'from': from_addr,
+                'to': to_addr,
+                'frequency': route.get('frequency', 0),
+                'from_lat': from_lat,
+                'from_lon': from_lon,
+                'to_lat': to_lat,
+                'to_lon': to_lon,
+            })
+
+    # Sort by frequency descending and return ONLY the top route
+    enriched_routes.sort(key=lambda x: x['frequency'], reverse=True)
+    return jsonify(enriched_routes[:1])  # <-- only the first (most frequent) route
+
+@app.route("/routes-map")
+def routes_map():
+    get_current_user()
+    return render_template("routes_map.html")
 
 if __name__ == "__main__":
     app.run()

@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-SILENT_PERIOD_HOURS = 3
+SILENT_PERIOD_HOURS = 4
 # -----------------------------------
 # FORMAT DURATION
 # -----------------------------------
