@@ -134,7 +134,7 @@ def faq_page():
 
 @app.route("/knowledge")
 def knowledge_page():
-    return redirect("/#knowledge")
+    return redirect("knowledge.html")
 
 @app.route("/api/rate")
 def exchange_rate():
