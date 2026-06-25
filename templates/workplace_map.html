@@ -3,6 +3,7 @@
 <head>
     <title>Workplace Zones Map</title>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
@@ -37,6 +38,23 @@
             padding: 2px 7px;
             border-radius: 12px;
             margin-bottom: 4px;
+        }
+
+        /* ── RESPONSIVE FIXES ──────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .legend { padding: 8px 10px; font-size: 11px; max-width: 200px; }
+            .legend-title { font-size: 12px; }
+            .legend-item { font-size: 11px; }
+            .legend-swatch { width: 18px; height: 10px; }
+            .rank-badge { font-size: 10px; padding: 2px 5px; }
+        }
+
+        @media (max-width: 480px) {
+            .legend { padding: 6px 8px; font-size: 10px; max-width: 160px; bottom: 10px; right: 10px; }
+            .legend-title { font-size: 11px; }
+            .legend-item { font-size: 10px; gap: 4px; }
+            .legend-swatch { width: 14px; height: 8px; }
+            .rank-badge { font-size: 9px; padding: 1px 4px; }
         }
     </style>
 </head>
@@ -86,44 +104,21 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="map"></div>
 
 <script>
-// ─── MAP SETUP ────────────────────────────────────────────────────────────────
 const map = L.map('map').setView([24.8607, 67.0011], 12);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// ─── COLOUR PALETTE (top 3 workplaces) ──────────────────────────────────────
-const ZONE_COLORS = ['#2980b9', '#27ae60', '#8e44ad'];   // blue, green, purple
+const ZONE_COLORS = ['#2980b9', '#27ae60', '#8e44ad'];
 const ZONE_LABELS = ['#1 Primary Workplace', '#2 Secondary', '#3 Tertiary'];
 
-// ─── SECTOR ANGLE MAP (same as residence) ────────────────────────────────────
 const SECTOR_BEARING = {
     'Sector 1': 0,
     'Sector 2': 120,
     'Sector 3': 240,
     '': 0
 };
-
-function drawSector(lat, lon, bearing, spread, radius, color) {
-    const points = [[lat, lon]];
-    const steps = 32;
-    for (let i = 0; i <= steps; i++) {
-        const angle = bearing + (spread * i / steps);
-        const rad = (angle - 90) * Math.PI / 180;
-        const dLat = (radius * Math.cos(rad)) / 111320;
-        const dLon = (radius * Math.sin(rad)) / (111320 * Math.cos(lat * Math.PI / 180));
-        points.push([lat + dLat, lon + dLon]);
-    }
-    points.push([lat, lon]);
-    return L.polygon(points, {
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.18,
-        weight: 1.8,
-        dashArray: '4 3'
-    });
-}
 
 function drawBTSSectors(lat, lon, sectorLabel, color, radius) {
     const group = L.layerGroup();
@@ -163,7 +158,6 @@ function drawBTSSectors(lat, lon, sectorLabel, color, radius) {
     return group;
 }
 
-// ─── LEGEND ───────────────────────────────────────────────────────────────────
 const legend = L.control({ position: 'bottomright' });
 legend.onAdd = function() {
     const div = L.DomUtil.create('div', 'legend');
@@ -184,7 +178,6 @@ legend.onAdd = function() {
 };
 legend.addTo(map);
 
-// ─── LOAD DATA & RENDER ───────────────────────────────────────────────────────
 fetch('/workplace-data')
     .then(r => r.json())
     .then(data => {
@@ -202,10 +195,8 @@ fetch('/workplace-data')
 
                 if (isNaN(lat) || isNaN(lng)) return;
 
-                // Draw BTS sectors
                 drawBTSSectors(lat, lng, sector, color, 500).addTo(map);
 
-                // Centre marker with rank number
                 const icon = L.divIcon({
                     html: `<div style="
                         background:${color};
@@ -240,9 +231,7 @@ fetch('/workplace-data')
         if (bounds.length > 0) {
             map.fitBounds(bounds, { padding: [60, 60] });
         } else {
-            // If no data, show default view
             map.setView([24.8607, 67.0011], 11);
-            // Optionally show a message overlay
             L.control({ position: 'topright' }).onAdd = function() {
                 const div = L.DomUtil.create('div', 'info');
                 div.style.background = 'rgba(0,0,0,0.7)';

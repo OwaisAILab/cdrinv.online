@@ -41,6 +41,21 @@
         .legend-circle { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #fff; }
         .legend-circle.origin { background: rgba(68, 170, 255, 0.3); }
         .legend-circle.dest { background: rgba(255, 68, 68, 0.3); }
+
+        /* ── RESPONSIVE FIXES ──────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .info-box { max-width: 220px; font-size: 11px; padding: 10px 14px; }
+            .legend { padding: 8px 10px; font-size: 10px; bottom: 20px; right: 20px; }
+        }
+
+        @media (max-width: 480px) {
+            .info-box { max-width: 160px; font-size: 10px; padding: 8px 10px; top: 6px; left: 6px; }
+            .info-box h3 { font-size: 11px; }
+            .legend { padding: 6px 8px; font-size: 9px; bottom: 10px; right: 10px; }
+            .legend-item { font-size: 9px; gap: 4px; }
+            .legend-line { width: 20px; height: 3px; }
+            .legend-circle { width: 12px; height: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -75,16 +90,14 @@
             return;
         }
 
-        const route = routes[0];  // only one route
+        const route = routes[0];
         const freq = route.frequency;
 
-        // Update info box
         infoEl.innerHTML = `
             <b>${route.from}</b> → <b>${route.to}</b><br>
             Frequency: <span class="freq">${freq}</span> times
         `;
 
-        // ── Draw the route line ──
         const latlngs = [
             [route.from_lat, route.from_lon],
             [route.to_lat, route.to_lon]
@@ -102,8 +115,6 @@
             Frequency: <b>${freq}</b> times
         `);
 
-        // ── Draw 300m radius circles around both towers ──
-        // Origin circle (blue)
         L.circle([route.from_lat, route.from_lon], {
             radius: 300,
             color: '#44aaff',
@@ -113,7 +124,6 @@
             dashArray: null
         }).addTo(map).bindPopup('Origin: ' + route.from);
 
-        // Destination circle (red)
         L.circle([route.to_lat, route.to_lon], {
             radius: 300,
             color: '#ff4444',
@@ -123,7 +133,6 @@
             dashArray: null
         }).addTo(map).bindPopup('Destination: ' + route.to);
 
-        // ── Add markers at tower centres ──
         L.circleMarker([route.from_lat, route.from_lon], {
             radius: 8,
             color: '#fff',
@@ -140,7 +149,6 @@
             fillOpacity: 0.9
         }).addTo(map).bindPopup('Destination: ' + route.to);
 
-        // ── Fit bounds ──
         map.fitBounds(polyline.getBounds(), { padding: [80, 80] });
     })
     .catch(err => {

@@ -3,6 +3,7 @@
 <head>
     <title>Filtered CDR Tower Map</title>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
@@ -39,6 +40,17 @@
         }
         .close-btn:hover {
             background: #d4a843;
+        }
+
+        /* ── RESPONSIVE FIXES ──────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .info-panel { padding: 8px 14px; font-size: 10px; max-width: 180px; }
+            .close-btn { padding: 6px 12px; font-size: 11px; }
+        }
+
+        @media (max-width: 480px) {
+            .info-panel { padding: 6px 10px; font-size: 9px; max-width: 140px; }
+            .close-btn { padding: 4px 10px; font-size: 10px; top: 6px; left: 6px; }
         }
     </style>
 </head>
@@ -91,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="map"></div>
 
     <script>
-        // Get filtered data from sessionStorage
         let mapData = [];
         const storedData = sessionStorage.getItem('filteredMapData');
         const filterDate = sessionStorage.getItem('filterDate') || 'unknown date';
@@ -106,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('infoPanel').innerHTML = '⚠️ No filtered data found';
         }
         
-        // Initialize map
         const map = L.map('map').setView([24.8607, 67.0011], 11);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -124,10 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             points.push([lat, lng]);
             
-            // Create marker with custom icon
             const marker = L.marker([lat, lng]).addTo(map);
             
-            // Popup with tower info
             marker.bindPopup(`
                 <b>Tower:</b> ${point.tower || 'N/A'}<br>
                 <b>Sector:</b> ${point.sector || 'N/A'}<br>
@@ -137,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             markers.push(marker);
             
-            // Add circle to show tower coverage
             L.circle([lat, lng], {
                 radius: 500,
                 color: '#c9a84c',
@@ -146,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }).addTo(map);
         });
         
-        // Draw movement path if there are points
         if (points.length > 1) {
             const polyline = L.polyline(points, {
                 color: '#ff003c',
@@ -158,9 +164,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (points.length === 1) {
             map.setView(points[0], 14);
         }
-        
-        // Clear session storage after use (optional)
-        // sessionStorage.removeItem('filteredMapData');
     </script>
 </body>
 </html>

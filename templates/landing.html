@@ -3,12 +3,21 @@
 {% block title %}CDR Analysis Software - CDR Intelligence Portal{% endblock %}
 
 {% block head_extra %}
-<!-- All the landing page CSS (copied from your file) goes here -->
 <style>
-/* ── GLOBAL READABILITY ──────────────────────────────────── */
-html { font-size: 16px; }
-body { font-size: 1rem; line-height: 1.6; }
-/* ── THEME TOKENS ────────────────────────────────────────────────────────── */
+/* ── RESET & BASE ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  background: #04100a;
+  color: #e8f0eb;
+  font-family: 'Barlow', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  top: 0 !important;
+  position: relative;
+}
+
+/* ── THEME VARIABLES ──────────────────────────────────────────────────────── */
 :root {
   --bg:       #04100a;
   --surface:  #091a10;
@@ -17,13 +26,11 @@ body { font-size: 1rem; line-height: 1.6; }
   --border:   #1e4030;
   --border2:  #2a5540;
   --accent:   #c9a84c;
-  --accent-d: #a8863a;
   --accent-l: #e0c070;
   --white:    #ffffff;
   --text:     #e8f0eb;
   --dim:      #6a9a78;
   --muted:    #1e4030;
-  --green:    #2e7d4f;
   --green-l:  #4aad72;
   --danger:   #c0392b;
   --mono:     'Share Tech Mono', monospace;
@@ -31,34 +38,32 @@ body { font-size: 1rem; line-height: 1.6; }
   --cond:     'Barlow Condensed', sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100vh;
-  overflow-x: hidden;
-  top: 0 !important;
-  position: relative;
-}
-
-/* Hide Google Translate banner (base already handles this, but keep for safety) */
+/* ── GOOGLE TRANSLATE OVERRIDES ───────────────────────────────────────────── */
 .goog-te-banner-frame { display: none !important; }
 .goog-te-menu-frame { z-index: 9999 !important; }
 .goog-te-gadget { font-family: var(--mono) !important; font-size: 0.85rem !important; color: var(--dim) !important; }
-.goog-te-gadget .goog-te-combo { background: var(--surface2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; padding: 6px 12px !important; border-radius: 4px !important; font-family: var(--mono) !important; font-size: 0.85rem !important; cursor: pointer !important; outline: none !important; }
+.goog-te-gadget .goog-te-combo {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  font-family: var(--mono) !important;
+  font-size: 0.85rem !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
 .goog-te-gadget .goog-te-combo:focus { border-color: var(--accent) !important; }
 .goog-logo-link { display: none !important; }
 .goog-te-gadget span { display: none !important; }
 
-/* Subtle grid overlay (base already has, but we override to keep the same) */
+/* ── GRID OVERLAY ─────────────────────────────────────────────────────────── */
 body::before {
   content: '';
   position: fixed; inset: 0;
-  background-image: linear-gradient(rgba(46,125,79,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(46,125,79,0.04) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(46,125,79,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46,125,79,0.04) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
   z-index: 0;
@@ -69,7 +74,9 @@ nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   padding: 0 48px;
   height: 70px;
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: rgba(4,16,10,0.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -82,13 +89,17 @@ nav::after {
 }
 
 .nav-logo {
-  display: flex; align-items: center; gap: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 .logo-emblem {
   width: 38px; height: 38px;
   border: 1.5px solid var(--accent);
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   position: relative;
 }
 .logo-emblem::before {
@@ -100,15 +111,37 @@ nav::after {
 .logo-emblem svg { position: relative; z-index: 1; }
 .logo-text-main {
   font-family: var(--cond);
-  font-size: 1.15rem; font-weight: 900;
-  letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--accent);
 }
 .logo-text-sub {
   font-family: var(--mono);
-  font-size: 0.82rem; letter-spacing: 0.2em;
-  color: var(--dim); margin-top: 2px;
+  font-size: 0.82rem;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  margin-top: 2px;
 }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+
 .nav-dropdown { position: relative; }
 .dropdown-menu {
   position: absolute;
@@ -131,25 +164,17 @@ nav::after {
 }
 .dropdown-menu li a:hover { color: var(--accent); background: var(--surface2); }
 
-.nav-links {
-  display: flex; align-items: center; gap: 32px;
-  list-style: none;
-}
-.nav-links a {
-  font-family: var(--mono);
-  font-size: 0.95rem; letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dim); text-decoration: none;
-  transition: color 0.2s;
-}
-.nav-links a:hover { color: var(--accent); }
-
 .nav-cta {
-  display: flex; align-items: center; gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 .btn-outline {
   font-family: var(--mono);
-  font-size: 0.95rem; letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--accent);
   border: 1px solid var(--accent);
   padding: 9px 20px;
@@ -160,8 +185,10 @@ nav::after {
 .btn-outline:hover { background: rgba(201,168,76,0.1); }
 .btn-solid {
   font-family: var(--cond);
-  font-size: 1.1rem; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #000;
   background: var(--accent);
   border: none;
@@ -172,6 +199,34 @@ nav::after {
 }
 .btn-solid:hover { background: var(--accent-l); transform: translateY(-1px); }
 
+/* ── HAMBURGER MENU ───────────────────────────────────────────────────────── */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 101;
+}
+.menu-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--dim);
+  transition: all 0.3s ease;
+}
+.menu-toggle:hover span { background: var(--accent); }
+.menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(4px, 4px);
+}
+.menu-toggle.active span:nth-child(2) { opacity: 0; }
+.menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(4px, -4px);
+}
+
+/* ── SECTIONS SHARED ──────────────────────────────────────────────────────── */
 .section-light {
   position: relative;
   z-index: 1;
@@ -180,11 +235,46 @@ nav::after {
   border-bottom: 1px solid var(--border);
   padding: 96px 48px;
 }
+.section {
+  position: relative;
+  z-index: 1;
+  padding: 96px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--cond);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+.section-desc {
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: var(--dim);
+  line-height: 1.7;
+  max-width: 540px;
+  margin-bottom: 56px;
+}
+
 /* ── HERO ──────────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
   min-height: 100vh;
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   padding: 120px 48px 80px;
   overflow: hidden;
 }
@@ -207,15 +297,23 @@ nav::after {
 
 .hero-inner {
   position: relative; z-index: 1;
-  max-width: 1200px; margin: 0 auto; width: 100%;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
 }
 
-/* Left — text */
 .hero-badge {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-family: var(--mono); font-size: 0.92rem;
-  letter-spacing: 0.18em; text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--accent);
   border: 1px solid rgba(201,168,76,0.35);
   padding: 6px 14px;
@@ -223,7 +321,8 @@ nav::after {
   background: rgba(201,168,76,0.05);
 }
 .hero-badge .dot {
-  width: 6px; height: 6px; border-radius: 50%;
+  width: 6px; height: 6px;
+  border-radius: 50%;
   background: var(--accent);
   animation: blink 1.6s ease-in-out infinite;
 }
@@ -252,44 +351,57 @@ nav::after {
 }
 
 .hero-divider {
-  width: 60px; height: 2px;
+  width: 60px;
+  height: 2px;
   background: linear-gradient(90deg, var(--accent), transparent);
   margin-bottom: 24px;
 }
 
 .hero-desc {
-  font-size: 1rem; font-weight: 300;
-  color: var(--dim); line-height: 1.75;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--dim);
+  line-height: 1.75;
   max-width: 480px;
   margin-bottom: 36px;
 }
 
 .hero-actions {
-  display: flex; gap: 14px; align-items: center;
+  display: flex;
+  gap: 14px;
+  align-items: center;
   flex-wrap: wrap;
 }
 .btn-hero {
   font-family: var(--cond);
-  font-size: 1rem; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: #000; background: var(--accent);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #000;
+  background: var(--accent);
   padding: 16px 36px;
   text-decoration: none;
-  border: none; cursor: pointer;
+  border: none;
+  cursor: pointer;
   transition: all 0.2s;
-  position: relative; overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
 .btn-hero::after {
   content: '';
   position: absolute; inset: 0;
   background: rgba(255,255,255,0.08);
-  opacity: 0; transition: opacity 0.2s;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 .btn-hero:hover { background: var(--accent-l); transform: translateY(-2px); }
 .btn-hero:hover::after { opacity: 1; }
 .btn-hero-ghost {
   font-family: var(--mono);
-  font-size: 1.0rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 1.0rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--dim);
   padding: 16px 28px;
   border: 1px solid var(--border2);
@@ -299,10 +411,8 @@ nav::after {
 }
 .btn-hero-ghost:hover { color: var(--white); border-color: var(--dim); }
 
-/* Right — visual panel */
-.hero-visual {
-  position: relative;
-}
+/* ── HERO VISUAL PANEL ────────────────────────────────────────────────────── */
+.hero-visual { position: relative; }
 .visual-frame {
   border: 1px solid var(--border);
   background: var(--surface);
@@ -316,35 +426,76 @@ nav::after {
   background: linear-gradient(90deg, transparent, var(--accent), var(--green-l), transparent);
 }
 .visual-topbar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--surface2);
 }
 .vtb-left {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 0.90rem;
-  letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.90rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--dim);
 }
-.vtb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-l); animation: blink 1.4s infinite; }
-.vtb-right { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); letter-spacing: 0.08em; }
+.vtb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green-l);
+  animation: blink 1.4s infinite;
+}
+.vtb-right {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
 
 .visual-body { padding: 20px; }
 .stat-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid rgba(30,64,48,0.5);
-  font-family: var(--mono); font-size: 0.95rem;
+  font-family: var(--mono);
+  font-size: 0.95rem;
 }
 .stat-row:last-child { border-bottom: none; }
-.stat-label { color: var(--dim); min-width: 130px; letter-spacing: 0.06em; text-transform: uppercase; }
-.stat-bar-wrap { flex: 1; height: 4px; background: var(--muted); border-radius: 0; overflow: hidden; }
-.stat-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--accent)); border-radius: 0; }
-.stat-val { color: var(--accent); min-width: 40px; text-align: right; }
+.stat-label {
+  color: var(--dim);
+  min-width: 130px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.stat-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--muted);
+  border-radius: 0;
+  overflow: hidden;
+}
+.stat-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-l), var(--accent));
+  border-radius: 0;
+}
+.stat-val {
+  color: var(--accent);
+  min-width: 40px;
+  text-align: right;
+}
 
 .mini-cards {
-  display: grid; grid-template-columns: repeat(3,1fr); gap: 1px;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 1px;
   margin-top: 1px;
   background: var(--border);
 }
@@ -354,22 +505,30 @@ nav::after {
   text-align: center;
 }
 .mini-card .mc-num {
-  font-family: var(--cond); font-size: 1.4rem; font-weight: 700;
-  color: var(--accent); letter-spacing: 0.04em;
+  font-family: var(--cond);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
 }
 .mini-card .mc-label {
-  font-family: var(--mono); font-size: 0.82rem;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--dim); margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 4px;
 }
 
 .corner-tl, .corner-br {
-  position: absolute; width: 16px; height: 16px;
+  position: absolute;
+  width: 16px;
+  height: 16px;
 }
 .corner-tl { top: -1px; left: -1px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
 .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
 
-/* ── STATS BANNER ───────────────────────────────────────────────────────────── */
+/* ── STATS BANNER ──────────────────────────────────────────────────────────── */
 .stats-banner {
   position: relative; z-index: 1;
   border-top: 1px solid var(--border);
@@ -378,8 +537,10 @@ nav::after {
   padding: 0 48px;
 }
 .stats-inner {
-  max-width: 1200px; margin: 0 auto;
-  display: grid; grid-template-columns: repeat(4,1fr);
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
 }
 .stat-item {
   padding: 32px 24px;
@@ -389,43 +550,22 @@ nav::after {
 .stat-item:last-child { border-right: none; }
 .stat-number {
   font-family: var(--cond);
-  font-size: 2.4rem; font-weight: 900;
-  color: var(--accent); letter-spacing: 0.02em;
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: 0.02em;
   line-height: 1;
 }
 .stat-unit {
   font-family: var(--mono);
-  font-size: 0.95rem; color: var(--dim);
-  letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 0.95rem;
+  color: var(--dim);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   margin-top: 6px;
 }
 
-/* ── FEATURES ───────────────────────────────────────────────────────────────── */
-.section {
-  position: relative; z-index: 1;
-  padding: 96px 48px;
-  max-width: 1200px; margin: 0 auto;
-}
-.section-label {
-  font-family: var(--mono); font-size: 0.92rem;
-  letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 12px;
-}
-.section-title {
-  font-family: var(--cond);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 900; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--white);
-  margin-bottom: 16px;
-  line-height: 1.1;
-}
-.section-desc {
-  font-size: 1.15rem; font-weight: 300;
-  color: var(--dim); line-height: 1.7;
-  max-width: 540px;
-  margin-bottom: 56px;
-}
-
+/* ── FEATURES GRID ──────────────────────────────────────────────────────────── */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -449,27 +589,37 @@ nav::after {
   background: linear-gradient(90deg, var(--accent), transparent);
 }
 .fc-icon {
-  width: 44px; height: 44px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--border2);
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   margin-bottom: 20px;
   background: var(--surface2);
 }
 .fc-title {
   font-family: var(--cond);
-  font-size: 1.05rem; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--white); margin-bottom: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 10px;
 }
 .fc-desc {
   font-family: var(--mono);
-  font-size: 0.92rem; letter-spacing: 0.04em;
-  color: var(--dim); line-height: 1.75;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+  line-height: 1.75;
 }
 .fc-tag {
-  display: inline-block; margin-top: 16px;
-  font-family: var(--mono); font-size: 0.82rem;
-  letter-spacing: 0.1em; text-transform: uppercase;
+  display: inline-block;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--accent);
   border: 1px solid rgba(201,168,76,0.25);
   padding: 3px 8px;
@@ -484,21 +634,25 @@ nav::after {
   border-bottom: 1px solid var(--border);
   padding: 96px 48px;
 }
-.how-inner {
-  max-width: 1400px; margin: 0 auto;
-}
+.how-inner { max-width: 1400px; margin: 0 auto; }
+
 .steps-list {
-  display: grid; grid-template-columns: repeat(5,1fr); gap: 0;
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 0;
   margin-top: 56px;
   position: relative;
 }
 .steps-list::before {
   content: '';
   position: absolute;
-  top: 32px; left: 10%; right: 10%;
+  top: 32px;
+  left: 10%;
+  right: 10%;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2), var(--border2), transparent);
 }
+
 .step-item {
   padding: 0 24px;
   text-align: center;
@@ -506,88 +660,87 @@ nav::after {
 }
 .step-num-wrap {
   position: relative;
-  display: inline-flex; align-items: center; justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 20px;
 }
 .step-num {
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   border: 1.5px solid var(--accent);
   background: var(--bg);
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
   font-family: var(--cond);
-  font-size: 1.4rem; font-weight: 900;
+  font-size: 1.4rem;
+  font-weight: 900;
   color: var(--accent);
-  position: relative; z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 .step-title {
   font-family: var(--cond);
-  font-size: 1.15rem; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--white); margin-bottom: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 10px;
 }
 .step-desc {
   font-family: var(--mono);
-  font-size: 0.90rem; letter-spacing: 0.04em;
-  color: var(--dim); line-height: 1.8;
+  font-size: 0.90rem;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+  line-height: 1.8;
 }
 
-/* ── SUBSCRIPTION SECTION ───────────────────────────────────────────────────── */
+/* ── PRICING ────────────────────────────────────────────────────────────────── */
 .pricing-section {
   position: relative; z-index: 1;
   padding: 96px 48px;
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 auto;
 }
+
 .rate-bar {
-  max-width: 1060px; margin: 32px auto 0;
+  max-width: 1060px;
+  margin: 32px auto 0;
   border: 1px solid var(--border);
   background: var(--surface2);
   padding: 12px 20px;
 }
 .rate-bar-inner {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  font-family: var(--mono); font-size: 0.88rem; letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  letter-spacing: 0.08em;
 }
 .rate-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--dim); flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+  flex-shrink: 0;
 }
-.rate-dot-live    { background: var(--green-l); animation: blink 2s ease-in-out infinite; }
+.rate-dot-live { background: var(--green-l); animation: blink 2s ease-in-out infinite; }
 .rate-dot-offline { background: var(--accent); }
 .rate-label { color: var(--dim); text-transform: uppercase; }
 .rate-value { color: var(--accent); font-weight: 600; }
 .rate-updated { color: var(--muted); margin-left: auto; font-size: 0.80rem; }
 
 .pricing-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
-  max-width: 1060px; margin: 56px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1060px;
+  margin: 56px auto 0;
 }
-.pc-badge {
-  display: inline-block;
-  font-family: var(--mono); font-size: 0.80rem;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  background: var(--accent); color: #000;
-  padding: 3px 10px; margin-bottom: 16px;
-}
-.pc-price {
-  font-family: var(--cond); font-size: 1.9rem; font-weight: 900;
-  color: var(--accent); letter-spacing: 0.02em;
-  margin-bottom: 4px;
-}
-.pc-price-note {
-  font-family: var(--mono); font-size: 0.80rem;
-  color: var(--green-l); letter-spacing: 0.1em;
-  text-transform: uppercase; margin-bottom: 20px;
-}
-.pc-divider {
-  height: 1px; background: var(--border);
-  margin-bottom: 20px;
-}
-.pc-features-label {
-  font-family: var(--mono); font-size: 0.78rem;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 10px;
-  opacity: 0.7;
-}
+
 .pricing-card {
   border: 1px solid var(--border);
   background: var(--surface);
@@ -603,136 +756,195 @@ nav::after {
   border-color: var(--accent);
   background: var(--surface2);
 }
+
 .pc-plan {
-  font-family: var(--mono); font-size: 0.90rem;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--dim); margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 0.90rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 12px;
 }
 .pc-duration {
-  font-family: var(--cond); font-size: 2.2rem; font-weight: 900;
-  color: var(--accent); letter-spacing: 0.04em;
+  font-family: var(--cond);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: 0.04em;
   margin-bottom: 6px;
 }
 .pc-sub {
-  font-family: var(--mono); font-size: 0.90rem;
-  color: var(--dim); margin-bottom: 24px;
+  font-family: var(--mono);
+  font-size: 0.90rem;
+  color: var(--dim);
+  margin-bottom: 24px;
   padding-bottom: 24px;
   border-bottom: 1px solid var(--border);
 }
+.pc-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.80rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #000;
+  padding: 3px 10px;
+  margin-bottom: 16px;
+}
+.pc-price {
+  font-family: var(--cond);
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+.pc-price-note {
+  font-family: var(--mono);
+  font-size: 0.80rem;
+  color: var(--green-l);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.pc-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 20px;
+}
+.pc-features-label {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
 .pc-features {
-  list-style: none; margin-bottom: 28px;
+  list-style: none;
+  margin-bottom: 28px;
 }
 .pc-features li {
-  font-family: var(--mono); font-size: 0.92rem;
-  color: var(--dim); padding: 7px 0;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  color: var(--dim);
+  padding: 7px 0;
   border-bottom: 1px solid rgba(30,64,48,0.4);
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .pc-features li::before { content: '✓'; color: var(--green-l); }
 .pc-features li:last-child { border-bottom: none; }
+
 .btn-plan {
-  display: block; width: 100%;
-  text-align: center; text-decoration: none;
-  font-family: var(--cond); font-size: 1.1rem; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase;
+  display: block;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  font-family: var(--cond);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   padding: 14px;
   transition: all 0.2s;
 }
 .btn-plan-ghost {
-  color: var(--accent); border: 1px solid var(--accent);
+  color: var(--accent);
+  border: 1px solid var(--accent);
   background: transparent;
 }
 .btn-plan-ghost:hover { background: rgba(201,168,76,0.1); }
 .btn-plan-filled {
-  background: var(--accent); color: #000; border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #000;
+  border: 1px solid var(--accent);
 }
 .btn-plan-filled:hover { background: var(--accent-l); }
 
-/* Contact section */
+/* ── CONTACT ────────────────────────────────────────────────────────────────── */
 .contact-section {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 60px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 20px;
 }
 .contact-form-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
 }
 .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
-.contact-section .form-group {
-    margin-bottom: 20px;
-}
+.contact-section .form-group { margin-bottom: 20px; }
 .contact-section label {
-    display: block;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 6px;
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 6px;
 }
 .contact-section input,
 .contact-section select,
 .contact-section textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.2s;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s;
 }
 .contact-section input:focus,
 .contact-section select:focus,
-.contact-section textarea:focus {
-    border-color: var(--accent);
-}
+.contact-section textarea:focus { border-color: var(--accent); }
+
 .btn-contact {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    font-family: var(--cond);
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 14px 28px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: auto;
-    margin-top: 8px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  font-family: var(--cond);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: auto;
+  margin-top: 8px;
 }
 .btn-contact:hover {
-    background: var(--accent-l);
-    transform: translateY(-1px);
+  background: var(--accent-l);
+  transform: translateY(-1px);
 }
-@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
-
 .alert-success {
-    background: rgba(0,200,83,0.1);
-    border: 1px solid rgba(0,200,83,0.3);
-    color: #00c853;
-    padding: 12px;
-    font-family: var(--mono);
-    font-size: 0.8rem;
+  background: rgba(0,200,83,0.1);
+  border: 1px solid rgba(0,200,83,0.3);
+  color: #00c853;
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
 }
 .alert-error {
-    background: rgba(255,0,60,0.1);
-    border: 1px solid rgba(255,0,60,0.3);
-    color: #ff003c;
-    padding: 12px;
-    font-family: var(--mono);
-    font-size: 0.8rem;
+  background: rgba(255,0,60,0.1);
+  border: 1px solid rgba(255,0,60,0.3);
+  color: #ff003c;
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
 }
 
-/* ── CTA BANNER ─────────────────────────────────────────────────────────────── */
+/* ── CTA ────────────────────────────────────────────────────────────────────── */
 .cta-section {
   position: relative; z-index: 1;
   background: var(--surface);
@@ -743,25 +955,47 @@ nav::after {
 }
 .cta-section::before {
   content: 'CDR';
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  font-family: var(--cond); font-size: 18rem; font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-family: var(--cond);
+  font-size: 18rem;
+  font-weight: 900;
   color: rgba(201,168,76,0.025);
-  white-space: nowrap; pointer-events: none; user-select: none;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
 }
-.cta-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+.cta-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
 .cta-title {
-  font-family: var(--cond); font-size: 2.2rem; font-weight: 900;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--white); margin-bottom: 14px;
+  font-family: var(--cond);
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 14px;
 }
 .cta-title span { color: var(--accent); }
 .cta-desc {
-  font-family: var(--mono); font-size: 0.95rem;
-  letter-spacing: 0.06em; color: var(--dim);
-  line-height: 1.8; margin-bottom: 36px;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+  line-height: 1.8;
+  margin-bottom: 36px;
 }
 .cta-actions {
-  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 /* ── FOOTER ──────────────────────────────────────────────────────────────────── */
@@ -769,48 +1003,115 @@ footer {
   position: relative; z-index: 1;
   border-top: 1px solid var(--border);
   padding: 28px 48px;
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .footer-logo {
-  font-family: var(--cond); font-size: 1.1rem; font-weight: 700;
-  letter-spacing: 0.12em; text-transform: uppercase;
+  font-family: var(--cond);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--accent);
 }
 .footer-meta {
-  font-family: var(--mono); font-size: 0.88rem;
-  letter-spacing: 0.1em; color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
   text-align: center;
 }
 .footer-meta span { color: var(--muted); margin: 0 8px; }
-.footer-right {
-  font-family: var(--mono); font-size: 0.88rem;
-  letter-spacing: 0.08em; color: var(--dim);
-}
 
 /* ── RESPONSIVE ─────────────────────────────────────────────────────────────── */
-@media (max-width: 1000px) {
-  .hero-inner { grid-template-columns: 1fr; }
+@media (max-width: 1024px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
   .hero-visual { display: none; }
-  .stats-inner { grid-template-columns: repeat(2,1fr); }
-  .features-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 56px auto 0; }
   .steps-list { grid-template-columns: 1fr 1fr; gap: 40px; }
   .steps-list::before { display: none; }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
 }
-@media (max-width: 640px) {
-  nav { padding: 0 20px; }
-  .nav-links { display: none; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; flex-wrap: wrap; height: auto; gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+  .menu-toggle { display: flex; order: 2; }
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    order: 3;
+    gap: 6px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { font-size: 0.75rem; padding: 6px 0; text-align: center; }
+  .nav-cta { order: 1; }
+  .nav-logo { order: 0; }
+  .nav-dropdown .dropdown-menu {
+    position: static;
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    margin-top: 4px;
+    width: 100%;
+    text-align: center;
+  }
+  .nav-dropdown.active .dropdown-menu { display: block; }
+  .nav-dropdown > a { cursor: pointer; }
+
   .hero { padding: 100px 20px 60px; }
-  .stats-inner { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: 2.4rem; }
+  .hero-desc { font-size: 0.95rem; }
+  .stats-banner { padding: 0 20px; }
   .section, .pricing-section { padding: 64px 20px; }
   .how-section { padding: 64px 20px; }
-  footer { flex-direction: column; gap: 12px; text-align: center; }
+  .section-light { padding: 64px 20px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .step-item { padding: 0 12px; }
+  .step-num { width: 48px; height: 48px; font-size: 1.1rem; }
+  .step-title { font-size: 1rem; }
+  .step-desc { font-size: 0.8rem; }
+  .pricing-card { padding: 28px 20px; }
+  .cta-section { padding: 60px 20px; }
+  .cta-title { font-size: 1.8rem; }
+  footer { flex-direction: column; gap: 12px; text-align: center; padding: 20px; }
+  .footer-meta span { display: inline-block; }
+  .contact-section { padding: 40px 16px; }
+  .contact-form-wrap { padding: 24px 16px; }
+}
+
+@media (max-width: 480px) {
+  nav { padding: 0 12px; }
+  .logo-text-sub { display: none; }
+  .hero { padding: 80px 16px 40px; }
+  .hero-title { font-size: 1.8rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .hero-desc { font-size: 0.85rem; }
+  .btn-hero { padding: 12px 20px; font-size: 0.8rem; }
+  .btn-hero-ghost { padding: 12px 16px; font-size: 0.75rem; }
+  .stats-inner { grid-template-columns: 1fr 1fr; }
+  .stat-item { padding: 16px 12px; }
+  .stat-number { font-size: 1.6rem; }
+  .stat-unit { font-size: 0.7rem; }
+  .section-title { font-size: 1.4rem; }
+  .section-desc { font-size: 0.9rem; }
+  .steps-list { grid-template-columns: 1fr; gap: 24px; }
+  .step-item { padding: 0; }
+  .pc-duration { font-size: 1.6rem; }
+  .pc-price { font-size: 1.5rem; }
+  .cta-title { font-size: 1.4rem; }
+  .cta-desc { font-size: 0.8rem; }
+  .footer-meta { font-size: 0.65rem; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- ── NAV ──────────────────────────────────────────────────────────────────── -->
+<!-- ─── NAV ──────────────────────────────────────────────────────────────────── -->
 <nav>
   <a href="/" class="nav-logo">
     <div class="logo-emblem">
@@ -826,12 +1127,19 @@ footer {
     </div>
   </a>
 
-  <ul class="nav-links">
+  <!-- Hamburger button -->
+  <button class="menu-toggle" onclick="toggleMenu()" aria-label="Toggle navigation">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <ul class="nav-links" id="navLinks">
     <li><a href="#features">Capabilities</a></li>
     <li><a href="#how">How It Works</a></li>
     <li><a href="#pricing">Subscription</a></li>
     <li class="nav-dropdown">
-      <a href="#">More ▾</a>
+      <a href="#" onclick="event.preventDefault(); this.parentElement.classList.toggle('active');">More ▾</a>
       <ul class="dropdown-menu">
         <li><a href="/faq">FAQ</a></li>
         <li><a href="/blog">Blog</a></li>
@@ -847,7 +1155,7 @@ footer {
   </div>
 </nav>
 
-<!-- ── HERO ─────────────────────────────────────────────────────────────────── -->
+<!-- ─── HERO ──────────────────────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-inner">
     <div>
@@ -882,7 +1190,6 @@ footer {
           <div class="vtb-right">CLASSIFICATION: RESTRICTED</div>
         </div>
         <div class="visual-body">
-          <!-- stats rows -->
           <div class="stat-row">
             <div class="stat-label">Call Frequency</div>
             <div class="stat-bar-wrap"><div class="stat-bar" style="width:87%"></div></div>
@@ -928,10 +1235,7 @@ footer {
   </div>
 </section>
 
-<!-- ── REST OF YOUR CONTENT ────────────────────────────────────────────────── -->
-<!-- (Your existing sections: stats banner, features, how it works, pricing, FAQ, contact, CTA, footer) -->
-
-<!-- Stats Banner -->
+<!-- ─── STATS BANNER ─────────────────────────────────────────────────────────── -->
 <div class="stats-banner">
   <div class="stats-inner">
     <div class="stat-item">
@@ -953,7 +1257,7 @@ footer {
   </div>
 </div>
 
-<!-- Features -->
+<!-- ─── FEATURES ─────────────────────────────────────────────────────────────── -->
 <div id="features">
   <div class="section">
     <div class="section-label">// Overview</div>
@@ -964,36 +1268,119 @@ footer {
       and analyze call behavior for intelligence and forensic investigations.
     </p>
     <div class="features-grid">
-      <!-- (your 6 feature cards – I'll keep one as placeholder; you'll copy all from your original) -->
       <div class="feature-card">
         <div class="fc-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M3 3h18v18H3zM3 9h18M9 9v12" stroke="#c9a84c" stroke-width="1.5"/>
           </svg>
         </div>
-        <div class="fc-title">CDR Upload & Parsing</div>
+        <div class="fc-title">CDR Upload &amp; Parsing</div>
         <div class="fc-desc">Ingest CSV or Excel call records in any format. The engine auto-normalises columns, detects anomalies, and structures data ready for analysis.</div>
         <span class="fc-tag">CSV · XLS · XLSX</span>
       </div>
-      <!-- Add the other 5 feature cards exactly as they are in your original landing.html -->
-      <!-- For brevity I'm skipping them here – copy them from your existing file -->
+      <div class="feature-card">
+        <div class="fc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="5" r="2" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="5" cy="19" r="2" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="19" cy="19" r="2" stroke="#c9a84c" stroke-width="1.5"/>
+            <path d="M12 7v4M12 11l-5 6M12 11l5 6" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="fc-title">Network Graph Analysis</div>
+        <div class="fc-desc">Visualise the full contact web. Identify key nodes, intermediaries, and hidden relationships across multiple hops — rendered as an interactive force graph.</div>
+        <span class="fc-tag">Interactive · Multi-hop</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#c9a84c" stroke-width="1.5"/>
+            <circle cx="12" cy="9" r="2.5" stroke="#c9a84c" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="fc-title">Movement &amp; Location Mapping</div>
+        <div class="fc-desc">Plot tower pings on an interactive map. Trace movement corridors, identify residence zones, and flag irregular location behaviour over time.</div>
+        <span class="fc-tag">Tower · GPS · Heatmap</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="8" height="8" stroke="#c9a84c" stroke-width="1.5"/>
+            <rect x="13" y="3" width="8" height="8" stroke="#c9a84c" stroke-width="1.5"/>
+            <rect x="3" y="13" width="8" height="8" stroke="#c9a84c" stroke-width="1.5"/>
+            <rect x="13" y="13" width="8" height="8" stroke="#c9a84c" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="fc-title">Multi-CDR Comparison</div>
+        <div class="fc-desc">Load multiple suspect records simultaneously. Find common contacts, overlapping timelines, and shared locations across different targets in a single view.</div>
+        <span class="fc-tag">Side-by-side · Cross-match</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 20V4M5 13l7 7 7-7" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="fc-title">PDF Intelligence Reports</div>
+        <div class="fc-desc">Generate comprehensive, branded PDF reports with call summaries, charts, maps, and network diagrams — formatted for submission as official evidence.</div>
+        <span class="fc-tag">Court-ready · Branded</span>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L3 7v5c0 5.25 3.9 10.14 9 11.34C17.1 22.14 21 17.25 21 12V7l-9-5z" stroke="#c9a84c" stroke-width="1.5"/>
+            <path d="M9 12l2 2 4-4" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="fc-title">Secure OTP Authentication</div>
+        <div class="fc-desc">Every login triggers a fresh one-time password to your registered email. Admin-approved accounts, subscription enforcement, and full audit logging.</div>
+        <span class="fc-tag">2FA · Admin-gated · Logged</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- How It Works -->
+<!-- ─── HOW IT WORKS ─────────────────────────────────────────────────────────── -->
 <div id="how" class="how-section">
   <div class="how-inner">
     <div class="section-label">// Access Protocol</div>
     <h2 class="section-title">How to Get Access</h2>
     <p class="section-desc">A controlled, verified onboarding process to ensure only authorised officers access the system.</p>
+
     <div class="steps-list">
-      <!-- 5 steps – copy from original -->
+      <div class="step-item">
+        <div class="step-num-wrap"><div class="step-num">01</div></div>
+        <div class="step-title">Pay Online</div>
+        <div class="step-desc">Pay online to Account Title</div>
+        <div class="step-title">Shaikh Abdullah</div>
+        <div class="step-title">PK44MEZN0099110107413195</div>
+        <div class="step-desc">of Meezan Bank Ltd as per your plan and keep the Transaction ID for next procedure</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-wrap"><div class="step-num">02</div></div>
+        <div class="step-title">Submit Registration</div>
+        <div class="step-desc">Fill in your officer details, email, password, and payment transaction ID for your chosen subscription period.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-wrap"><div class="step-num">03</div></div>
+        <div class="step-title">Verify Email</div>
+        <div class="step-desc">A one-time code is sent to your email immediately. Enter the 6-digit OTP to confirm your identity.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-wrap"><div class="step-num">04</div></div>
+        <div class="step-title">Await Approval</div>
+        <div class="step-desc">Your payment is reviewed by an administrator. Approval takes up to 30 minutes. You'll receive an email notification.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-wrap"><div class="step-num">05</div></div>
+        <div class="step-title">Login with OTP</div>
+        <div class="step-desc">Once approved, every login requires a fresh email OTP — ensuring your session is always verified and secure.</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Pricing -->
+<!-- ─── PRICING ─────────────────────────────────────────────────────────────── -->
 <div id="pricing">
   <div class="pricing-section">
     <div style="text-align:center">
@@ -1003,6 +1390,7 @@ footer {
         Access is granted upon payment verification and admin approval. Select the plan that fits your operational timeline.
       </p>
     </div>
+
     <div class="rate-bar">
       <div class="rate-bar-inner">
         <span class="rate-dot" id="rate-dot"></span>
@@ -1011,34 +1399,182 @@ footer {
         <span class="rate-updated" id="rate-updated"></span>
       </div>
     </div>
+
     <div class="pricing-grid">
-      <!-- 3 pricing cards – copy from original -->
+      <div class="pricing-card">
+        <div class="pc-plan">Basic Plan</div>
+        <div class="pc-duration">1 Month</div>
+        <div class="pc-sub">30 days of platform access</div>
+        <div class="pc-price" id="price-basic">Calculating…</div>
+        <div class="pc-price-note" id="usd-basic"></div>
+        <div class="pc-divider"></div>
+        <div class="pc-features-label">Includes</div>
+        <ul class="pc-features">
+          <li>Single CDR Analysis</li>
+          <li>30 CDRs maximum</li>
+          <li>OTP-secured logins</li>
+          <li>PDF report generation</li>
+          <li>Email support</li>
+        </ul>
+        <a href="/auth/register" class="btn-plan btn-plan-ghost">Get Started →</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pc-plan">Standard Plan</div>
+        <div class="pc-duration">6 Months</div>
+        <div class="pc-sub">180 days of platform access</div>
+        <div class="pc-price" id="price-standard">Calculating…</div>
+        <div class="pc-price-note" id="usd-standard"></div>
+        <div class="pc-divider"></div>
+        <div class="pc-features-label">Everything in Basic+Add</div>
+        <ul class="pc-features">
+          <li>Single &amp; Dual CDR Analysis</li>
+          <li>Unlimited CDRs analysis</li>
+          <li>OTP-secured logins</li>
+          <li>PDF report generation</li>
+          <li>Priority email support</li>
+        </ul>
+        <a href="/auth/register" class="btn-plan btn-plan-filled">Get Started →</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pc-plan">Extended Plan</div>
+        <div class="pc-duration">1 Year</div>
+        <div class="pc-sub">365 days of platform access</div>
+        <div class="pc-price" id="price-extended">Calculating…</div>
+        <div class="pc-price-note" id="usd-extended"></div>
+        <div class="pc-divider"></div>
+        <div class="pc-features-label">Everything in Standard+Add</div>
+        <ul class="pc-features">
+          <li>Geo-Fence Record Search in CDR</li>
+          <li>Single &amp; Dual CDR Analysis</li>
+          <li>Unlimited CDRs analysis</li>
+          <li>OTP-secured logins</li>
+          <li>PDF report generation</li>
+          <li>Priority email support</li>
+        </ul>
+        <a href="/auth/register" class="btn-plan btn-plan-ghost">Get Started →</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FAQ -->
+<script>
+// ── PRICING SCRIPT ───────────────────────────────────────────────────────────
+const PLANS = {
+  basic:    { usd: 3.6,   label: "1 month"   },
+  standard: { usd: 20,  label: "6 months"  },
+  extended: { usd: 36,  label: "1 year"    }
+};
+
+function roundTo100(amount) {
+  return Math.ceil(amount / 100) * 100;
+}
+
+function formatPKR(amount) {
+  const rounded = roundTo100(amount);
+  return "Rs.\u200b" + rounded.toLocaleString("en-PK") + "/-";
+}
+
+function applyPrices(rate, isLive) {
+  document.getElementById("rate-dot").className =
+    "rate-dot " + (isLive ? "rate-dot-live" : "rate-dot-offline");
+  document.getElementById("rate-display").textContent =
+    "1 USD = PKR " + rate.toFixed(2);
+  document.getElementById("rate-updated").textContent =
+    new Date().toLocaleString("en-PK");
+  document.getElementById("price-basic").textContent =
+    formatPKR(PLANS.basic.usd * rate);
+  document.getElementById("price-standard").textContent =
+    formatPKR(PLANS.standard.usd * rate);
+  document.getElementById("price-extended").textContent =
+    formatPKR(PLANS.extended.usd * rate);
+}
+
+async function loadRate() {
+  try {
+    const res = await fetch("/api/rate");
+    const data = await res.json();
+    if (data?.rate) {
+      applyPrices(data.rate, data.source === "live");
+      return;
+    }
+  } catch (e) {
+    console.log("Rate API failed, using fallback");
+  }
+  applyPrices(278.50, false);
+}
+loadRate();
+</script>
+
+<!-- ─── FAQ ──────────────────────────────────────────────────────────────────── -->
 <div id="faq" class="section-light">
   <div class="how-inner">
     <div class="section-label">// Frequently Asked Questions</div>
     <h2 class="section-title">FAQ</h2>
-    <!-- your FAQ content -->
+
+    <h3 style="color:#fff;margin-top:20px;">What is CDR analysis software?</h3>
+    <p class="section-desc">It is a tool used to analyze Call Detail Records to identify communication patterns and relationships between phone numbers.</p>
+
+    <h3 style="color:#fff;margin-top:20px;">Who uses this system?</h3>
+    <p class="section-desc">Law enforcement agencies, intelligence units, and telecom analysts use CDR intelligence platforms for investigations.</p>
+
+    <h3 style="color:#fff;margin-top:20px;">Is the platform secure?</h3>
+    <p class="section-desc">Yes. The system uses OTP authentication, encrypted sessions, and audit logging for security.</p>
+
+    <h3 style="color:#fff;margin-top:20px;">Where to contact if any issues arise?</h3>
+    <p class="section-desc">You can contact our support team via the contact form below.</p>
+
+    <h3 style="color:#fff;margin-top:20px;">What if I am not satisfied with the service?</h3>
+    <p class="section-desc">You can request a refund within 3 days of purchase if eligible.</p>
   </div>
 </div>
 
-<!-- Contact -->
+<!-- ─── CONTACT ──────────────────────────────────────────────────────────────── -->
+{% if contact_success %}
+    <div class="alert-success" style="margin-bottom: 20px;">{{ contact_success }}</div>
+{% elif contact_error %}
+    <div class="alert-error" style="margin-bottom: 20px;">{{ contact_error }}</div>
+{% endif %}
+
 <section id="contact" class="contact-section">
-  <div class="section-label">// Get In Touch</div>
-  <h2 class="section-title">Contact <span>Us</span></h2>
-  <p class="section-desc" style="margin-bottom: 32px;">We value your feedback. Reach out to us for any inquiries, suggestions, or support.</p>
-  <div class="contact-form-wrap">
-    <form id="contactForm" action="/contact" method="POST">
-      <!-- your form -->
-    </form>
-  </div>
+    <div class="section-label">// Get In Touch</div>
+    <h2 class="section-title">Contact <span>Us</span></h2>
+    <p class="section-desc" style="margin-bottom: 32px;">We value your feedback. Reach out to us for any inquiries, suggestions, or support.</p>
+
+    <div class="contact-form-wrap">
+        <form id="contactForm" action="/contact" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" required placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" required placeholder="you@example.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select name="type" required>
+                    <option value="" disabled selected>— Select —</option>
+                    <option value="Suggestion">Suggestion</option>
+                    <option value="Complaint">Complaint</option>
+                    <option value="Enquiry">Enquiry</option>
+                    <option value="Correction">Correction</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message / Details</label>
+                <textarea name="message" rows="5" required placeholder="Please provide full details..."></textarea>
+            </div>
+            <button type="submit" class="btn-contact">Send Message</button>
+            <div id="contactFormStatus" style="margin-top: 12px; font-family: var(--mono); font-size: 0.8rem;"></div>
+        </form>
+    </div>
 </section>
 
-<!-- CTA -->
+<!-- ─── CTA ───────────────────────────────────────────────────────────────────── -->
 <div class="cta-section">
   <div class="cta-inner">
     <h2 class="cta-title">Ready to <span>Begin?</span></h2>
@@ -1053,7 +1589,7 @@ footer {
   </div>
 </div>
 
-<!-- FOOTER -->
+<!-- ─── FOOTER ────────────────────────────────────────────────────────────────── -->
 <footer>
   <div class="footer-logo">CDR Intelligence</div>
   <div class="footer-meta">
@@ -1065,8 +1601,31 @@ footer {
   </div>
 </footer>
 
-<!-- Pricing script (same as your original) -->
+<!-- ─── HAMBURGER MENU SCRIPT ────────────────────────────────────────────── -->
 <script>
-// Your pricing script...
+function toggleMenu() {
+  const navLinks = document.getElementById('navLinks');
+  const menuBtn = document.querySelector('.menu-toggle');
+  navLinks.classList.toggle('open');
+  menuBtn.classList.toggle('active');
+}
+
+// Close menu when a link is clicked
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    document.getElementById('navLinks').classList.remove('open');
+    document.querySelector('.menu-toggle').classList.remove('active');
+  });
+});
+
+// Auto-close dropdown on mobile when clicking outside
+document.addEventListener('click', function(e) {
+  if (window.innerWidth <= 768) {
+    const dropdown = document.querySelector('.nav-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+      dropdown.classList.remove('active');
+    }
+  }
+});
 </script>
 {% endblock %}

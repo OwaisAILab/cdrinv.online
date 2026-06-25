@@ -49,6 +49,227 @@ footer{border-top:1px solid var(--border);text-align:center;padding:15px;color:v
   .card-title{font-size:1.6rem}
   .logo-sub{display:none}
 }
+
+/* ── RESPONSIVE FIXES FOR AUTH PAGES ────────────────────────────────────── */
+
+/* Tablets & small laptops */
+@media (max-width: 768px) {
+  /* ── General ── */
+  html { font-size: 15px; }
+  
+  /* ── Headers ── */
+  header { padding: 14px 20px; flex-wrap: wrap; gap: 8px; }
+  .logo-mark { width: 32px; height: 32px; }
+  .logo-title { font-size: 1.1rem; }
+  .logo-sub { font-size: 0.6rem; }
+  .header-right { font-size: 0.75rem; }
+  .back-btn { font-size: 0.65rem; padding: 4px 10px; }
+  
+  /* ── Forms / Cards ── */
+  .card { padding: 28px 20px; max-width: 100%; margin: 0 10px; }
+  .card-title { font-size: 1.3rem; }
+  .card-sub { font-size: 0.8rem; }
+  
+  /* ── Login/Register wrap ── */
+  .login-wrap { 
+    grid-template-columns: 1fr; 
+    max-width: 100%; 
+    margin: 0 10px;
+    border: none;
+  }
+  .left-panel { 
+    display: none; 
+  }
+  .right-panel { 
+    padding: 28px 20px; 
+  }
+  
+  /* ── Register specific ── */
+  .row-2 { grid-template-columns: 1fr; gap: 12px; }
+  .sub-cards { grid-template-columns: 1fr; gap: 8px; }
+  .steps { flex-wrap: wrap; }
+  .step { 
+    flex: 1 1 40%; 
+    font-size: 0.6rem; 
+    padding: 6px 4px; 
+  }
+  .plan-card { padding: 12px; }
+  .plan-name { font-size: 0.9rem; }
+  .plan-price { font-size: 1rem; }
+  .plan-features { font-size: 0.55rem; }
+  
+  /* ── OTP pages ── */
+  .otp-row { gap: 6px; }
+  .otp-row input { 
+    width: 40px; 
+    height: 50px; 
+    font-size: 1.3rem; 
+  }
+  .card { padding: 28px 16px; }
+  
+  /* ── Forms ── */
+  input, select { 
+    font-size: 0.9rem; 
+    padding: 10px 12px; 
+  }
+  label { font-size: 0.7rem; }
+  .btn { 
+    font-size: 0.9rem; 
+    padding: 12px; 
+  }
+  .form-group { margin-bottom: 14px; }
+  
+  /* ── Pending approval ── */
+  .spinner { width: 56px; height: 56px; }
+  .spinner-inner { width: 40px; height: 40px; top: 8px; left: 8px; }
+  .steps-vertical li { 
+    padding: 8px 0; 
+    font-size: 0.8rem; 
+    gap: 10px; 
+  }
+  .step-icon { width: 22px; height: 22px; font-size: 0.7rem; }
+  .note { font-size: 0.75rem; padding: 12px; }
+  
+  /* ── Plan grid (expired_renew) ── */
+  .plan-grid { grid-template-columns: 1fr; gap: 8px; }
+  .page-title { font-size: 1.2rem; }
+  .page-sub { font-size: 0.7rem; }
+  
+  /* ── Renew plan ── */
+  .cp-grid { 
+    grid-template-columns: 1fr; 
+    gap: 8px; 
+  }
+  .cp-val { font-size: 1.1rem; }
+  .plan-grid { grid-template-columns: 1fr; }
+  
+  /* ── Admin login ── */
+  .card { max-width: 100%; padding: 32px 24px; }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+  
+  /* ── Headers ── */
+  header { padding: 10px 14px; }
+  .logo-mark { width: 28px; height: 28px; }
+  .logo-title { font-size: 0.9rem; }
+  .logo-sub { 
+    font-size: 0.5rem; 
+    display: none; 
+  }
+  .header-right { font-size: 0.65rem; }
+  .back-btn { 
+    font-size: 0.55rem; 
+    padding: 3px 8px; 
+  }
+  
+  /* ── Cards ── */
+  .card { 
+    padding: 20px 14px; 
+    margin: 0 6px; 
+  }
+  .card-title { font-size: 1.1rem; }
+  .card-sub { font-size: 0.7rem; }
+  
+  /* ── Forms ── */
+  input, select { 
+    font-size: 0.85rem; 
+    padding: 8px 10px; 
+  }
+  label { font-size: 0.65rem; }
+  .btn { 
+    font-size: 0.85rem; 
+    padding: 10px; 
+  }
+  
+  /* ── OTP ── */
+  .otp-row input { 
+    width: 36px; 
+    height: 44px; 
+    font-size: 1.1rem; 
+  }
+  .shield svg { width: 40px; height: 40px; }
+  h2 { font-size: 1.1rem; }
+  .sub { font-size: 0.6rem; }
+  
+  /* ── Register steps ── */
+  .step { 
+    font-size: 0.5rem; 
+    padding: 4px 2px; 
+  }
+  .step.active::after { height: 1px; }
+  
+  /* ── Register plan cards ── */
+  .plan-card { padding: 10px; }
+  .plan-name { font-size: 0.8rem; }
+  .plan-price { font-size: 0.9rem; }
+  .plan-features { font-size: 0.5rem; line-height: 1.6; }
+  .plan-badge { font-size: 0.6rem; padding: 2px 6px; }
+  
+  /* ── Expired renew ── */
+  .page-title { font-size: 1rem; }
+  .page-sub { font-size: 0.65rem; }
+  .container { padding: 0 4px; }
+  .plan-card { padding: 10px; }
+  .plan-name { font-size: 0.8rem; }
+  .plan-features { font-size: 0.5rem; }
+  
+  /* ── Renew plan ── */
+  .cp-val { font-size: 0.9rem; }
+  .cp-key { font-size: 0.5rem; }
+  .section-title { font-size: 0.9rem; }
+  
+  /* ── Pending approval ── */
+  .spinner { width: 44px; height: 44px; border-width: 2px; }
+  .spinner-inner { width: 32px; height: 32px; top: 6px; left: 6px; }
+  .steps-vertical li { 
+    padding: 6px 0; 
+    font-size: 0.7rem; 
+    gap: 8px; 
+  }
+  .step-icon { width: 18px; height: 18px; font-size: 0.6rem; }
+  .note { font-size: 0.65rem; padding: 10px; }
+  .poll-status { font-size: 0.7rem; }
+  .btn { font-size: 0.75rem; padding: 8px; }
+  .btn-approve { font-size: 0.8rem; padding: 10px 20px; }
+  
+  /* ── Admin login ── */
+  .logo-mark { width: 40px; height: 40px; }
+  h1 { font-size: 0.9rem; }
+  .sub { font-size: 0.5rem; }
+  .error { font-size: 0.6rem; padding: 8px 10px; }
+  
+  /* ── Footer ── */
+  footer { 
+    font-size: 0.55rem; 
+    padding: 10px; 
+  }
+  
+  /* ── Toggle password button ── */
+  .toggle-pw { 
+    font-size: 0.7rem !important; 
+    right: 8px !important; 
+  }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+  .card { padding: 14px 10px; }
+  .card-title { font-size: 0.95rem; }
+  .otp-row input { 
+    width: 30px; 
+    height: 38px; 
+    font-size: 0.9rem; 
+  }
+  .otp-row { gap: 4px; }
+  input { font-size: 0.75rem; padding: 6px 8px; }
+  .btn { font-size: 0.75rem; padding: 8px; }
+  .step { font-size: 0.45rem; padding: 3px 2px; }
+  .logo-title { font-size: 0.8rem; }
+  .back-btn { font-size: 0.5rem; padding: 2px 6px; }
+}
 </style>
 {% endblock %}
 
