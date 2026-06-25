@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import pandas as pd
 import sys
-
+import pickle
 # ── Auth imports ──────────────────────────────────────────────────────────
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from auth.database import engine, Base, SessionLocal
@@ -62,10 +62,23 @@ def inject_request():
     return dict(request=request)
 
 # ── Global state – per‑user data (FIX: concurrency) ──────────────────────
-_user_data = {}  # user_id -> { 'normalized': df, 'non_mobile': df, ... }
+def _user_data_path(user_id):
+    return os.path.join(app.config['UPLOAD_FOLDER'], f"session_{user_id}.pkl")
 
 def get_user_data(user_id):
-    return _user_data.get(user_id, {})
+    path = _user_data_path(user_id)
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, 'rb') as f:
+            return pickle.load(f)
+    except Exception:
+        return {}
+
+def set_user_data(user_id, data):
+    path = _user_data_path(user_id)
+    with open(path, 'wb') as f:
+        pickle.dump(data, f)
 
 # ── Helper: get current user as a dict ────────────────────────────────────
 def get_current_user():
@@ -193,7 +206,7 @@ def upload_cdr():
         return jsonify({"status": "error", "message": "No selected file"}), 400
 
     filename = secure_filename(file.filename)
-    temp_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{uid}_{filename}")
     file.save(temp_path)
 
     try:
@@ -282,7 +295,7 @@ def upload_cdr():
             "non_mobile_summary": non_mobile_summary(non_mobile_df)
         }
 
-        _user_data[uid] = {
+        set_user_data(uid, {
             'normalized': normalized_df,
             'non_mobile': non_mobile_df,
             'data_sessions': data_sessions_df,
@@ -295,7 +308,12 @@ def upload_cdr():
             'device_info_list': device_info_list,
             'network_info_list': network_info_list,
             'is_trial': user['subscription_type'] == SubscriptionType.TRIAL
-        }
+        })
+
+        try:
+            os.remove(temp_path)
+        except OSError:
+            pass
 
         if user['subscription_type'] in (SubscriptionType.TRIAL, SubscriptionType.ONE_MONTH):
             db = SessionLocal()
