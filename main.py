@@ -348,8 +348,8 @@ def compare_cdrs():
     if file1.filename == '' or file2.filename == '':
         return jsonify({"status": "error", "message": "Missing file"}), 400
 
-    path1 = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file1.filename))
-    path2 = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file2.filename))
+    path1 = os.path.join(app.config['UPLOAD_FOLDER'], f"{uid}_{secure_filename(file1.filename)}")
+    path2 = os.path.join(app.config['UPLOAD_FOLDER'], f"{uid}_{secure_filename(file2.filename)}")
     file1.save(path1)
     file2.save(path2)
 
@@ -383,7 +383,7 @@ def compare_cdrs():
         }
         user_data = get_user_data(uid)
         user_data['comparison_data'] = comparison_data
-        _user_data[uid] = user_data
+        set_user_data(uid, user_data)
 
         return redirect("/comparison-dashboard", code=303)
 
@@ -553,6 +553,18 @@ def workplace_data():
     data = get_user_data(user['id']).get('workplace_data', [])
     return jsonify(data)
 
+@app.route("/delete-record", methods=["POST"])
+def delete_record():
+    user = get_current_user()
+    uid = user['id']
+    path = _user_data_path(uid)
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+    except OSError:
+        pass
+    return jsonify({"status": "ok"})
+
 @app.route("/workplace-map")
 def workplace_map():
     get_current_user()
@@ -612,6 +624,8 @@ def routes_data():
 def routes_map():
     get_current_user()
     return render_template("routes_map.html")
+
+
 
 if __name__ == "__main__":
     app.run()
