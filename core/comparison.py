@@ -139,3 +139,76 @@ def common_contacts(df1, df2):
     )
 
     return list(common)
+
+# -----------------------------------
+# CROSS-SUSPECT TIMELINE OVERLAY
+# -----------------------------------
+def cross_suspect_timeline(df1, df2, subject1_label="Subject A", subject2_label="Subject B"):
+    """
+    Merges both CDRs into a single chronological event list.
+    Each event carries: datetime, subject label, call type/direction,
+    contact number, tower, and a 'meeting_flag' if the other subject
+    was at the same tower within 15 minutes.
+    Returns a list of dicts sorted by datetime ascending.
+    """
+    required = ["call_date", "call_time", "contact_number", "tower_address"]
+    for col in required:
+        if col not in df1.columns or col not in df2.columns:
+            return []
+
+    def prep(df, label):
+        t = df.copy()
+        t["datetime"] = pd.to_datetime(
+            t["call_date"] + " " + t["call_time"], errors="coerce"
+        )
+        t = t.dropna(subset=["datetime"]).sort_values("datetime")
+        t["subject"] = label
+        return t
+
+    t1 = prep(df1, subject1_label)
+    t2 = prep(df2, subject2_label)
+
+    # Build a set of (tower, minute-bucket) for each subject
+    # so we can flag proximity cheaply with a 15-min window
+    def tower_minute_set(df, window_min=15):
+        result = set()
+        for _, row in df.iterrows():
+            tower = str(row["tower_address"]).strip()
+            ts = row["datetime"]
+            for offset in range(-window_min, window_min + 1, 1):
+                bucket = (tower, ts.floor("min") + pd.Timedelta(minutes=offset))
+                result.add(bucket)
+        return result
+
+    set1 = tower_minute_set(t1)
+    set2 = tower_minute_set(t2)
+
+    def build_events(df, other_set, label):
+        events = []
+        for _, row in df.iterrows():
+            tower = str(row["tower_address"]).strip()
+            ts = row["datetime"]
+            bucket = (tower, ts.floor("min"))
+            proximity = bucket in other_set
+
+            events.append({
+                "datetime":      ts.strftime("%Y-%m-%d %H:%M:%S"),
+                "date":          ts.strftime("%Y-%m-%d"),
+                "time":          ts.strftime("%H:%M"),
+                "subject":       label,
+                "direction":     str(row.get("direction", "")).upper(),
+                "call_type":     str(row.get("call_type", "VOICE")).upper(),
+                "contact":       str(row.get("contact_number", "")),
+                "tower":         tower,
+                "latitude":      row.get("latitude", ""),
+                "longitude":     row.get("longitude", ""),
+                "duration":      row.get("duration", 0),
+                "proximity_flag": proximity,   # True = other subject nearby
+            })
+        return events
+
+    events1 = build_events(t1, set2, subject1_label)
+    events2 = build_events(t2, set1, subject2_label)
+
+    merged = sorted(events1 + events2, key=lambda x: x["datetime"])
+    return merged
