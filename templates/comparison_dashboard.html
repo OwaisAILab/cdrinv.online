@@ -183,7 +183,20 @@ tbody td { padding: 10px 14px; color: var(--text); letter-spacing: 0.04em; }
     <div class="status-pill"><div class="dot"></div>COMPARISON ACTIVE</div>
     <div class="timestamp" id="clock">—</div>
   </div>
-  <button onclick="exportPDF()" style="font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; padding:8px 16px; background:transparent; border:1px solid var(--accent); color:var(--accent); cursor:pointer; text-transform:uppercase; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='var(--accent)';this.style.color='var(--bg)'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">⬇ Export PDF</button>
+<!-- REPLACE WITH: -->
+<button onclick="deleteRecord()" style="
+    font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.1em;
+    padding:9px 18px; background:#e05252; border:none;
+    color:#fff; cursor:pointer; text-transform:uppercase;">
+  🗑 Delete Record
+</button>
+<button onclick="exportPDF()" style="
+    font-family:var(--mono); font-size:0.75rem; font-weight:700; letter-spacing:0.1em;
+    padding:9px 18px; background:var(--accent); border:none;
+    color:#000; cursor:pointer; text-transform:uppercase;">
+  ⬇ Export PDF
+</button>
+
   <button class="menu-btn" onclick="openSidebar()" title="Menu">☰</button>
 </header>
 
@@ -263,6 +276,13 @@ function exportPDF() {
   const chunkSize = 6; const contacts = d.common_contacts || []; const rows = []; for (let i = 0; i < contacts.length; i += chunkSize) rows.push(contacts.slice(i, i + chunkSize));
   doc.autoTable({ startY: y, body: rows, theme: 'grid', bodyStyles: { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 }, alternateRowStyles: { fillColor: [245,245,245] }, styles: { fontSize: 8 } });
   doc.save('CDR_Dual_Analysis_' + Date.now() + '.pdf');
+}
+function deleteRecord() {
+  if (!confirm("Delete all analyzed data for this CDR? This cannot be undone.")) return;
+  fetch("/delete-record", { method: "POST" })
+    .then(() => {
+      window.location.replace("/upload");
+    });
 }
 function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebar-overlay').style.display = 'block'; }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').style.display = 'none'; }
