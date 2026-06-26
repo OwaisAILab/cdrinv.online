@@ -20,7 +20,7 @@ from core.timeline import (
     imsi_switch_timeline
 )
 from core.map_utils import generate_map_data
-from core.comparison import same_tower_same_time, common_contacts
+from core.comparison import same_tower_same_time, common_contacts, cross_suspect_timeline
 from core.relationship import direct_contacts, relationship_score_engine, relationship_intelligence
 from core.network_graph import build_network_data
 from core.movement import (
@@ -363,6 +363,7 @@ def compare_cdrs():
         meetings = same_tower_same_time(norm1, norm2)
         hotspots = meeting_hotspots(meetings)
         hotspot_history = hotspot_dates(meetings)
+        timeline_overlay = cross_suspect_timeline(norm1, norm2, "Subject A", "Subject B")
         common = common_contacts(norm1, norm2)
         relationship = relationship_score_engine(norm1, norm2, direct, common, meetings)
 
@@ -379,7 +380,8 @@ def compare_cdrs():
             "direct_relationship": direct,
             "relationship_analysis": relationship,
             "meeting_hotspots": hotspots,
-            "hotspot_history": hotspot_history
+            "hotspot_history": hotspot_history,
+            "timeline_overlay": timeline_overlay,
         }
         user_data = get_user_data(uid)
         user_data['comparison_data'] = comparison_data
