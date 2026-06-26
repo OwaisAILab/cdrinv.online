@@ -248,13 +248,87 @@ const MOCK = {
 
 fetch('/compare-dashboard-data').then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(data => { window._dashData = data; render(data); }).catch(() => { window._dashData = MOCK; render(MOCK); });
 
-function render(data) { document.getElementById('app').innerHTML = `${summaryHTML(data)}${scoreHTML(data)}${directHTML(data)}${hotspotsHTML(data)}${meetingsHTML(data)}${commonContactsHTML(data)}`; }
+function render(data) { document.getElementById('app').innerHTML = `${summaryHTML(data)}${scoreHTML(data)}${directHTML(data)}${hotspotsHTML(data)}${meetingsHTML(data)}${commonContactsHTML(data)}${timelineHTML(data)}`; }
 function summaryHTML(d) { const dr = d.direct_relationship || {}; const ra = d.relationship_analysis || {}; const items = [ { num: (d.cdr_1_records || 0).toLocaleString(), unit: 'REC', label: 'CDR 1 Records', color: 'var(--cdr1)', max: 6000 }, { num: (d.cdr_2_records || 0).toLocaleString(), unit: 'REC', label: 'CDR 2 Records', color: 'var(--cdr2)', max: 6000 }, { num: ra.total_direct_calls || 0, unit: 'CALL', label: 'Direct Calls Total', color: 'var(--accent)', max: 50 }, { num: ra.total_possible_meetings || 0, unit: 'MTG', label: 'Possible Meetings', color: '#f0c040', max: 20 }, { num: ra.common_contacts || 0, unit: 'ID', label: 'Common Contacts', color: '#40c070', max: 50 } ]; return `<div class="card span-3"><div class="card-label">Dual Subject Overview</div><div class="summary-inner">${items.map(i => `<div class="stat-block"><div class="stat-number" data-unit="${i.unit}">${i.num}</div><div class="stat-label">${i.label}</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${Math.min(Number(String(i.num).replace(/,/g,'')) / i.max, 1) * 100}%; background:${i.color}"></div></div></div>`).join('')}</div></div>`; }
 function scoreHTML(d) { const ra = d.relationship_analysis || {}; const score = ra.relationship_score || 0; const level = (ra.relationship_level || 'LOW').toUpperCase(); const levelClass = level === 'HIGH' ? 'level-high' : level === 'MEDIUM' ? 'level-medium' : 'level-low'; const circ = 251.3; const dash = (score / 100) * circ; const reasons = ra.reasons || []; return `<div class="card span-2"><div class="card-label">Relationship Assessment</div><div class="gauge-wrap"><div class="gauge"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="8"/><circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="${dash} ${circ}" stroke-linecap="butt" style="transition: stroke-dasharray 1.2s ease"/></svg><div class="gauge-text"><div class="gauge-num">${score}</div><div class="gauge-sub">/ 100</div></div></div><div class="gauge-info"><h3 class="${levelClass}">${level} RELATIONSHIP</h3><p>Direct calls: <b>${ra.total_direct_calls || 0}</b> &nbsp;|&nbsp; Duration: <b>${ra.total_direct_duration || '00:00:00'}</b><br>Meetings: <b>${ra.total_possible_meetings || 0}</b> &nbsp;|&nbsp; Shared contacts: <b>${ra.common_contacts || 0}</b></p></div></div><div class="reason-list">${reasons.length ? reasons.map(r => `<div class="reason-item">${r}</div>`).join('') : `<div class="reason-item" style="color:var(--muted)">No significant indicators detected</div>`}</div></div>`; }
 function directHTML(d) { const dr = d.direct_relationship || {}; const isLinked = dr.direct_relationship === true; const dur1 = Math.round((dr.cdr_1_to_cdr_2_duration_seconds || 0) / 60); const dur2 = Math.round((dr.cdr_2_to_cdr_1_duration_seconds || 0) / 60); return `<div class="card"><div class="card-label">Direct Communication</div><div class="kv-grid"><div class="kv-item" style="grid-column:span 2"><div class="kv-key">Link Status</div><div class="kv-val" style="color:${isLinked ? 'var(--cdr2)' : 'var(--danger)'}; font-size:1rem; font-family:var(--cond); letter-spacing:0.1em;">${isLinked ? '✔ DIRECT LINK CONFIRMED' : '✘ NO DIRECT COMMUNICATION'}</div></div><div class="kv-item"><div class="kv-key"><span class="cdr-pill c1">CDR 1</span> Owner</div><div class="kv-val c1color" style="font-size:0.78rem">${dr.cdr_1_owner || '—'}</div></div><div class="kv-item"><div class="kv-key"><span class="cdr-pill c2">CDR 2</span> Owner</div><div class="kv-val c2color" style="font-size:0.78rem">${dr.cdr_2_owner || '—'}</div></div><div class="kv-item"><div class="kv-key">CDR 1 → CDR 2</div><div class="kv-val score">${dr.cdr_1_to_cdr_2_calls || 0}</div><div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);margin-top:2px">${dur1} min talk time</div></div><div class="kv-item"><div class="kv-key">CDR 2 → CDR 1</div><div class="kv-val score" style="color:var(--cdr2)">${dr.cdr_2_to_cdr_1_calls || 0}</div><div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);margin-top:2px">${dur2} min talk time</div></div></div></div>`; }
 function hotspotsHTML(d) { const spots = d.meeting_hotspots || []; return `<div class="card"><div class="section-header"><div class="section-title"><span>◈</span> Meeting Hotspots</div><div class="section-badge">${spots.length} TOWERS</div></div>${spots.length === 0 ? `<p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">No recurring meeting locations detected.</p>` : spots.map(s => `<div class="hotspot-item"><div><div class="hotspot-tower">${s.tower}</div><div class="hotspot-meta">RISK: ${s.risk}</div></div><div><div class="hotspot-count">${s.meeting_count}</div><div class="hotspot-risk">meetings</div></div></div>`).join('')}</div>`; }
 function meetingsHTML(d) { const meetings = (d.possible_meetings || []).sort((a, b) => a.time_gap_minutes - b.time_gap_minutes); const confKey = c => c.replace(' ', '_').toUpperCase(); return `<div class="card span-3"><div class="section-header"><div class="section-title"><span>◈</span> Possible Physical Meetings</div><div class="section-badge">${meetings.length} EVENTS</div></div><div class="contacts-wrap"><table><thead><tr><th>#</th><th>Tower / Location</th><th>Sector</th><th><span class="cdr-pill c1">CDR 1</span> Time</th><th><span class="cdr-pill c2">CDR 2</span> Time</th><th>Gap (min)</th><th>Confidence</th></tr></thead><tbody>${meetings.length === 0 ? `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No co-location events found within the time window.</td></tr>` : meetings.map((m, i) => `<tr><td style="color:var(--text-dim)">${String(i+1).padStart(2,'0')}</td><td>${m.tower}</td><td style="color:var(--text-dim)">${m.sector || '—'}</td><td style="color:var(--cdr1)">${String(m.cdr_1_time).slice(0,16).replace('T',' ')}</td><td style="color:var(--cdr2)">${String(m.cdr_2_time).slice(0,16).replace('T',' ')}</td><td><span class="badge">${m.time_gap_minutes}</span></td><td><span class="conf-badge conf-${confKey(m.confidence)}">${m.confidence}</span></td></tr>`).join('')}</tbody></table></div></div>`; }
 function commonContactsHTML(d) { const contacts = d.common_contacts || []; return `<div class="card span-3"><div class="section-header"><div class="section-title"><span>◈</span> Shared Contact Network</div><div class="section-badge">${contacts.length} COMMON IDs</div></div>${contacts.length === 0 ? `<p style="font-family:var(--mono);font-size:0.68rem;color:var(--muted)">No common contacts found between both CDRs.</p>` : `<div class="contact-grid">${contacts.map(c => `<div class="contact-chip">${c}</div>`).join('')}</div>`}</div>`; }
+
+function timelineHTML(d) {
+  // Change 1: work only with proximity events — filter immediately, never show the full merged CDR
+  const allEvents   = d.timeline_overlay || [];
+  const events      = allEvents.filter(e => e.proximity_flag);
+  if (events.length === 0) return '';
+
+  // Change 2: use actual CDR owner numbers instead of generic Subject labels
+  const dr = d.direct_relationship || {};
+  const s1 = dr.cdr_1_owner || 'CDR Owner 1';
+  const s2 = dr.cdr_2_owner || 'CDR Owner 2';
+
+  // Group proximity events by date
+  const byDate = {};
+  events.forEach(e => { if (!byDate[e.date]) byDate[e.date] = []; byDate[e.date].push(e); });
+
+  function rowHTML(e) {
+    const subjects = [...new Set(allEvents.map(x => x.subject))];
+    const pillClass  = e.subject === subjects[0] ? 'c1' : 'c2';
+    const ownerLabel = e.subject === subjects[0] ? s1 : s2;
+    const dir = e.direction || '';
+    const dirIcon = dir === 'OUTGOING' ? '↗' : dir === 'INCOMING' ? '↙' : '·';
+    const dur = e.duration ? `${Math.round(Number(e.duration))}s` : '—';
+    return `<tr class="tl-row">
+      <td style="color:var(--text-dim);font-family:var(--mono);font-size:0.65rem;white-space:nowrap;padding:8px 12px;">${e.time}</td>
+      <td style="padding:8px 8px;"><span class="cdr-pill ${pillClass}">${ownerLabel}</span></td>
+      <td style="font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);padding:8px 8px;">${dirIcon} ${dir}</td>
+      <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text);padding:8px 8px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.tower}">${e.tower}</td>
+      <td style="font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);padding:8px 8px;">${e.contact || '—'}</td>
+      <td style="font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);padding:8px 8px;">${dur}</td>
+    </tr>`;
+  }
+
+  const dayBlocks = Object.keys(byDate).sort().map(date => {
+    const dayEvents = byDate[date];
+    return `
+      <div class="tl-day" style="margin-bottom:16px;">
+        <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.18em;color:var(--text-dim);padding:6px 12px;background:var(--surface2);border:1px solid var(--border);margin-bottom:1px;display:flex;align-items:center;">
+          ${date}
+          <span style="margin-left:10px;font-family:var(--mono);font-size:0.55rem;padding:2px 8px;background:rgba(201,168,76,0.15);color:var(--accent);border:1px solid rgba(201,168,76,0.35);border-radius:2px;">⚑ ${dayEvents.length} NEAR-MEETING MOMENT${dayEvents.length > 1 ? 'S' : ''}</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;">
+            <thead><tr style="background:rgba(0,180,80,0.06);border-bottom:1px solid var(--accent);">
+              <th style="padding:8px 12px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:400;text-align:left;">Time</th>
+              <th style="padding:8px 8px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:400;text-align:left;">Owner</th>
+              <th style="padding:8px 8px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:400;text-align:left;">Direction</th>
+              <th style="padding:8px 8px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:400;text-align:left;">Tower / Location</th>
+              <th style="padding:8px 8px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:400;text-align:left;">Contact Number</th>
+              <th style="padding:8px 8px;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:400;text-align:left;">Duration</th>
+            </tr></thead>
+            <tbody style="background:rgba(201,168,76,0.04);">${dayEvents.map(rowHTML).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Change 2 cont: legend shows real owner numbers; Change 3: plain heading
+  const subjects = [...new Set(allEvents.map(x => x.subject))];
+  return `<div class="card span-3" style="padding-bottom:28px;">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> Activity at Suspected Meeting Times</div>
+      <span class="section-badge">${events.length} SHARED LOCATION MOMENT${events.length !== 1 ? 'S' : ''}</span>
+    </div>
+    <p style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:16px;line-height:1.7;">
+      Showing only the moments when both individuals were recorded at the <strong style="color:var(--text);">same tower within 15 minutes</strong> of each other. Each date group is a suspected meeting window.
+    </p>
+    <div style="display:flex;gap:24px;margin-bottom:16px;font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);">
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--cdr1);border-radius:2px;margin-right:5px;vertical-align:middle;"></span>${s1}</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--cdr2);border-radius:2px;margin-right:5px;vertical-align:middle;"></span>${s2}</span>
+    </div>
+    <div id="tl-body">${dayBlocks}</div>
+  </div>`;
+}
 
 function exportPDF() {
   const { jsPDF } = window.jspdf; const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' }); const d = window._dashData; let y = 15;
@@ -275,6 +349,38 @@ function exportPDF() {
   doc.setFontSize(11); doc.setTextColor(255,123,0); doc.text('SHARED CONTACT NETWORK', 14, y); y += 4;
   const chunkSize = 6; const contacts = d.common_contacts || []; const rows = []; for (let i = 0; i < contacts.length; i += chunkSize) rows.push(contacts.slice(i, i + chunkSize));
   doc.autoTable({ startY: y, body: rows, theme: 'grid', bodyStyles: { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 }, alternateRowStyles: { fillColor: [245,245,245] }, styles: { fontSize: 8 } });
+  y = doc.lastAutoTable.finalY + 10;
+  if (y > 160) { doc.addPage(); y = 15; }
+  const proximityEvents = (d.timeline_overlay || []).filter(e => e.proximity_flag);
+  if (proximityEvents.length > 0) {
+    const s1 = dr.cdr_1_owner || 'CDR Owner 1';
+    const s2 = dr.cdr_2_owner || 'CDR Owner 2';
+    doc.setFontSize(11); doc.setTextColor(255,123,0); doc.text('ACTIVITY AT SUSPECTED MEETING TIMES', 14, y); y += 4;
+    doc.setFontSize(7); doc.setTextColor(120,120,120); doc.text(`Moments when ${s1} and ${s2} were recorded at the same tower within 15 minutes of each other.`, 14, y); y += 5;
+    doc.autoTable({
+      startY: y,
+      head: [['Date', 'Time', 'CDR Owner', 'Direction', 'Tower / Location', 'Contact Number', 'Duration']],
+      body: proximityEvents.map(e => [
+        e.date,
+        e.time,
+        e.subject === [...new Set((d.timeline_overlay||[]).map(x=>x.subject))][0] ? s1 : s2,
+        e.direction || '—',
+        e.tower || '—',
+        e.contact || '—',
+        e.duration ? Math.round(Number(e.duration)) + 's' : '—'
+      ]),
+      headStyles: { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+      bodyStyles: { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+      alternateRowStyles: { fillColor: [255,251,235] },
+      styles: { fontSize: 7.5 },
+      theme: 'grid',
+      didParseCell: function(data) {
+        if (data.section === 'body') {
+          data.cell.styles.fillColor = data.row.index % 2 === 0 ? [255,251,235] : [255,255,255];
+        }
+      }
+    });
+  }
   doc.save('CDR_Dual_Analysis_' + Date.now() + '.pdf');
 }
 function deleteRecord() {
