@@ -1,5 +1,8 @@
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, abort
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
@@ -46,6 +49,9 @@ Base.metadata.create_all(engine)
 # ── Flask app setup ───────────────────────────────────────────────────────
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config["WTF_CSRF_TIME_LIMIT"] = None
+csrf = CSRFProtect(app)
+limiter = Limiter(get_remote_address, app=app, default_limits=[], storage_uri="memory://")
 if not app.secret_key:
     raise RuntimeError("FLASK_SECRET_KEY environment variable not set.")
 app.config['UPLOAD_FOLDER'] = os.getenv("UPLOAD_FOLDER", "uploads")
@@ -60,7 +66,8 @@ load_tac_database()
 # ── Make `request` available in all templates automatically ──────────────
 @app.context_processor
 def inject_request():
-    return dict(request=request)
+    from flask_wtf.csrf import generate_csrf
+    return dict(request=request, csrf_token=generate_csrf)
 
 # ── Global state – per‑user data (FIX: concurrency) ──────────────────────
 def _user_data_path(user_id):
@@ -78,8 +85,17 @@ def get_user_data(user_id):
 
 def set_user_data(user_id, data):
     path = _user_data_path(user_id)
-    with open(path, 'wb') as f:
-        pickle.dump(data, f)
+    tmp_path = path + '.tmp'
+    try:
+        with open(tmp_path, 'wb') as f:
+            pickle.dump(data, f)
+        os.chmod(tmp_path, 0o600)  # owner read/write only before rename
+        os.replace(tmp_path, path)  # atomic rename — no partial reads
+    except Exception:
+        if os.path.exists(tmp_path):
+            try: os.remove(tmp_path)
+            except OSError: pass
+        raise
 
 # ── Helper: get current user as a dict ────────────────────────────────────
 def get_current_user():
@@ -114,7 +130,7 @@ def get_current_user():
         abort(401)
 
 # ── Register auth blueprint ──────────────────────────────────────────────
-init_auth_routes(app)
+init_auth_routes(app, limiter)
 
 # ── Helper: read uploaded file (use read_cdr_excel for Excel) ────────────
 def read_uploaded_file(filepath, filename):
@@ -140,7 +156,10 @@ def subscribe_page():
 
 @app.route("/blog")
 def blog_page():
-    return render_template("blog.html") if os.path.exists("templates/blog.html") else redirect("/")
+    try:
+        return render_template("blog.html")
+    except Exception:
+        return redirect("/")
 
 @app.route("/faq")
 def faq_page():
@@ -148,7 +167,7 @@ def faq_page():
 
 @app.route("/knowledge")
 def knowledge_page():
-    return redirect("knowledge.html")
+    return render_template("knowledge.html")
 
 @app.route("/api/rate")
 def exchange_rate():
@@ -156,6 +175,7 @@ def exchange_rate():
 
 # ── Contact form (POST only) ─────────────────────────────────────────────
 @app.route("/contact", methods=['POST'])
+@limiter.limit("5 per minute")
 def contact_submit():
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
@@ -165,18 +185,22 @@ def contact_submit():
     if not all([name, email, contact_type, message]):
         return render_template("landing.html", contact_error="All fields are required."), 400
 
+    import html as _he
+    s_name = _he.escape(name); s_email = _he.escape(email)
+    s_type = _he.escape(contact_type); s_msg = _he.escape(message).replace("\n", "<br>")
     subject = f"CDR Portal Contact: {contact_type} from {name}"
     body_html = f"""
     <div style="font-family:monospace;background:#04100a;color:#e8f0eb;padding:24px;">
         <h2 style="color:#c9a84c;">New Contact Form Submission</h2>
-        <p><strong>Name:</strong> {name}</p>
-        <p><strong>Email:</strong> {email}</p>
-        <p><strong>Type:</strong> {contact_type}</p>
+        <p><strong>Name:</strong> {s_name}</p>
+        <p><strong>Email:</strong> {s_email}</p>
+        <p><strong>Type:</strong> {s_type}</p>
         <p><strong>Message:</strong></p>
-        <p style="background:#0d2218;padding:16px;border-left:3px solid #c9a84c;">{message.replace(chr(10), '<br>')}</p>
+        <p style="background:#0d2218;padding:16px;border-left:3px solid #c9a84c;">{s_msg}</p>
     </div>
     """
-    success = _send_email("muhammadmeethani@gmail.com", subject, body_html)
+    admin_email = os.getenv("ADMIN_EMAIL") or os.getenv("SMTP_USER")
+    success = _send_email(admin_email, subject, body_html)
     if success:
         return render_template("landing.html", contact_success="Thank you! Your message has been sent.")
     else:
@@ -190,6 +214,8 @@ def upload_page():
                            subscription_type=user['subscription_type'].value)
 
 @app.route("/upload-cdr/", methods=['POST'])
+@csrf.exempt
+@limiter.limit("5 per minute")
 def upload_cdr():
     user = get_current_user()
     uid = user['id']
@@ -207,6 +233,10 @@ def upload_cdr():
         return jsonify({"status": "error", "message": "No selected file"}), 400
 
     filename = secure_filename(file.filename)
+    allowed_ext = {'csv', 'xlsx', 'xls'}
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if ext not in allowed_ext:
+        return jsonify({"status": "error", "message": "Only CSV, XLSX and XLS files are accepted."}), 400
     temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{uid}_{filename}")
     file.save(temp_path)
 
@@ -311,7 +341,8 @@ def upload_cdr():
             'comparison_data': {},
             'device_info_list': device_info_list,
             'network_info_list': network_info_list,
-            'is_trial': user['subscription_type'] == SubscriptionType.TRIAL
+            'is_trial': user['subscription_type'] == SubscriptionType.TRIAL,
+            'is_extended': user['subscription_type'] == SubscriptionType.ONE_YEAR
         })
 
         try:
@@ -339,6 +370,8 @@ def upload_cdr():
             os.remove(temp_path)
 
 @app.route("/compare-cdrs/", methods=['POST'])
+@csrf.exempt
+@limiter.limit("5 per minute")
 def compare_cdrs():
     user = get_current_user()
     uid = user['id']
@@ -351,6 +384,13 @@ def compare_cdrs():
     file2 = request.files['file2']
     if file1.filename == '' or file2.filename == '':
         return jsonify({"status": "error", "message": "Missing file"}), 400
+
+    allowed_ext = {'csv', 'xlsx', 'xls'}
+    for f_obj, label in ((file1, 'File 1'), (file2, 'File 2')):
+        fname = secure_filename(f_obj.filename)
+        ext = fname.rsplit('.', 1)[-1].lower() if '.' in fname else ''
+        if ext not in allowed_ext:
+            return jsonify({"status": "error", "message": f"{label}: only CSV, XLSX and XLS files are accepted."}), 400
 
     path1 = os.path.join(app.config['UPLOAD_FOLDER'], f"{uid}_{secure_filename(file1.filename)}")
     path2 = os.path.join(app.config['UPLOAD_FOLDER'], f"{uid}_{secure_filename(file2.filename)}")
@@ -572,12 +612,16 @@ def dashboard():
     
     device_info_list = user_data.get('device_info_list', [])
     network_info_list = user_data.get("network_info_list",[])
+    has_cdr = bool(user_data.get('dashboard_data'))
+    is_extended = user_data.get('is_extended', False) or (user['subscription_type'] == SubscriptionType.ONE_YEAR)
     return render_template("dashboard.html",
                            username=user['username'],
                            is_trial=is_trial,
                            trial_end=trial_end,
                            device_info_list=device_info_list,
-                           network_info_list=network_info_list)
+                           network_info_list=network_info_list,
+                           has_cdr=has_cdr,
+                           is_extended=is_extended)
 
 @app.route("/map")
 def map_page():
@@ -646,6 +690,7 @@ def workplace_data():
     return jsonify(data)
 
 @app.route("/delete-record", methods=["POST"])
+@csrf.exempt
 def delete_record():
     user = get_current_user()
     uid = user['id']

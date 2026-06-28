@@ -61,3 +61,4 @@ primary_region = "sin"   # Singapore — closest to Pakistan with good latency
   UPLOAD_FOLDER    = "/data/uploads"
   DATABASE_URL     = "sqlite:////data/cdr_portal.db"
   # FLASK_SECRET_KEY  ← set via `fly secrets set` (see README)
+  # ADMIN_EMAIL       ← recipient for admin alert emails (defaults to SMTP_USER if not set)
