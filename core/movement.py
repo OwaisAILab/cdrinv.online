@@ -29,7 +29,7 @@ def workplace_analysis(df):
             .astype(int)
         )
 
-    except:
+    except Exception:
 
         return []
 
@@ -296,14 +296,19 @@ def movement_radius_analysis(df):
     if len(temp) < 2:
         return {}
 
-    # FIX: Use centroid (mean lat/lon) as reference point
+    # Use most-frequent tower as anchor — centroid is unreliable
+    # when a suspect travels between distant cities
     try:
-        center_lat = temp["latitude"].astype(float).mean()
-        center_lon = temp["longitude"].astype(float).mean()
-    except:
-        # If conversion fails, fallback to first row
-        center_lat = temp.iloc[0]["latitude"]
-        center_lon = temp.iloc[0]["longitude"]
+        anchor_tower = (
+            temp.groupby(["latitude", "longitude"])
+            .size()
+            .idxmax()
+        )
+        center_lat = float(anchor_tower[0])
+        center_lon = float(anchor_tower[1])
+    except Exception:
+        center_lat = float(temp.iloc[0]["latitude"])
+        center_lon = float(temp.iloc[0]["longitude"])
 
     distances = []
     furthest_tower = ""
@@ -319,7 +324,7 @@ def movement_radius_analysis(df):
             if distance > max_distance:
                 max_distance = distance
                 furthest_tower = str(row["tower_address"])
-        except:
+        except Exception:
             pass
 
     if len(distances) == 0:
@@ -379,6 +384,8 @@ def unusual_travel_detection(df):
 
     results = []
 
+    normal_tower_set = set(normal_route)
+
     # ----------------------------
     # COMPARE EACH DAY
     # ----------------------------
@@ -388,11 +395,16 @@ def unusual_travel_detection(df):
             day["route"]
         )
 
-        unusual = (
-            current_route
-            !=
-            normal_route
-        )
+        current_tower_set = set(current_route)
+
+        # Jaccard similarity: |intersection| / |union|
+        # 1.0 = identical towers visited, 0.0 = completely different
+        intersection = current_tower_set & normal_tower_set
+        union = current_tower_set | normal_tower_set
+        similarity = len(intersection) / len(union) if union else 1.0
+
+        # Flag as unusual if less than 50% of towers overlap with normal pattern
+        unusual = similarity < 0.5
 
         results.append({
 

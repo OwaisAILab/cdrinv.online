@@ -131,7 +131,7 @@ def format_duration(seconds):
 
         return f"{hours:02}:{minutes:02}:{secs:02}"
 
-    except:
+    except Exception:
 
         return "00:00:00"
 
@@ -141,8 +141,6 @@ def format_duration(seconds):
 # -----------------------------------
 def relationship_score_engine(df1, df2, direct_relation, common_contacts, meetings):
     # no column access inside, so no check needed here
-    pass
-
     score = 0
 
     reasons = []
@@ -237,31 +235,19 @@ def relationship_score_engine(df1, df2, direct_relation, common_contacts, meetin
         )
 
     # -----------------------------------
-    # NIGHT ACTIVITY
+    # NIGHT ACTIVITY (both CDRs)
     # -----------------------------------
     night_calls = 0
 
-    if "call_time" in df1.columns:
-
-        for _, row in df1.iterrows():
-
+    for _df in [df1, df2]:
+        if "call_time" not in _df.columns:
+            continue
+        for _, row in _df.iterrows():
             try:
-
-                hour = int(
-                    str(
-                        row["call_time"]
-                    )[0:2]
-                )
-
-                if (
-                    hour >= 22
-                    or
-                    hour <= 6
-                ):
-
+                hour = int(str(row["call_time"])[0:2])
+                if hour >= 22 or hour <= 6:
                     night_calls += 1
-
-            except:
+            except Exception:
                 pass
 
     if night_calls >= 5:
@@ -468,7 +454,7 @@ def relationship_intelligence(df):
 
                     night_calls += 1
 
-            except:
+            except Exception:
                 pass
 
         # ------------------------

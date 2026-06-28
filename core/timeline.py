@@ -14,7 +14,7 @@ def format_duration(seconds):
         minutes = (seconds % 3600) // 60
         secs = seconds % 60
         return f"{hours:02}:{minutes:02}:{secs:02}"
-    except:
+    except Exception:
         return "00:00:00"
 # -----------------------------------
 # IMEI SWITCH TIMELINE
@@ -182,8 +182,40 @@ def most_contacted(df):
 # CONTACT TIMELINE
 # -----------------------------------
 def contact_timeline(df):
+    """
+    Returns a chronological list of every call/SMS grouped by contact number.
+    Each entry: contact, datetime, direction, call_type, duration, tower.
+    Sorted by datetime ascending so investigators can read a contact's
+    full communication history in order.
+    """
+    required = {"contact_number", "call_date", "call_time"}
+    if not required.issubset(df.columns):
+        return []
 
-    return []
+    try:
+        temp = df.copy()
+        temp["datetime"] = pd.to_datetime(
+            temp["call_date"].astype(str) + " " + temp["call_time"].astype(str),
+            errors="coerce"
+        )
+        temp = temp.dropna(subset=["datetime", "contact_number"])
+        temp = temp.sort_values("datetime")
+
+        records = []
+        for _, row in temp.iterrows():
+            records.append({
+                "contact":    str(row["contact_number"]),
+                "datetime":   row["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
+                "date":       row["datetime"].strftime("%Y-%m-%d"),
+                "time":       row["datetime"].strftime("%H:%M"),
+                "direction":  str(row.get("direction", "")).upper(),
+                "call_type":  str(row.get("call_type", "VOICE")).upper(),
+                "duration":   int(row["duration"]) if pd.notna(row.get("duration")) else 0,
+                "tower":      str(row.get("tower_address", "")),
+            })
+        return records
+    except Exception:
+        return []
 
 
 # -----------------------------------
@@ -283,7 +315,7 @@ def night_activity(df):
     temp = temp[
         (temp["hour"] >= 22)
         |
-        (temp["hour"] <= 7)
+        (temp["hour"] <= 6)  # unified: 10 PM – 6 AM
     ]
 
     return most_contacted(temp)

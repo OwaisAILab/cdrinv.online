@@ -8,13 +8,25 @@ def get_contact_strength(
     total_calls,
     total_duration
 ):
-
-    if total_calls >= 20:
+    # Score on both call frequency AND total duration (seconds)
+    # so long-duration low-frequency contacts rank correctly
+    call_score = (
+        3 if total_calls >= 20
+        else 2 if total_calls >= 10
+        else 1 if total_calls >= 3
+        else 0
+    )
+    duration_score = (
+        3 if total_duration >= 7200   # 2+ hours
+        else 2 if total_duration >= 1800  # 30+ min
+        else 1 if total_duration >= 300   # 5+ min
+        else 0
+    )
+    combined = call_score + duration_score
+    if combined >= 5:
         return "HIGH"
-
-    elif total_calls >= 10:
+    elif combined >= 3:
         return "MEDIUM"
-
     return "LOW"
 
 
@@ -81,7 +93,7 @@ def build_network_data(df):
                     )[0:2]
                 )
 
-                if hour >= 22 or hour <= 6:
+                if hour >= 22 or hour <= 6:  # unified: 10 PM – 6 AM
 
                     night_contacts.add(
                         str(
@@ -89,7 +101,7 @@ def build_network_data(df):
                         ).strip()
                     )
 
-            except:
+            except Exception:
                 pass
 
     # -----------------------------------
@@ -161,7 +173,7 @@ def build_network_data(df):
                 )
             )
 
-        except:
+        except Exception:
 
             duration = 0
 

@@ -105,6 +105,8 @@ def same_tower_same_time(
             "longitude":        row.get(lon_col, ""),
             "sector":           row.get("_sector", row.get("sector_1", "")),
             "confidence":       row["confidence"],
+            "cdr_1_type":       str(row.get("call_type_1", row.get("call_type", "VOICE"))).upper(),
+            "cdr_2_type":       str(row.get("call_type_2", row.get("call_type", "VOICE"))).upper(),
         })
 
     return results
@@ -113,6 +115,26 @@ def same_tower_same_time(
 # -----------------------------------
 # COMMON CONTACTS
 # -----------------------------------
+def _normalize_pk_number(val: str) -> str:
+    """Normalize Pakistani mobile numbers to 92XXXXXXXXXX format for comparison."""
+    val = val.strip().replace(" ", "").replace("-", "")
+    if val.startswith("+"):
+        val = val[1:]
+    if val.startswith("0092"):
+        val = val[4:]
+    if val.startswith("92") and len(val) == 12:
+        return val
+    if val.startswith("03") and len(val) == 11:
+        return "92" + val[1:]
+    if val.startswith("3") and len(val) == 10:
+        return "92" + val
+    if val.startswith("0"):
+        stripped = val.lstrip("0")
+        if stripped.startswith("3") and len(stripped) == 10:
+            return "92" + stripped
+    return val
+
+
 def common_contacts(df1, df2):
 
     if (
@@ -123,15 +145,11 @@ def common_contacts(df1, df2):
         return []
 
     contacts_1 = set(
-        df1["contact_number"]
-        .dropna()
-        .astype(str)
+        df1["contact_number"].dropna().astype(str).map(_normalize_pk_number)
     )
 
     contacts_2 = set(
-        df2["contact_number"]
-        .dropna()
-        .astype(str)
+        df2["contact_number"].dropna().astype(str).map(_normalize_pk_number)
     )
 
     common = contacts_1.intersection(
@@ -140,15 +158,15 @@ def common_contacts(df1, df2):
 
     return list(common)
 
+
 # -----------------------------------
 # CROSS-SUSPECT TIMELINE OVERLAY
 # -----------------------------------
 def cross_suspect_timeline(df1, df2, subject1_label="Subject A", subject2_label="Subject B"):
     """
     Merges both CDRs into a single chronological event list.
-    Each event carries: datetime, subject label, call type/direction,
-    contact number, tower, and a 'meeting_flag' if the other subject
-    was at the same tower within 15 minutes.
+    Only events where the other subject was at the same tower
+    within 15 minutes are flagged (proximity_flag=True).
     Returns a list of dicts sorted by datetime ascending.
     """
     required = ["call_date", "call_time", "contact_number", "tower_address"]
@@ -159,7 +177,8 @@ def cross_suspect_timeline(df1, df2, subject1_label="Subject A", subject2_label=
     def prep(df, label):
         t = df.copy()
         t["datetime"] = pd.to_datetime(
-            t["call_date"] + " " + t["call_time"], errors="coerce"
+            t["call_date"].astype(str) + " " + t["call_time"].astype(str),
+            errors="coerce"
         )
         t = t.dropna(subset=["datetime"]).sort_values("datetime")
         t["subject"] = label
@@ -168,14 +187,12 @@ def cross_suspect_timeline(df1, df2, subject1_label="Subject A", subject2_label=
     t1 = prep(df1, subject1_label)
     t2 = prep(df2, subject2_label)
 
-    # Build a set of (tower, minute-bucket) for each subject
-    # so we can flag proximity cheaply with a 15-min window
     def tower_minute_set(df, window_min=15):
         result = set()
         for _, row in df.iterrows():
             tower = str(row["tower_address"]).strip()
             ts = row["datetime"]
-            for offset in range(-window_min, window_min + 1, 1):
+            for offset in range(-window_min, window_min + 1):
                 bucket = (tower, ts.floor("min") + pd.Timedelta(minutes=offset))
                 result.add(bucket)
         return result
@@ -190,20 +207,19 @@ def cross_suspect_timeline(df1, df2, subject1_label="Subject A", subject2_label=
             ts = row["datetime"]
             bucket = (tower, ts.floor("min"))
             proximity = bucket in other_set
-
             events.append({
-                "datetime":      ts.strftime("%Y-%m-%d %H:%M:%S"),
-                "date":          ts.strftime("%Y-%m-%d"),
-                "time":          ts.strftime("%H:%M"),
-                "subject":       label,
-                "direction":     str(row.get("direction", "")).upper(),
-                "call_type":     str(row.get("call_type", "VOICE")).upper(),
-                "contact":       str(row.get("contact_number", "")),
-                "tower":         tower,
-                "latitude":      row.get("latitude", ""),
-                "longitude":     row.get("longitude", ""),
-                "duration":      row.get("duration", 0),
-                "proximity_flag": proximity,   # True = other subject nearby
+                "datetime":       ts.strftime("%Y-%m-%d %H:%M:%S"),
+                "date":           ts.strftime("%Y-%m-%d"),
+                "time":           ts.strftime("%H:%M"),
+                "subject":        label,
+                "direction":      str(row.get("direction", "")).upper(),
+                "call_type":      str(row.get("call_type", "VOICE")).upper(),
+                "contact":        str(row.get("contact_number", "")),
+                "tower":          tower,
+                "latitude":       row.get("latitude", ""),
+                "longitude":      row.get("longitude", ""),
+                "duration":       row.get("duration", 0),
+                "proximity_flag": proximity,
             })
         return events
 

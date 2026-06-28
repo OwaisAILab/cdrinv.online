@@ -206,7 +206,6 @@ _MAP_JAZZ = {
     "aparty": "owner_number",
     "bparty": "contact_number",
     "date_and_time": "datetime",
-    "date_and_time": "datetime",
     "datetime": "datetime",
     "date&time" : "datetime",
     "call_start_dt_tm": "datetime",
