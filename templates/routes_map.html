@@ -1,159 +1,233 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Most Frequent Route Map</title>
+    <title>Frequent Routes Map</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        body { margin: 0; padding: 0; font-family: 'Share Tech Mono', monospace; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Share Tech Mono', monospace; background: #04100a; color: #e8f0eb; }
         #map { width: 100%; height: 100vh; }
-        .info-box {
+
+        .panel {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 12px;
+            left: 12px;
             z-index: 1000;
-            background: rgba(0,0,0,0.85);
-            color: #fff;
-            padding: 14px 20px;
-            border-radius: 6px;
-            border-left: 4px solid #c9a84c;
-            max-width: 350px;
-            font-size: 13px;
-            line-height: 1.7;
+            background: rgba(4,16,10,0.93);
+            border: 1px solid #1e4030;
+            border-radius: 8px;
+            width: 300px;
+            overflow: hidden;
         }
-        .info-box h3 { color: #c9a84c; margin-bottom: 4px; }
-        .info-box .freq { color: #ffaa00; font-weight: bold; }
+        .panel-header {
+            background: #0d2218;
+            padding: 10px 14px;
+            border-bottom: 1px solid #1e4030;
+            font-size: 13px;
+            font-weight: bold;
+            color: #c9a84c;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .route-item {
+            padding: 10px 14px;
+            border-bottom: 1px solid #1e4030;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .route-item:last-child { border-bottom: none; }
+        .route-item:hover { background: #0d2218; }
+        .route-item.active { background: #0d2218; }
+        .route-rank {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 22px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .route-label { font-size: 12px; line-height: 1.5; margin-top: 4px; color: #b0c8b8; }
+        .route-freq { font-size: 11px; color: #c9a84c; margin-top: 2px; }
+        .route-addresses { font-size: 10px; color: #6a9a78; margin-top: 2px; word-break: break-word; }
+
         .legend {
             position: absolute;
-            bottom: 30px;
-            right: 30px;
+            bottom: 24px;
+            right: 12px;
             z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            color: #fff;
-            padding: 10px 14px;
+            background: rgba(4,16,10,0.88);
+            border: 1px solid #1e4030;
             border-radius: 6px;
-            font-size: 12px;
+            padding: 10px 14px;
+            font-size: 11px;
         }
-        .legend-item { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
-        .legend-line { width: 30px; height: 4px; background: #ff4444; display: inline-block; }
-        .legend-circle { width: 16px; height: 16px; border-radius: 50%; border: 1px solid #fff; }
-        .legend-circle.origin { background: rgba(68, 170, 255, 0.3); }
-        .legend-circle.dest { background: rgba(255, 68, 68, 0.3); }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+        .legend-line { width: 28px; height: 4px; border-radius: 2px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; }
 
-        /* ── RESPONSIVE FIXES ──────────────────────────────────────── */
-        @media (max-width: 768px) {
-            .info-box { max-width: 220px; font-size: 11px; padding: 10px 14px; }
-            .legend { padding: 8px 10px; font-size: 10px; bottom: 20px; right: 20px; }
-        }
-
-        @media (max-width: 480px) {
-            .info-box { max-width: 160px; font-size: 10px; padding: 8px 10px; top: 6px; left: 6px; }
-            .info-box h3 { font-size: 11px; }
-            .legend { padding: 6px 8px; font-size: 9px; bottom: 10px; right: 10px; }
-            .legend-item { font-size: 9px; gap: 4px; }
-            .legend-line { width: 20px; height: 3px; }
-            .legend-circle { width: 12px; height: 12px; }
+        @media (max-width: 560px) {
+            .panel { width: 200px; }
+            .panel-header { font-size: 10px; padding: 8px 10px; }
+            .route-item { padding: 8px 10px; }
+            .route-label { font-size: 10px; }
+            .legend { font-size: 9px; padding: 6px 10px; bottom: 12px; right: 8px; }
         }
     </style>
 </head>
 <body>
 
-<div class="info-box" id="infoBox">
-    <h3>🚀 Most Frequent Route</h3>
-    <p id="routeDetails">Loading...</p>
+<div class="panel" id="routePanel">
+    <div class="panel-header">⬛ Top Frequent Routes</div>
+    <div id="routeList"><div style="padding:14px;font-size:12px;color:#6a9a78;">Loading...</div></div>
 </div>
 
 <div id="map"></div>
 
-<div class="legend">
-    <div class="legend-item"><span class="legend-line"></span> Route direction</div>
-    <div class="legend-item"><span class="legend-circle origin"></span> Origin (with 300m radius)</div>
-    <div class="legend-item"><span class="legend-circle dest"></span> Destination (with 300m radius)</div>
+<div class="legend" id="legend" style="display:none;">
+    <div id="legendItems"></div>
+    <div class="legend-item" style="margin-top:6px;padding-top:6px;border-top:1px solid #1e4030;">
+        <div class="legend-dot" style="background:#44aaff;border-color:#44aaff;"></div> Origin tower
+    </div>
+    <div class="legend-item">
+        <div class="legend-dot" style="background:#ffaa00;border-color:#ffaa00;"></div> Destination tower
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-    const map = L.map('map', { preferCanvas: true }).setView([24.8607, 67.0011], 11);
+    const ROUTE_COLORS = ['#ff4444', '#00ccff', '#c9a84c'];
+    const ROUTE_LABELS = ['#1', '#2', '#3'];
 
+    const map = L.map('map', { preferCanvas: true }).setView([24.8607, 67.0011], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    let routeLayers = [];
+
+    function clearRouteLayers() {
+        routeLayers.forEach(group => group.forEach(l => map.removeLayer(l)));
+        routeLayers = [];
+    }
+
+    function showRoute(routes, idx) {
+        clearRouteLayers();
+        const bounds = [];
+        const toShow = (idx === null) ? routes : [routes[idx]];
+
+        toShow.forEach((route, i) => {
+            const colorIdx = (idx === null) ? i : idx;
+            const color = ROUTE_COLORS[colorIdx % ROUTE_COLORS.length];
+            const layers = [];
+
+            const latlngs = [
+                [route.from_lat, route.from_lon],
+                [route.to_lat, route.to_lon]
+            ];
+
+            const poly = L.polyline(latlngs, {
+                color, weight: 5, opacity: 0.85, smoothFactor: 1
+            }).addTo(map);
+            poly.bindPopup(`<b>Route #${colorIdx+1}</b><br>${route.from} → ${route.to}<br>Frequency: <b>${route.frequency}</b>`);
+            layers.push(poly);
+            bounds.push(...latlngs);
+
+            const fromCircle = L.circle([route.from_lat, route.from_lon], {
+                radius: 250, color, weight: 1, fillColor: color, fillOpacity: 0.12
+            }).addTo(map);
+            fromCircle.bindPopup('Origin: ' + route.from);
+            layers.push(fromCircle);
+
+            const toCircle = L.circle([route.to_lat, route.to_lon], {
+                radius: 250, color, weight: 1, fillColor: '#ffaa00', fillOpacity: 0.12
+            }).addTo(map);
+            toCircle.bindPopup('Destination: ' + route.to);
+            layers.push(toCircle);
+
+            const fromMarker = L.circleMarker([route.from_lat, route.from_lon], {
+                radius: 8, color: '#fff', weight: 2, fillColor: '#44aaff', fillOpacity: 0.95
+            }).addTo(map).bindPopup('Origin: ' + route.from);
+            layers.push(fromMarker);
+
+            const toMarker = L.circleMarker([route.to_lat, route.to_lon], {
+                radius: 8, color: '#fff', weight: 2, fillColor: '#ffaa00', fillOpacity: 0.95
+            }).addTo(map).bindPopup('Destination: ' + route.to);
+            layers.push(toMarker);
+
+            routeLayers.push(layers);
+        });
+
+        if (bounds.length) {
+            map.fitBounds(bounds, { padding: [80, 80] });
+        }
+
+        // Highlight active item in sidebar
+        document.querySelectorAll('.route-item').forEach((el, i) => {
+            el.classList.toggle('active', idx === null ? false : i === idx);
+        });
+    }
+
     fetch('/routes-data')
     .then(res => res.json())
     .then(routes => {
-        const infoEl = document.getElementById('routeDetails');
+        const listEl = document.getElementById('routeList');
+        const legendEl = document.getElementById('legend');
+        const legendItemsEl = document.getElementById('legendItems');
+
         if (!routes || routes.length === 0) {
-            infoEl.innerHTML = '⚠️ No frequent routes found. Make sure the CDR has tower coordinates.';
+            listEl.innerHTML = '<div style="padding:14px;font-size:11px;color:#6a9a78;">⚠️ No frequent routes found. Make sure the CDR has tower coordinates.</div>';
             return;
         }
 
-        const route = routes[0];
-        const freq = route.frequency;
+        listEl.innerHTML = '';
+        legendEl.style.display = 'block';
 
-        infoEl.innerHTML = `
-            <b>${route.from}</b> → <b>${route.to}</b><br>
-            Frequency: <span class="freq">${freq}</span> times
-        `;
+        // "Show all" button
+        const allBtn = document.createElement('div');
+        allBtn.className = 'route-item active';
+        allBtn.innerHTML = `<span class="route-rank" style="background:#1e4030;color:#c9a84c;">ALL</span> <span style="font-size:12px;">Show all routes</span>`;
+        allBtn.addEventListener('click', () => {
+            showRoute(routes, null);
+            document.querySelectorAll('.route-item').forEach((el, i) => el.classList.toggle('active', i === 0));
+        });
+        listEl.appendChild(allBtn);
 
-        const latlngs = [
-            [route.from_lat, route.from_lon],
-            [route.to_lat, route.to_lon]
-        ];
+        routes.forEach((route, i) => {
+            const color = ROUTE_COLORS[i % ROUTE_COLORS.length];
 
-        const polyline = L.polyline(latlngs, {
-            color: '#ff4444',
-            weight: 6,
-            opacity: 0.8,
-            smoothFactor: 1,
-        }).addTo(map);
+            const item = document.createElement('div');
+            item.className = 'route-item';
+            item.innerHTML = `
+                <span class="route-rank" style="background:${color}22;color:${color};border:1px solid ${color};">#${i+1}</span>
+                <span style="font-size:12px;font-weight:bold;color:#e8f0eb;">Frequency: ${route.frequency}</span>
+                <div class="route-addresses">
+                    ↑ ${route.from}<br>↓ ${route.to}
+                </div>
+            `;
+            item.addEventListener('click', () => showRoute(routes, i));
+            listEl.appendChild(item);
 
-        polyline.bindPopup(`
-            <b>${route.from}</b> → <b>${route.to}</b><br>
-            Frequency: <b>${freq}</b> times
-        `);
+            // Legend entry
+            const li = document.createElement('div');
+            li.className = 'legend-item';
+            li.innerHTML = `<div class="legend-line" style="background:${color};"></div> Route #${i+1} (×${route.frequency})`;
+            legendItemsEl.appendChild(li);
+        });
 
-        L.circle([route.from_lat, route.from_lon], {
-            radius: 300,
-            color: '#44aaff',
-            weight: 2,
-            fillColor: '#44aaff',
-            fillOpacity: 0.15,
-            dashArray: null
-        }).addTo(map).bindPopup('Origin: ' + route.from);
-
-        L.circle([route.to_lat, route.to_lon], {
-            radius: 300,
-            color: '#ff4444',
-            weight: 2,
-            fillColor: '#ff4444',
-            fillOpacity: 0.15,
-            dashArray: null
-        }).addTo(map).bindPopup('Destination: ' + route.to);
-
-        L.circleMarker([route.from_lat, route.from_lon], {
-            radius: 8,
-            color: '#fff',
-            weight: 2,
-            fillColor: '#44aaff',
-            fillOpacity: 0.9
-        }).addTo(map).bindPopup('Origin: ' + route.from);
-
-        L.circleMarker([route.to_lat, route.to_lon], {
-            radius: 8,
-            color: '#fff',
-            weight: 2,
-            fillColor: '#ff4444',
-            fillOpacity: 0.9
-        }).addTo(map).bindPopup('Destination: ' + route.to);
-
-        map.fitBounds(polyline.getBounds(), { padding: [80, 80] });
+        // Show all routes by default
+        showRoute(routes, null);
+        // Mark "ALL" as active
+        allBtn.classList.add('active');
     })
     .catch(err => {
-        console.error('Error loading route:', err);
-        document.getElementById('routeDetails').innerHTML = '❌ Error loading route data.';
+        console.error(err);
+        document.getElementById('routeList').innerHTML = '<div style="padding:14px;font-size:11px;color:#ff4444;">❌ Error loading route data.</div>';
     });
 </script>
 </body>

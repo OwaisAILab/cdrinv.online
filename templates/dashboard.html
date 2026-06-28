@@ -943,8 +943,9 @@ function residenceHTML(d) {
   const zones = (d.residence || []).slice(0, 2);
   return `
   <div class="card span-2">
-    <div class="section-header"><div class="section-title"><span>◈</span> Residence Intelligence</div><div class="section-badge">ZONE ANALYSIS</div></div>
-    ${zones.map((z, i) => `<div class="zone-item"><div><div class="zone-addr">${z.tower_address}</div><div class="zone-meta"><span class="zone-tag">SECTOR: ${z.sector}</span><span class="zone-tag">RANK #${i+1}</span></div></div><div><div class="zone-score">${z.score}</div><div class="zone-score-label">CONFIDENCE</div></div></div>`).join('')}
+    <div class="section-header"><div class="section-title"><span>◈</span> Probable Residence</div><div class="section-badge">SILENT PERIOD ANALYSIS</div></div>
+    <div style="font-size:10px;color:var(--text-dim,#6a9a78);margin-bottom:8px;padding:0 2px;">Based on towers active before/after consistent silent gaps (≥4 hrs) — time-of-day independent. Higher score = more frequent silence at that location.</div>
+    ${zones.map((z, i) => `<div class="zone-item"><div><div class="zone-addr">${z.tower_address}</div><div class="zone-meta"><span class="zone-tag">SECTOR: ${z.sector}</span><span class="zone-tag">RANK #${i+1}</span></div></div><div><div class="zone-score">${z.score}</div><div class="zone-score-label">SILENT HITS</div></div></div>`).join('')}
     <a class="map-link" href="/residence-map"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 11 L5 1 L9 7 L11 5" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="5" r="1.5" fill="currentColor"/></svg> Open Residence Map</a>
   </div>`;
 }
