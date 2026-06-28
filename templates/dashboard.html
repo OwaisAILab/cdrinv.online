@@ -731,7 +731,25 @@ tbody td:first-child { color: var(--accent2); }
                 Reset
             </button>
         </div>
+
+        <!-- divider -->
+        <div style="width:1px;background:var(--border);align-self:stretch;margin:0 6px;"></div>
+
+        <!-- Contact Number Search — parallel to date box -->
+        <div style="flex:1;max-width:280px;">
+            <label style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--dim);display:block;margin-bottom:5px;">SEARCH CONTACT NUMBER</label>
+            <input id="cs-input" type="text" placeholder="e.g. 03001234567"
+                onkeydown="if(event.key==='Enter')searchContact()"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;font-family:var(--mono);font-size:0.85rem;outline:none;" />
+        </div>
+        <div>
+            <button onclick="searchContact()"
+                style="background:var(--accent);color:#000;border:none;font-family:var(--cond);font-size:0.9rem;font-weight:700;letter-spacing:0.1em;padding:10px 24px;cursor:pointer;text-transform:uppercase;">
+                🔍 Search
+            </button>
+        </div>
     </div>
+    <div id="cs-error" style="display:none;margin-top:10px;font-family:var(--mono);font-size:0.68rem;color:var(--danger);">⚠ No records found for that number.</div>
     <div id="dateFilterInfo" style="margin-top: 12px; font-family: var(--mono); font-size: 0.7rem; color: var(--accent3);"></div>
 </div>
 
@@ -822,6 +840,9 @@ function render(data) {
     ${relationshipHTML(data)}
     ${contactsHTML(data)}
     ${nonMobileHTML(data)}
+    ${burstHTML(data)}
+    ${abandonmentHTML(data)}
+    ${firstContactHTML(data)}
   `;
 
   // ── TRIAL MODE BLUR (keep headers visible) ──
@@ -991,6 +1012,180 @@ function contactsHTML(d) {
   <div class="card span-3"><div class="section-header"><div class="section-title"><span>◈</span> Top Contacts</div><div class="section-badge">${contacts.length} RESULTS</div></div>
   <div class="contacts-wrap"><table><thead><tr><th>#</th><th>Contact Number</th><th>Total Calls/SMS</th><th>Total Duration</th><th title="Calls between 22:00 – 06:00">🌙 Night Calls/SMS</th><th>Relationship</th></tr></thead>
   <tbody>${contacts.map((c, i) => { const nightCount = c.night_calls ?? 0; const color = nightColor(nightCount); return `<tr><td style="color:var(--text-dim)">${String(i+1).padStart(2,'0')}</td><td>${c.contact_number}</td><td><span class="badge">${c.total_calls}</span></td><td>${Math.round((c.total_duration_seconds || 0)/60)} min</td><td style="white-space:nowrap"><span style="font-weight:600;color:${color};font-size:13px;">${nightCount === 0 ? '—' : nightCount}</span>${nightCount > 0 ? `<span style="font-size:10px;color:${color};opacity:0.85;margin-left:3px;">(${Math.round((nightCount / c.total_calls) * 100)}%)</span><div style="width:60px;height:3px;background:var(--border);margin-top:3px;position:relative;"><div style="position:absolute;top:0;left:0;bottom:0;width:${Math.min((nightCount / c.total_calls) * 100,100)}%;background:${color};animation:barGrow 1s ease forwards;"></div></div>` : ''}</td><td><div style="width:100%;background:var(--border);height:3px;position:relative;min-width:80px"><div style="position:absolute;top:0;left:0;bottom:0;width:${Math.round((c.total_calls / (contacts[0]?.total_calls || 1)) * 100)}%;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:barGrow 1s ease forwards"></div></div></td></tr>`}).join('')}</tbody></table></div></div>`;
+}
+
+// ── BURST DETECTION ──
+function burstHTML(d) {
+  const bursts = d.burst_detection || [];
+  if (bursts.length === 0) return '';
+  function sevColor(s) { return s === 'HIGH' ? '#e03030' : '#e07820'; }
+  const rows = bursts.map((b, i) => {
+    const recRows = (b.records || []).map(r => `
+      <tr style="background:var(--surface-0,#0d1117);">
+        <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);padding:5px 10px;">${r.datetime}</td>
+        <td style="font-family:var(--mono);font-size:0.65rem;padding:5px 10px;">${r.contact}</td>
+        <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);padding:5px 10px;">${r.direction}</td>
+        <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);padding:5px 10px;">${r.call_type}</td>
+        <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);padding:5px 10px;">${r.duration}s</td>
+        <td style="font-family:var(--mono);font-size:0.63rem;color:var(--text-dim);padding:5px 10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.tower}">${r.tower}</td>
+      </tr>`).join('');
+    return `
+    <tr class="burst-summary-row" onclick="toggleBurstDetail(${i})" style="cursor:pointer;" title="Click to expand call records">
+      <td style="font-family:var(--mono);font-size:0.7rem;">${b.window_start}</td>
+      <td style="font-family:var(--mono);font-size:0.7rem;">${b.window_end}</td>
+      <td style="cursor:pointer;" title="Click to view records"><span class="badge" style="text-decoration:underline dotted;">${b.call_count}</span></td>
+      <td style="font-size:0.68rem;color:var(--text-dim);">${b.contact_count} number${b.contact_count !== 1 ? 's' : ''}</td>
+      <td style="font-family:var(--mono);font-size:0.7rem;">${b.avg_duration_sec}s</td>
+      <td style="cursor:pointer;" title="Click to view records"><span style="font-family:var(--mono);font-size:0.65rem;padding:2px 8px;border-radius:2px;background:${sevColor(b.severity)}22;color:${sevColor(b.severity)};border:1px solid ${sevColor(b.severity)}55;">${b.severity} ▾</span></td>
+    </tr>
+    <tr id="burst-detail-${i}" style="display:none;">
+      <td colspan="6" style="padding:0;border-top:1px solid var(--border);">
+        <div style="padding:8px 12px 12px;">
+          <p style="font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);margin-bottom:6px;letter-spacing:0.1em;">▸ INDIVIDUAL RECORDS IN THIS BURST WINDOW</p>
+          <table style="width:100%;">
+            <thead><tr style="background:var(--surface-1,#161b22);">
+              <th style="font-size:0.62rem;padding:5px 10px;text-align:left;">Date/Time</th>
+              <th style="font-size:0.62rem;padding:5px 10px;text-align:left;">Contact</th>
+              <th style="font-size:0.62rem;padding:5px 10px;text-align:left;">Direction</th>
+              <th style="font-size:0.62rem;padding:5px 10px;text-align:left;">Type</th>
+              <th style="font-size:0.62rem;padding:5px 10px;text-align:left;">Duration</th>
+              <th style="font-size:0.62rem;padding:5px 10px;text-align:left;">Tower</th>
+            </tr></thead>
+            <tbody>${recRows}</tbody>
+          </table>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  return `
+  <div class="card span-3">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> Call Burst Detection</div>
+      <div class="section-badge">${bursts.length} BURST${bursts.length > 1 ? 'S' : ''} FOUND</div>
+    </div>
+    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--text-dim);margin-bottom:14px;">
+      Periods where an unusually high number of calls occurred within 30 minutes. Click any row to expand individual call records.
+    </p>
+    <div class="contacts-wrap"><table><thead><tr>
+      <th>Window Start</th><th>Window End</th><th>Call Count</th><th>Contacts Involved</th><th>Avg Duration</th><th>Severity</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>
+  </div>`;
+}
+
+// ── CALL ABANDONMENT ──
+function abandonmentHTML(d) {
+  const items = d.call_abandonment || [];
+  if (items.length === 0) return '';
+  function riskColor(r) { return r === 'HIGH' ? '#e03030' : '#e07820'; }
+  return `
+  <div class="card span-3">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> Call Abandonment / Flash Calls</div>
+      <div class="section-badge">${items.length} FLAGGED CONTACT${items.length > 1 ? 'S' : ''}</div>
+    </div>
+    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--text-dim);margin-bottom:14px;">
+      Contacts receiving repeated outgoing calls of 5 seconds or less. One-ring signalling is a known criminal coordination pattern.
+    </p>
+    <div class="contacts-wrap"><table><thead><tr>
+      <th>Contact Number</th><th>Flash Calls</th><th>Total Calls</th><th>Abandonment Rate</th><th>First</th><th>Last</th><th>Risk</th>
+    </tr></thead><tbody>
+    ${items.map(a => `<tr>
+      <td style="font-family:var(--mono);">${a.contact}</td>
+      <td><span class="badge">${a.abandoned_call_count}</span></td>
+      <td style="color:var(--text-dim);font-size:0.7rem;">${a.total_calls_to_contact}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:60px;height:3px;background:var(--border);position:relative;">
+            <div style="position:absolute;top:0;left:0;bottom:0;width:${Math.min(a.abandonment_rate_pct,100)}%;background:${riskColor(a.risk_level)};"></div>
+          </div>
+          <span style="font-family:var(--mono);font-size:0.68rem;color:${riskColor(a.risk_level)};">${a.abandonment_rate_pct}%</span>
+        </div>
+      </td>
+      <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);">${a.first_abandoned}</td>
+      <td style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);">${a.last_abandoned}</td>
+      <td><span style="font-family:var(--mono);font-size:0.65rem;padding:2px 8px;border-radius:2px;background:${riskColor(a.risk_level)}22;color:${riskColor(a.risk_level)};border:1px solid ${riskColor(a.risk_level)}55;">${a.risk_level}</span></td>
+    </tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
+// ── FIRST CONTACT ANALYSIS ──
+function firstContactHTML(d) {
+  const fc = d.first_contact || {};
+  const all = fc.all_first_contacts || [];
+  if (all.length === 0) return '';
+  // Show most recent 30 first appearances — most investigatively relevant
+  const shown = all.slice(-30).reverse();
+  return `
+  <div class="card span-3">
+    <div class="section-header">
+      <div class="section-title"><span>◈</span> First Contact Timeline</div>
+      <div class="section-badge">${all.length} UNIQUE CONTACTS</div>
+    </div>
+    <p style="font-family:var(--mono);font-size:0.68rem;color:var(--text-dim);margin-bottom:14px;">
+      The first date each contact number ever appeared in this CDR. New numbers appearing around a specific date may indicate planning, recruitment, or post-incident coordination.
+    </p>
+    <div class="contacts-wrap"><table><thead><tr>
+      <th>Contact Number</th><th>First Seen Date</th><th>First Seen Time</th>
+    </tr></thead><tbody>
+    ${shown.map(c => `<tr>
+      <td style="font-family:var(--mono);">${c.contact}</td>
+      <td style="font-family:var(--mono);font-size:0.7rem;">${c.date}</td>
+      <td style="font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);">${c.datetime ? c.datetime.split(' ')[1] : ''}</td>
+    </tr>`).join('')}
+    </tbody></table>
+    ${all.length > 30 ? `<p style="font-family:var(--mono);font-size:0.63rem;color:var(--text-dim);margin-top:10px;">Showing most recent 30 of ${all.length} total first contacts.</p>` : ''}
+  </div>`;
+}
+
+function searchContact() {
+  const q = document.getElementById('cs-input').value.trim();
+  if (!q) {
+    document.getElementById('cs-input').style.borderColor = 'var(--danger, #e03030)';
+    setTimeout(() => document.getElementById('cs-input').style.borderColor = '', 1500);
+    return;
+  }
+  const btn = document.querySelector('button[onclick="searchContact()"]');
+  const origText = btn.innerHTML;
+  btn.innerHTML = '⏳ Searching…';
+  btn.disabled  = true;
+
+  fetch(`/contact-search?q=${encodeURIComponent(q)}`)
+    .then(r => r.json())
+    .then(data => {
+      btn.innerHTML = origText;
+      btn.disabled  = false;
+      if (!data.found) {
+        document.getElementById('cs-input').style.borderColor = 'var(--danger, #e03030)';
+        setTimeout(() => document.getElementById('cs-input').style.borderColor = '', 2000);
+        const errDiv = document.getElementById('cs-error');
+        errDiv.style.display = 'block';
+        setTimeout(() => errDiv.style.display = 'none', 3000);
+        return;
+      }
+      // Store result and open detail page
+      sessionStorage.setItem('cs_data', JSON.stringify(data));
+      window.location.href = '/contact-detail';
+    })
+    .catch(() => {
+      btn.innerHTML = origText;
+      btn.disabled  = false;
+      alert('Search failed — check your connection.');
+    });
+}
+
+function toggleBurstDetail(i) {
+  const detail = document.getElementById('burst-detail-' + i);
+  if (!detail) return;
+  const isOpen = detail.style.display !== 'none';
+  // Close all open details first
+  document.querySelectorAll('[id^="burst-detail-"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.burst-summary-row').forEach(el => el.style.background = '');
+  // If it was closed, open this one
+  if (!isOpen) {
+    detail.style.display = '';
+    detail.previousElementSibling.style.background = 'rgba(201,168,76,0.06)';
+  }
 }
 
 // ── EXPORT PDF (unchanged, keeps all sections) ──

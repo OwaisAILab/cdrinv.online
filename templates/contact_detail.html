@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+{% block title %}Contact Detail | CDR Intelligence Portal{% endblock %}
+
+{% block head_extra %}
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<style>
+/* ── ROOT THEME (identical to dashboard) ── */
+:root {
+  --bg:       #000000;
+  --surface:  #121212;
+  --surface2: #1e1e1e;
+  --border:   #333333;
+  --accent:   #c9a84c;
+  --accent2:  #ffffff;
+  --accent3:  #707070;
+  --muted:    #404040;
+  --text:     #ffffff;
+  --text-dim: #a0a0a0;
+  --danger:   #ff003c;
+  --mono:     'Share Tech Mono', monospace;
+  --sans:     'Barlow', sans-serif;
+  --cond:     'Barlow Condensed', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* scanline */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,180,80,0.012) 2px, rgba(0,180,80,0.012) 4px);
+  pointer-events: none; z-index: 9999;
+}
+/* grain */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9998; opacity: 0.4;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  padding: 28px 40px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  overflow: hidden;
+}
+header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+}
+.header-left  { display: flex; align-items: center; gap: 20px; }
+.logo-mark {
+  width: 42px; height: 42px;
+  border: 2px solid var(--accent);
+  display: grid; place-items: center;
+  position: relative;
+  animation: pulse-border 3s ease-in-out infinite;
+}
+.logo-mark::before {
+  content: ''; position: absolute; inset: 4px;
+  background: var(--accent); opacity: 0.15;
+}
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(201,168,76,0); }
+}
+.header-title h1 {
+  font-family: var(--cond); font-size: 1.5rem; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); line-height: 1;
+}
+.header-title p {
+  font-family: var(--mono); font-size: 0.65rem;
+  color: var(--muted); letter-spacing: 0.2em; margin-top: 4px;
+}
+.header-right { display: flex; align-items: center; gap: 12px; }
+.hdr-btn {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.1em; padding: 9px 18px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-dim); cursor: pointer; text-transform: uppercase;
+  text-decoration: none; display: inline-block;
+  transition: border-color 0.2s, color 0.2s;
+}
+.hdr-btn:hover          { border-color: var(--accent); color: var(--accent); }
+.hdr-btn.primary        { background: var(--accent); border-color: var(--accent); color: #000; }
+.hdr-btn.primary:hover  { background: var(--accent2); border-color: var(--accent2); }
+
+/* ── PAGE WRAP ── */
+main { padding: 32px 40px 80px; }
+
+/* ── STAT ROW ── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  margin-bottom: 28px;
+  position: relative;
+}
+.stat-row::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 40%, transparent 100%);
+  opacity: 0.5;
+}
+.stat-block {
+  padding: 22px 24px;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+}
+.stat-block:last-child { border-right: none; }
+.stat-number {
+  font-family: var(--cond); font-size: 2.4rem; font-weight: 900;
+  color: var(--accent); line-height: 1; letter-spacing: -0.02em;
+}
+.stat-label {
+  font-family: var(--mono); font-size: 0.58rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-dim); margin-top: 8px;
+}
+
+/* ── DIRECTION PILLS ── */
+.dir-row { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+.dir-pill {
+  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em;
+  padding: 7px 18px; border: 1px solid var(--border); color: var(--text-dim);
+}
+.dir-pill.out { border-color: var(--accent);  color: var(--accent); }
+.dir-pill.inc { border-color: #378ADD; color: #378ADD; }
+.dir-pill.sms { border-color: var(--accent3); color: var(--accent3); }
+
+/* ── SECTION HEADING ── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: var(--cond); font-size: 1rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
+}
+.section-title span { color: var(--accent); }
+.section-badge {
+  font-family: var(--mono); font-size: 0.58rem;
+  padding: 3px 8px; border: 1px solid var(--border);
+  color: var(--text-dim); letter-spacing: 0.1em;
+}
+
+/* ── TOWER CHIPS ── */
+.tower-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+.tower-chip {
+  font-family: var(--mono); font-size: 0.62rem;
+  padding: 5px 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex; gap: 8px; margin-bottom: 14px;
+  flex-wrap: wrap; align-items: center;
+}
+.filter-bar input, .filter-bar select {
+  font-family: var(--mono); font-size: 0.68rem; padding: 8px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); outline: none;
+}
+.filter-bar input:focus { border-color: var(--accent); }
+.filter-btn {
+  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+  padding: 8px 14px; background: transparent;
+  border: 1px solid var(--border); color: var(--text-dim);
+  cursor: pointer; text-transform: uppercase;
+  transition: border-color 0.15s, color 0.15s;
+}
+.filter-btn:hover  { border-color: var(--accent3); color: var(--accent3); }
+.filter-btn.active { border-color: var(--accent); color: var(--accent); }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.72rem; }
+thead tr { background: rgba(0,180,80,0.06); border-bottom: 1px solid var(--accent); }
+thead th {
+  padding: 10px 16px; text-align: left;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  font-size: 0.6rem; color: var(--accent); font-weight: 400;
+}
+tbody tr { border-bottom: 1px solid rgba(51,51,51,0.6); transition: background 0.15s; }
+tbody tr:hover { background: rgba(201,168,76,0.04); }
+tbody td { padding: 11px 16px; color: var(--text); letter-spacing: 0.04em; }
+tbody td:first-child { color: var(--accent2); }
+tr.out-row td.dir-cell { color: var(--accent); }
+tr.inc-row td.dir-cell { color: #378ADD; }
+
+.badge {
+  display: inline-block; padding: 2px 8px;
+  background: rgba(0,180,80,0.08); border: 1px solid rgba(0,180,80,0.2);
+  border-radius: 2px; color: var(--accent); font-size: 0.7rem;
+}
+
+/* ── EMPTY / NOT-FOUND ── */
+.empty-state {
+  text-align: center; padding: 100px 20px;
+  font-family: var(--mono); color: var(--text-dim);
+}
+.empty-state .big { font-size: 2rem; color: var(--muted); margin-bottom: 12px; }
+.empty-state p    { font-size: 0.75rem; margin-bottom: 20px; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="3" fill="#c9a84c"/>
+        <circle cx="10" cy="10" r="7" stroke="#c9a84c" stroke-width="1" stroke-dasharray="2 2"/>
+      </svg>
+    </div>
+    <div class="header-title">
+      <h1>Contact Detail Report</h1>
+      <p id="hdr-sub">// initialising...</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <button onclick="exportThisPDF()" class="hdr-btn primary">⬇ Export PDF</button>
+    <button onclick="window.close()" class="hdr-btn">✕ Close</button>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- NOT FOUND -->
+  <div id="not-found" style="display:none;" class="empty-state">
+    <div class="big">⚠</div>
+    <p>No data found. Please use the Search button on the dashboard first.</p>
+    <button onclick="window.close()" class="hdr-btn">Close Window</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="main-content" style="display:none;">
+
+    <!-- Stat row -->
+    <div class="stat-row" id="stat-row"></div>
+
+    <!-- Direction pills -->
+    <div class="dir-row" id="dir-row"></div>
+
+    <!-- Towers -->
+    <div style="margin-bottom:28px;">
+      <div class="section-header">
+        <div class="section-title"><span>◈</span> Towers Used</div>
+        <div class="section-badge" id="tower-count">0 TOWERS</div>
+      </div>
+      <div class="tower-wrap" id="tower-chips"></div>
+    </div>
+
+    <!-- Records table -->
+    <div>
+      <div class="section-header">
+        <div class="section-title"><span>◈</span> All Call Records</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="section-badge" id="rec-count-badge">0 RECORDS</span>
+          <button class="filter-btn active" id="btn-all"   onclick="applyFilter('ALL')">All</button>
+          <button class="filter-btn"        id="btn-out"   onclick="applyFilter('OUTGOING')">Outgoing</button>
+          <button class="filter-btn"        id="btn-inc"   onclick="applyFilter('INCOMING')">Incoming</button>
+          <button class="filter-btn"        id="btn-voice" onclick="applyFilter('VOICE')">Voice</button>
+          <button class="filter-btn"        id="btn-sms"   onclick="applyFilter('SMS')">SMS</button>
+        </div>
+      </div>
+
+      <!-- Date + text search -->
+      <div class="filter-bar">
+        <input id="date-filter" type="date" title="Filter by date" onchange="renderTable()"/>
+        <input id="text-filter" type="text" placeholder="Search tower…" oninput="renderTable()" style="min-width:200px;"/>
+        <button class="filter-btn" onclick="clearFilters()">Clear</button>
+        <span id="filter-info" style="font-family:var(--mono);font-size:0.62rem;color:var(--text-dim);"></span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Direction</th>
+              <th>Type</th>
+              <th>Duration</th>
+              <th>Tower / Location</th>
+              <th>IMEI</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody"></tbody>
+        </table>
+      </div>
+      <p id="no-records" style="display:none;font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);padding:20px 0;">
+        No records match the current filter.
+      </p>
+    </div>
+
+  </div><!-- /main-content -->
+</main>
+
+<script>
+// ── HELPERS ──
+function fmtDur(s) {
+  s = Math.round(s || 0);
+  if (s < 60)   return s + 's';
+  if (s < 3600) return Math.floor(s/60) + 'm ' + (s%60) + 's';
+  return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm';
+}
+
+// ── LOAD DATA ──
+const raw = sessionStorage.getItem('cs_data');
+if (!raw) {
+  document.getElementById('not-found').style.display = 'block';
+} else {
+  const data    = JSON.parse(raw);
+  const summary = data.summary  || {};
+  const records = data.records  || [];
+  let activeDir  = 'ALL';
+  let activeType = 'ALL';
+
+  document.getElementById('main-content').style.display = 'block';
+  document.getElementById('hdr-sub').textContent =
+    `// contact: ${data.contact}  ·  ${records.length} records  ·  ${summary.first_seen || ''} → ${summary.last_seen || ''}`;
+
+  // ── STAT ROW ──
+  const stats = [
+    { n: summary.total_calls,                          l: 'Total Records'  },
+    { n: fmtDur(summary.total_duration_sec || 0),      l: 'Total Duration' },
+    { n: fmtDur(Math.round(summary.avg_duration_sec||0)), l: 'Avg Duration'},
+    { n: summary.unique_towers || 0,                   l: 'Unique Towers'  },
+    { n: (summary.direction_breakdown || {})['OUTGOING'] || 0, l: 'Outgoing Calls' },
+  ];
+  document.getElementById('stat-row').innerHTML = stats.map(s =>
+    `<div class="stat-block">
+       <div class="stat-number">${s.n}</div>
+       <div class="stat-label">${s.l}</div>
+     </div>`
+  ).join('');
+
+  // ── DIRECTION PILLS ──
+  const db = summary.direction_breakdown || {};
+  document.getElementById('dir-row').innerHTML = Object.entries(db).map(([k, v]) => {
+    const cls = k==='OUTGOING' ? 'out' : k==='INCOMING' ? 'inc' : 'sms';
+    return `<div class="dir-pill ${cls}">${k} <b style="margin-left:6px;">${v}</b></div>`;
+  }).join('');
+
+  // ── TOWERS ──
+  const towers = summary.towers || [];
+  document.getElementById('tower-count').textContent = towers.length + ' TOWER' + (towers.length!==1?'S':'');
+  document.getElementById('tower-chips').innerHTML = towers.length
+    ? towers.map(t => `<div class="tower-chip">${t}</div>`).join('')
+    : `<span style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);">No tower data available.</span>`;
+
+  // ── FILTERS ──
+  function applyFilter(val) {
+    const dirs  = ['ALL','OUTGOING','INCOMING'];
+    const types = ['VOICE','SMS','DATA'];
+    if (val === 'ALL')       { activeDir = 'ALL'; activeType = 'ALL'; }
+    else if (dirs.includes(val))  activeDir  = val;
+    else if (types.includes(val)) activeType = val;
+    ['btn-all','btn-out','btn-inc','btn-voice','btn-sms'].forEach(id =>
+      document.getElementById(id).classList.remove('active'));
+    const map = { ALL:'btn-all', OUTGOING:'btn-out', INCOMING:'btn-inc', VOICE:'btn-voice', SMS:'btn-sms' };
+    if (map[val]) document.getElementById(map[val]).classList.add('active');
+    renderTable();
+  }
+  window.applyFilter = applyFilter;
+
+  function clearFilters() {
+    document.getElementById('date-filter').value = '';
+    document.getElementById('text-filter').value = '';
+    activeDir = 'ALL'; activeType = 'ALL';
+    ['btn-all','btn-out','btn-inc','btn-voice','btn-sms'].forEach(id =>
+      document.getElementById(id).classList.remove('active'));
+    document.getElementById('btn-all').classList.add('active');
+    renderTable();
+  }
+  window.clearFilters = clearFilters;
+
+  // ── RENDER TABLE ──
+  function renderTable() {
+    const dateVal = document.getElementById('date-filter').value;
+    const textVal = document.getElementById('text-filter').value.toLowerCase();
+    let filtered = records.filter(r => {
+      if (activeDir  !== 'ALL' && r.direction !== activeDir)  return false;
+      if (activeType !== 'ALL' && r.call_type !== activeType) return false;
+      if (dateVal && r.date !== dateVal)                       return false;
+      if (textVal && !r.tower.toLowerCase().includes(textVal)) return false;
+      return true;
+    });
+    document.getElementById('rec-count-badge').textContent = filtered.length + ' RECORDS';
+    document.getElementById('filter-info').textContent =
+      filtered.length < records.length
+        ? `(${records.length - filtered.length} hidden by filter)` : '';
+    if (filtered.length === 0) {
+      document.getElementById('records-tbody').innerHTML = '';
+      document.getElementById('no-records').style.display = 'block';
+      return;
+    }
+    document.getElementById('no-records').style.display = 'none';
+    document.getElementById('records-tbody').innerHTML = filtered.map((r, i) => {
+      const dirClass = r.direction==='OUTGOING' ? 'out-row' : r.direction==='INCOMING' ? 'inc-row' : '';
+      return `<tr class="${dirClass}">
+        <td>${String(i+1).padStart(3,'0')}</td>
+        <td>${r.date}</td>
+        <td>${r.time}</td>
+        <td class="dir-cell">${r.direction || '—'}</td>
+        <td style="color:var(--text-dim);">${r.call_type || '—'}</td>
+        <td>${r.duration ? fmtDur(r.duration) : '—'}</td>
+        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.tower}">${r.tower || '—'}</td>
+        <td style="color:var(--muted);font-size:0.6rem;">${r.imei && r.imei!=='nan' ? r.imei : '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+  renderTable();
+
+  // ── PDF EXPORT ──
+  function exportThisPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    const W = doc.internal.pageSize.getWidth();
+    let y = 15;
+    doc.setFontSize(14); doc.setTextColor(0,0,0);
+    doc.text('CDR INTELLIGENCE PORTAL — CONTACT DETAIL', 14, y); y += 7;
+    doc.setFontSize(8); doc.setTextColor(80,80,80);
+    doc.text(`Contact: ${data.contact}`, 14, y); y += 5;
+    doc.text(`Records: ${records.length}  |  Total Duration: ${fmtDur(summary.total_duration_sec||0)}  |  Towers: ${summary.unique_towers}`, 14, y); y += 5;
+    doc.text(`Period: ${summary.first_seen} → ${summary.last_seen}`, 14, y); y += 7;
+    doc.setDrawColor(180,180,180); doc.line(14, y, W-14, y); y += 6;
+    doc.autoTable({
+      startY: y,
+      head: [['#','Date','Time','Direction','Type','Duration','Tower / Location','IMEI']],
+      body: records.map((r,i) => [
+        String(i+1).padStart(3,'0'), r.date, r.time,
+        r.direction||'—', r.call_type||'—',
+        r.duration ? fmtDur(r.duration) : '—',
+        r.tower||'—',
+        (r.imei && r.imei!=='nan') ? r.imei : '—'
+      ]),
+      headStyles: { fillColor:false, textColor:[0,0,0], fontStyle:'bold', lineColor:[0,0,0], lineWidth:0.3 },
+      bodyStyles: { fillColor:false, textColor:[0,0,0], lineColor:[180,180,180], lineWidth:0.2 },
+      alternateRowStyles: { fillColor:[245,245,245] },
+      styles: { fontSize:7 },
+      theme: 'grid',
+    });
+    doc.save(`Contact_${data.contact}_${Date.now()}.pdf`);
+  }
+  window.exportThisPDF = exportThisPDF;
+}
+</script>
+{% endblock %}
