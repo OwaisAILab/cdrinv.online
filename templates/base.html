@@ -6,6 +6,7 @@
     <title>{% block title %}CDR Intelligence Portal{% endblock %}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
     {% block head_extra %}{% endblock %}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <!-- ── LANGUAGE SWITCHER (EN / UR / SD) ─────────────────────────────────── -->
@@ -50,4 +51,51 @@
     });
     </script>
     {% block content %}{% endblock %}
+
+  <!-- ── Auto-logout after 5 minutes of inactivity ── -->
+  <script>
+  (function() {
+    var IDLE_MS = 5 * 60 * 1000; // 5 minutes
+    var timer;
+    var WARNING_MS = 60 * 1000;  // warn 1 minute before
+
+    function logout() {
+      // Delete the access_token cookie by expiring it
+      document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+      window.location.href = "/auth/login?reason=idle";
+    }
+
+    function showWarning() {
+      if (document.getElementById('_idle_warn')) return;
+      var w = document.createElement('div');
+      w.id = '_idle_warn';
+      w.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);' +
+        'background:#1a1200;border:1px solid #c9a84c;color:#c9a84c;padding:12px 24px;' +
+        'font-family:monospace;font-size:13px;z-index:99999;border-radius:6px;' +
+        'box-shadow:0 4px 20px rgba(0,0,0,0.6);';
+      w.innerHTML = '⚠ Session expiring in 1 minute due to inactivity. ' +
+        '<a href="#" onclick="(function(){resetTimer();document.getElementById('_idle_warn').remove();})()" ' +
+        'style="color:#e8c96a;text-decoration:underline;">Stay logged in</a>';
+      document.body.appendChild(w);
+    }
+
+    var logoutTimer;
+    function resetTimer() {
+      clearTimeout(timer);
+      clearTimeout(logoutTimer);
+      var el = document.getElementById('_idle_warn');
+      if (el) el.remove();
+      // Warn at IDLE_MS - WARNING_MS, logout at IDLE_MS
+      timer = setTimeout(showWarning, IDLE_MS - WARNING_MS);
+      logoutTimer = setTimeout(logout, IDLE_MS);
+    }
+
+    // Reset on any user activity
+    ['mousemove','keydown','mousedown','touchstart','scroll','click'].forEach(function(evt) {
+      document.addEventListener(evt, resetTimer, { passive: true });
+    });
+
+    resetTimer(); // start the timer
+  })();
+  </script>
 </body>

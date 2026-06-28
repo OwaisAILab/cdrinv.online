@@ -308,6 +308,7 @@ footer{text-align:center;padding:16px;font-family:var(--mono);font-size: 0.90rem
     {% endif %}
 
     <form method="POST" action="/auth/register-trial">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label>Username</label>
         <input type="text" name="username" value="{{ (form or {}).get('username','') }}" placeholder="officer_id" required autocomplete="off"/>

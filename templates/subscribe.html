@@ -298,6 +298,7 @@ footer{border-top:1px solid var(--border);text-align:center;padding:15px;color:v
         </div>
 
         <form action="/verify-subscription" method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label>User ID</label>
                 <input type="text" name="user_id" placeholder="Enter your User ID" required>

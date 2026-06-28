@@ -46,6 +46,7 @@ input[type=password]:focus{border-color:var(--accent)}
   {% if error %}<div class="error">✖  {{ error }}</div>{% endif %}
 
   <form method="POST" action="/auth/admin/login">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group">
       <label>Admin Secret Key</label>
       <input type="password" name="secret" placeholder="••••••••••••" autofocus required/>

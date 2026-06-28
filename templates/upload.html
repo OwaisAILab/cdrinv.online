@@ -541,22 +541,114 @@ bindDrop('dz-single','fi-single','fp-single','fn-single','fs-single','btn-single
 bindDrop('dz-file1','fi-file1','fp-file1','fn-file1','fs-file1','btn-dual','fi-file2');
 bindDrop('dz-file2','fi-file2','fp-file2','fn-file2','fs-file2','btn-dual','fi-file1');
 
-function attachProgress(formId, fillId, pctId, statusId, wrapId) {
-  document.getElementById(formId).addEventListener('submit', function() {
-    document.getElementById(wrapId).classList.add('visible');
+// ── Error banner ─────────────────────────────────────────────────────
+function showUploadError(msg) {
+  let banner = document.getElementById('upload-error-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'upload-error-banner';
+    banner.style.cssText = [
+      'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
+      'background:#1a0a0a','border:1px solid #c0392b','border-left:4px solid #c0392b',
+      'color:#ff6b6b','padding:14px 22px','border-radius:8px','z-index:9999',
+      'font-family:Share Tech Mono,monospace','font-size:13px','max-width:480px',
+      'width:90%','box-shadow:0 4px 24px rgba(0,0,0,0.6)','display:flex',
+      'align-items:center','gap:12px'
+    ].join(';');
+    document.body.appendChild(banner);
+  }
+  banner.innerHTML = '<span style="font-size:18px">⚠</span><span>' + msg + '</span>'
+    + '<button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;'
+    + 'border:none;color:#ff6b6b;font-size:18px;cursor:pointer;padding:0 4px;">✕</button>';
+  banner.style.display = 'flex';
+  setTimeout(() => { if (banner.parentElement) banner.remove(); }, 8000);
+}
+
+// ── Progress stages ──────────────────────────────────────────────────
+const STAGES = [
+  [10, 'UPLOADING FILE…'],
+  [30, 'NORMALISING CDR…'],
+  [55, 'BUILDING NETWORK…'],
+  [72, 'RUNNING ANALYSIS…'],
+  [88, 'GENERATING MAPS…'],
+  [95, 'FINALISING…']
+];
+
+function attachProgress(formId, fillId, pctId, statusId, wrapId, redirectUrl) {
+  document.getElementById(formId).addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const wrapEl  = document.getElementById(wrapId);
+    const fill    = document.getElementById(fillId);
+    const pctEl   = document.getElementById(pctId);
+    const statEl  = document.getElementById(statusId);
+    const btn     = form.querySelector('button[type=submit]');
+
+    // Validate at least one file selected
+    const fileInputs = form.querySelectorAll('input[type=file]');
+    for (const fi of fileInputs) {
+      if (!fi.files || fi.files.length === 0) {
+        showUploadError('Please select a file before submitting.'); return;
+      }
+    }
+
+    if (btn) btn.disabled = true;
+    wrapEl.classList.add('visible');
+
+    // Staged progress animation
+    let stageIdx = 0;
     let v = 0;
-    const fill   = document.getElementById(fillId);
-    const pctEl  = document.getElementById(pctId);
-    const statEl = document.getElementById(statusId);
     const iv = setInterval(() => {
-      v = Math.min(v + Math.random() * 10, 95);
-      fill.style.width = v + '%';
-      pctEl.textContent = Math.round(v) + '%';
-      if (v >= 95) { clearInterval(iv); statEl.textContent = 'PROCESSING…'; }
-    }, 200);
+      if (stageIdx < STAGES.length) {
+        const [target, label] = STAGES[stageIdx];
+        if (v < target) {
+          v = Math.min(v + Math.random() * 4 + 1, target);
+          fill.style.width = v + '%';
+          pctEl.textContent = Math.round(v) + '%';
+          statEl.textContent = label;
+        } else { stageIdx++; }
+      }
+    }, 180);
+
+    // AJAX submit
+    const fd = new FormData(form);
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+    fetch(form.action, {
+      method: 'POST',
+      body: fd,
+      headers: csrfToken ? { 'X-CSRFToken': csrfToken } : {}
+    })
+      .then(async res => {
+        clearInterval(iv);
+        if (res.redirected) {
+          // Success — complete the bar then follow the redirect
+          fill.style.width = '100%';
+          pctEl.textContent = '100%';
+          statEl.textContent = 'COMPLETE ✓';
+          fill.style.background = 'linear-gradient(90deg,#2ecc71,#27ae60)';
+          setTimeout(() => { window.location.href = res.url; }, 400);
+          return;
+        }
+        // Non-redirect response — try to parse error
+        let msg = 'Upload failed. Please try again.';
+        try {
+          const data = await res.json();
+          if (data.message) msg = data.message;
+        } catch(_) {}
+        wrapEl.classList.remove('visible');
+        if (btn) btn.disabled = false;
+        showUploadError(msg);
+      })
+      .catch(() => {
+        clearInterval(iv);
+        wrapEl.classList.remove('visible');
+        if (btn) btn.disabled = false;
+        showUploadError('Network error. Check your connection and try again.');
+      });
   });
 }
-attachProgress('form-single','pf-single','pp-single','ps-single','pw-single');
-attachProgress('form-dual',  'pf-dual',  'pp-dual',  'ps-dual',  'pw-dual');
+attachProgress('form-single','pf-single','pp-single','ps-single','pw-single','/dashboard');
+attachProgress('form-dual',  'pf-dual',  'pp-dual',  'ps-dual',  'pw-dual','/comparison-dashboard');
 </script>
 {% endblock %}

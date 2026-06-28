@@ -554,6 +554,66 @@ tbody td:first-child { color: var(--accent2); }
   pointer-events: none;
 }
 
+/* ── EXTENDED-ONLY LOCK ── */
+.extended-lock-card {
+  position: relative;
+  overflow: hidden;
+}
+.extended-lock-card > *:not(.section-header) {
+  filter: blur(5px);
+  pointer-events: none;
+  user-select: none;
+}
+.extended-lock-card .section-header {
+  filter: none !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 2;
+}
+.extended-lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(4, 16, 10, 0.55);
+  backdrop-filter: blur(1px);
+  pointer-events: none;
+}
+.extended-lock-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1a1200, #2a1f00);
+  border: 1px solid #c9a84c;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: #c9a84c;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.2);
+  pointer-events: auto;
+}
+.extended-lock-badge svg {
+  flex-shrink: 0;
+}
+.extended-lock-sub {
+  font-size: 11px;
+  color: #6a9a78;
+  letter-spacing: 0.04em;
+  pointer-events: auto;
+}
+.extended-lock-sub a {
+  color: #c9a84c;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* === SCROLLBAR === */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -820,10 +880,40 @@ const MOCK = {
   ]
 };
 
-fetch('/dashboard-data')
-  .then(r => r.json())
-  .then(data => { console.log("DASHBOARD DATA:", data); window._dashData = data; render(data); })
-  .catch(() => { console.warn("Using mock data"); window._dashData = MOCK; render(MOCK); });
+const _hasCdr = {{ has_cdr | tojson }};
+
+if (!_hasCdr) {
+  // No CDR loaded — show empty state prompt instead of empty dashboard
+  document.getElementById('app').innerHTML = `
+    <div style="
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:60vh;gap:20px;text-align:center;padding:40px 20px;
+    ">
+      <div style="font-size:48px;opacity:0.3;">📂</div>
+      <div style="font-size:20px;font-weight:600;color:var(--text-primary,#e8f0eb);letter-spacing:0.04em;">
+        No CDR Loaded
+      </div>
+      <div style="font-size:13px;color:var(--text-dim,#6a9a78);max-width:340px;line-height:1.7;">
+        Upload a Call Detail Record file to begin analysis. Supported formats: CSV, XLSX, XLS, JSON, TXT.
+      </div>
+      <a href="/upload" style="
+        display:inline-block;margin-top:8px;padding:12px 28px;
+        background:linear-gradient(135deg,#c9a84c,#e8c96a);
+        color:#111008;font-weight:700;font-size:13px;border-radius:6px;
+        text-decoration:none;letter-spacing:0.06em;
+        box-shadow:0 4px 16px rgba(201,168,76,0.3);
+        transition:opacity 0.2s;
+      " onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+        ↑ UPLOAD CDR FILE
+      </a>
+    </div>
+  `;
+} else {
+  fetch('/dashboard-data')
+    .then(r => r.json())
+    .then(data => { console.log("DASHBOARD DATA:", data); window._dashData = data; render(data); })
+    .catch(() => { console.warn("Using mock data"); window._dashData = MOCK; render(MOCK); });
+}
 
 // ============================================================
 // RENDER FUNCTION WITH TRIAL BLUR (headers visible)
@@ -866,6 +956,43 @@ function render(data) {
       pdfBtn.style.cursor = 'not-allowed';
       pdfBtn.title = 'PDF export is disabled in trial mode';
     }
+  }
+
+  // ── EXTENDED-PLAN LOCK (Burst Detection + Call Abandonment) ──
+  const isExtended = {{ is_extended|tojson }};
+  if (!isExtended) {
+    const EXTENDED_SECTIONS = ['Call Burst Detection', 'Call Abandonment / Flash Calls'];
+    const cards = document.querySelectorAll('#app > .card');
+    cards.forEach(card => {
+      const titleEl = card.querySelector('.section-title');
+      const titleText = titleEl?.textContent || '';
+      const isLocked = EXTENDED_SECTIONS.some(s => titleText.includes(s));
+      if (!isLocked) return;
+
+      // Remove trial-blur-card if already applied (extended lock takes priority visually)
+      card.classList.remove('trial-blur-card');
+      card.classList.add('extended-lock-card');
+
+      // Inject overlay (only once)
+      if (!card.querySelector('.extended-lock-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'extended-lock-overlay';
+        overlay.innerHTML = `
+          <div class="extended-lock-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Extended Plan Only
+          </div>
+          <div class="extended-lock-sub">
+            Upgrade to 1-Year plan to unlock this analysis &nbsp;·&nbsp;
+            <a href="/renew-plan">Upgrade</a>
+          </div>
+        `;
+        card.appendChild(overlay);
+      }
+    });
   }
 }
 
@@ -1483,6 +1610,63 @@ function exportPDF() {
         bodyStyles: { fillColor: false, textColor: [0, 0, 0], lineColor: [180, 180, 180], lineWidth: 0.2 },
         alternateRowStyles: { fillColor: [245, 245, 245] },
         styles: { fontSize: 8 }
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ── Call Burst Detection (Extended plan only) ──────────────────────
+    const burstData = d.burst_detection || [];
+    if (burstData.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFontSize(11);
+      doc.setTextColor(255, 123, 0);
+      doc.text('CALL BURST DETECTION', 14, y);
+      y += 4;
+      doc.autoTable({
+        startY: y,
+        head: [['Window Start', 'Window End', 'Calls', 'Contacts Involved', 'Avg Duration (s)', 'Severity']],
+        body: burstData.slice(0, 20).map(b => [
+          b.window_start || '—',
+          b.window_end || '—',
+          b.call_count || 0,
+          (b.contacts_involved || []).join(', ') || '—',
+          b.avg_duration_sec != null ? parseFloat(b.avg_duration_sec).toFixed(1) : '—',
+          b.severity || '—'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+        bodyStyles: { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+        alternateRowStyles: { fillColor: [245,245,245] },
+        styles: { fontSize: 7.5 }
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ── Call Abandonment / Flash Calls (Extended plan only) ────────────
+    const abandonData = d.call_abandonment || [];
+    if (abandonData.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFontSize(11);
+      doc.setTextColor(255, 123, 0);
+      doc.text('CALL ABANDONMENT / FLASH CALLS', 14, y);
+      y += 4;
+      doc.autoTable({
+        startY: y,
+        head: [['Contact', 'Flash Calls', 'Total Calls', 'Abandonment Rate', 'First Seen', 'Last Seen', 'Risk']],
+        body: abandonData.slice(0, 20).map(a => [
+          a.contact || '—',
+          a.abandoned_call_count || 0,
+          a.total_calls_to_contact || 0,
+          a.abandonment_rate_pct != null ? parseFloat(a.abandonment_rate_pct).toFixed(1) + '%' : '—',
+          a.first_abandoned || '—',
+          a.last_abandoned || '—',
+          a.risk_level || '—'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+        bodyStyles: { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+        alternateRowStyles: { fillColor: [245,245,245] },
+        styles: { fontSize: 7.5 }
       });
       y = doc.lastAutoTable.finalY + 10;
     }

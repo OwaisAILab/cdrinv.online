@@ -321,6 +321,7 @@ footer{text-align:center;padding:16px;font-family:var(--mono);font-size:.75rem;c
 
     <div class="section-title">Select New Plan</div>
     <form action="/auth/renew-plan" method="POST" id="renewForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="plan-grid">
         <label class="plan-card" id="card-1month" onclick="selectPlan('1_month')">
           <input type="radio" name="new_plan" value="1_month" id="p1"/>

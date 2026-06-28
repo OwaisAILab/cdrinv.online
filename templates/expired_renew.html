@@ -308,6 +308,7 @@ footer{text-align:center;padding:16px;font-family:var(--mono);font-size:.75rem;c
     {% endif %}
 
     <form action="/auth/expired-renew" method="POST" id="renewForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <!-- Plan Selection -->
       <div class="section-title">Select Plan</div>

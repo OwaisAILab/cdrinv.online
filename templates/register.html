@@ -321,6 +321,7 @@ footer{text-align:center;padding:16px;font-family:var(--mono);font-size: 0.90rem
     {% endif %}
 
     <form method="POST" action="/auth/register" id="regForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row-2">
         <div class="form-group">
           <label>Username</label>

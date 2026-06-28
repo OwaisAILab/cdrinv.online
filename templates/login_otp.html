@@ -305,6 +305,7 @@ footer{text-align:center;padding:16px;font-size:.6rem;color:var(--muted);border-
     {% endif %}
 
     <form method="POST" action="/auth/login-otp" id="otpForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="user_id" value="{{ user_id }}"/>
       <input type="hidden" name="otp" id="otpHidden"/>
       <div class="otp-row">

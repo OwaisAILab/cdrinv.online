@@ -291,9 +291,11 @@ footer{text-align:center;padding:14px;font-family:var(--mono);font-size:.6rem;co
       </div>
       <div class="uc-actions">
         <form method="POST" action="/auth/admin/approve/{{ u.id }}" style="flex:1">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn-approve" style="width:100%">✓ Approve</button>
         </form>
         <form method="POST" action="/auth/admin/reject/{{ u.id }}" style="flex:1">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn-reject" style="width:100%">✗ Reject</button>
         </form>
       </div>
@@ -336,6 +338,7 @@ footer{text-align:center;padding:14px;font-family:var(--mono);font-size:.6rem;co
     <span class="filter-label">Plan:</span>
     <select id="planFilter" class="filter-select">
       <option value="">All Plans</option>
+      <option value="trial">Trial (3 Days)</option>
       <option value="basic">Basic (1 Month)</option>
       <option value="standard">Standard (6 Months)</option>
       <option value="extended">Extended (1 Year)</option>
@@ -363,9 +366,11 @@ footer{text-align:center;padding:14px;font-family:var(--mono);font-size:.6rem;co
       </thead>
       <tbody id="usersBody">
         {% for u in all_users %}
-        {% if u.subscription_type.value == '1_month' %}{% set plan_label = 'Basic' %}
+        {% if u.subscription_type.value == 'trial' %}{% set plan_label = 'Trial' %}
+        {% elif u.subscription_type.value == '1_month' %}{% set plan_label = 'Basic' %}
         {% elif u.subscription_type.value == '6_months' %}{% set plan_label = 'Standard' %}
-        {% else %}{% set plan_label = 'Extended' %}{% endif %}
+        {% elif u.subscription_type.value == '1_year' %}{% set plan_label = 'Extended' %}
+        {% else %}{% set plan_label = u.subscription_type.value %}{% endif %}
         {% if u.status.value == 'active' %}{% set status_slug = 'active' %}
         {% elif u.status.value == 'pending_payment' %}{% set status_slug = 'pending' %}
         {% elif u.status.value == 'rejected' %}{% set status_slug = 'rejected' %}
@@ -401,6 +406,7 @@ footer{text-align:center;padding:14px;font-family:var(--mono);font-size:.6rem;co
           <td>{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '—' }}</td>
           <td>
             <form method="POST" action="/auth/admin/change-status/{{ u.id }}" style="display:flex;gap:4px;align-items:center;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <select name="new_status" style="background:#1a1a1a;color:#ccc;border:1px solid #333;font-family:monospace;font-size:0.7rem;padding:4px 6px;">
                 <option value="active" {% if u.status.value == 'active' %}selected{% endif %}>Active</option>
                 <option value="pending_payment" {% if u.status.value == 'pending_payment' %}selected{% endif %}>Pending</option>

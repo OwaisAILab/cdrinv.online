@@ -1493,15 +1493,15 @@ function applyPrices(rate, isLive) {
 
 async function loadRate() {
   try {
-    const res = await fetch("/api/rate");
-    const data = await res.json();
-    if (data?.rate) {
-      applyPrices(data.rate, data.source === "live");
-      return;
-    }
-  } catch (e) {
-    console.log("Rate API failed, using fallback");
-  }
+    const r = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+    const d = await r.json();
+    if (d?.rates?.PKR) { applyPrices(d.rates.PKR, true); return; }
+  } catch(_) {}
+  try {
+    const r = await fetch("https://api.frankfurter.app/latest?from=USD&to=PKR");
+    const d = await r.json();
+    if (d?.rates?.PKR) { applyPrices(d.rates.PKR, true); return; }
+  } catch(_) {}
   applyPrices(278.50, false);
 }
 loadRate();
@@ -1544,6 +1544,7 @@ loadRate();
 
     <div class="contact-form-wrap">
         <form id="contactForm" action="/contact" method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-row">
                 <div class="form-group">
                     <label>Full Name</label>
