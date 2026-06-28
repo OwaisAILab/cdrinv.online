@@ -2,7 +2,7 @@
 Auth routes – Flask version (no detached instance errors)
 """
 from dotenv import load_dotenv
-from flask import Blueprint, render_template, request, redirect, make_response, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, make_response, jsonify, abort, current_app
 from datetime import datetime, timedelta
 import hmac, hashlib, math, os, secrets, httpx
 
@@ -19,8 +19,64 @@ from auth.utils import (
 )
 
 load_dotenv()
+
+# ── Admin alert (replaces unimplemented WhatsApp notifier) ────────────────
+def _notify_admin(username: str, email: str, event: str) -> None:
+    """
+    Send an admin alert email when a user registers or submits a renewal.
+    Falls back to a console log if SMTP is not configured.
+    """
+    from auth.utils import SMTP_USER, SMTP_PASS, _send_email
+    import html as _html
+    admin_email = os.getenv("ADMIN_EMAIL", SMTP_USER)
+    if not admin_email:
+        print(f"[ADMIN ALERT] {event} | user={username} | email={email}")
+        return
+
+    safe_event    = _html.escape(event)
+    safe_username = _html.escape(username)
+    safe_email    = _html.escape(email)
+    from datetime import datetime as _dt
+    timestamp = _dt.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
+    html_body = f"""
+    <div style="font-family:monospace;background:#0d1a0f;color:#c9f0c9;padding:24px;border-radius:8px;max-width:480px;">
+      <div style="border-left:4px solid #c9a84c;padding-left:14px;margin-bottom:16px;">
+        <div style="font-size:11px;color:#c9a84c;letter-spacing:0.1em;text-transform:uppercase;">CDRInv.Online — Admin Alert</div>
+        <div style="font-size:20px;font-weight:bold;margin-top:4px;">{safe_event}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr><td style="color:#6a9a78;padding:4px 0;width:100px;">Username</td><td style="color:#e8f0eb;">{safe_username}</td></tr>
+        <tr><td style="color:#6a9a78;padding:4px 0;">Email</td><td style="color:#e8f0eb;">{safe_email}</td></tr>
+        <tr><td style="color:#6a9a78;padding:4px 0;">Time</td><td style="color:#e8f0eb;">{timestamp}</td></tr>
+      </table>
+      <div style="margin-top:16px;">
+        <a href="https://cdrinv.online/auth/admin/pending"
+           style="display:inline-block;padding:8px 18px;background:#c9a84c;color:#0d1a0f;
+                  font-weight:bold;font-size:12px;border-radius:4px;text-decoration:none;
+                  letter-spacing:0.06em;">
+          OPEN ADMIN PANEL →
+        </a>
+      </div>
+    </div>
+    """
+    try:
+        _send_email(admin_email, f"[CDRInv] {event} — {username}", html_body)
+    except Exception as e:
+        print(f"[ADMIN ALERT EMAIL ERROR] {e}")
+        print(f"[ADMIN ALERT] {event} | user={username} | email={email}")
+
 # ── Blueprint ──────────────────────────────────────────────────────────────
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# Standalone limiter for auth blueprint — initialised with the app in init_auth_routes()
+_auth_limiter = Limiter(get_remote_address, default_limits=[], storage_uri="memory://")
+
+def _limiter():
+    return _auth_limiter
 
 # ── Make `request` available in blueprint templates ───────────────────────
 @auth_bp.context_processor
@@ -54,6 +110,10 @@ def _get_current_user():
         if not user or user.status != UserStatus.ACTIVE:
             abort(401)
         if user.subscription_end and user.subscription_end < _now():
+            # Persist the expired status so admin panel reflects it immediately
+            if user.status == UserStatus.ACTIVE:
+                user.status = UserStatus.EXPIRED
+                db.commit()
             abort(401)
         # Keep the user attached until we return, so we must not close db here.
         # Instead, return the user and a flag that tells the caller not to close?
@@ -86,6 +146,7 @@ def register_page():
     return render_template("register.html")
 
 @auth_bp.route("/register", methods=['POST'])
+@_limiter().limit("5 per minute")
 def register():
     username = request.form.get("username")
     email = request.form.get("email").lower()
@@ -159,7 +220,7 @@ def register():
         user_id = user.id
         user_email = user.email
         user_username = user.username
-        _notify_whatsapp(username, email, f"NEW REG | {subscription_type}")
+        _notify_admin(username, email, f"NEW REG | {subscription_type}")
         db.close()
 
         send_registration_otp(user_email, user_username, otp)
@@ -182,6 +243,7 @@ def trial_register_page():
     return render_template("trial_register.html")
 
 @auth_bp.route("/register-trial", methods=['POST'])
+@_limiter().limit("5 per minute")
 def register_trial():
     username = request.form.get("username")
     email = request.form.get("email").lower()
@@ -256,6 +318,7 @@ def verify_email_page():
     return render_template("verify_email.html", user_id=user_id)
 
 @auth_bp.route("/verify-email", methods=['POST'])
+@_limiter().limit("5 per minute")
 def verify_email():
     user_id = request.form.get("user_id", type=int)
     otp = request.form.get("otp")
@@ -290,6 +353,7 @@ def verify_email():
         raise
 
 @auth_bp.route("/resend-registration-otp", methods=['POST'])
+@_limiter().limit("5 per minute")
 def resend_registration_otp():
     user_id = request.form.get("user_id", type=int)
     db = SessionLocal()
@@ -354,6 +418,7 @@ def login_page():
     return render_template("login.html")
 
 @auth_bp.route("/login", methods=['POST'])
+@_limiter().limit("5 per minute")
 def login():
     email = request.form.get("email").lower()
     password = request.form.get("password")
@@ -412,6 +477,7 @@ def login_otp_page():
     return render_template("login_otp.html", user_id=user_id)
 
 @auth_bp.route("/login-otp", methods=['POST'])
+@_limiter().limit("5 per minute")
 def login_otp():
     user_id = request.form.get("user_id", type=int)
     otp = request.form.get("otp")
@@ -464,6 +530,7 @@ def login_otp():
         raise
 
 @auth_bp.route("/resend-login-otp", methods=['POST'])
+@_limiter().limit("5 per minute")
 def resend_login_otp():
     user_id = request.form.get("user_id", type=int)
     db = SessionLocal()
@@ -501,6 +568,7 @@ def admin_login_page():
     return render_template("admin_login.html")
 
 @auth_bp.route("/admin/login", methods=['POST'])
+@_limiter().limit("5 per minute")
 def admin_login():
     secret = request.form.get("secret")
     if secret != ADMIN_SECRET:
@@ -520,8 +588,23 @@ def admin_pending():
         pending = db.query(User).filter(User.status == UserStatus.PENDING_PAYMENT).all()
         all_users = db.query(User).filter(User.status != UserStatus.PENDING_EMAIL).all()
 
-        PLAN_PRICES = {"1_month": 1050, "6_months": 5600, "1_year": 11150}
+        # ── Auto-expire users whose subscription_end has passed ──────────
         today = datetime.utcnow()
+        changed = False
+        for u in all_users:
+            if u.status == UserStatus.ACTIVE and u.subscription_end:
+                end = u.subscription_end
+                if hasattr(end, 'tzinfo') and end.tzinfo is not None:
+                    end = end.replace(tzinfo=None)
+                if end < today:
+                    u.status = UserStatus.EXPIRED
+                    changed = True
+        if changed:
+            db.commit()
+            # Refresh counts from updated list
+            pending = [u for u in all_users if u.status == UserStatus.PENDING_PAYMENT]
+
+        PLAN_PRICES = {"1_month": 1050, "6_months": 5600, "1_year": 11150}
         month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         fiscal_year_start = today.replace(month=7, day=1, hour=0, minute=0, second=0, microsecond=0)
         if fiscal_year_start > today:
@@ -700,6 +783,7 @@ def renew_plan_page():
         raise
 
 @auth_bp.route("/renew-plan", methods=['POST'])
+@_limiter().limit("5 per minute")
 def renew_plan_submit():
     user = _get_current_user()
     new_plan = request.form.get("new_plan")
@@ -748,7 +832,7 @@ def renew_plan_submit():
         user_username = db_user.username
         user_email = db_user.email
         db.close()
-        _notify_whatsapp(user_username, user_email, f"{request_type.upper()} → {new_plan}")
+        _notify_admin(user_username, user_email, f"{request_type.upper()} → {new_plan}")
         resp = make_response(redirect(f"/auth/pending-approval?user_id={user['id']}", code=303))
         resp.delete_cookie("access_token", path="/")
         return resp
@@ -764,6 +848,7 @@ def expired_renew_page():
     return render_template("expired_renew.html", prefill_email=email)
 
 @auth_bp.route("/expired-renew", methods=['POST'])
+@_limiter().limit("5 per minute")
 def expired_renew_submit():
     email = request.form.get("email").lower().strip()
     new_plan = request.form.get("new_plan")
@@ -792,7 +877,7 @@ def expired_renew_submit():
         user_username = user.username
         user_email = user.email
         db.close()
-        _notify_whatsapp(user_username, user_email, f"EXPIRED RENEWAL → {new_plan}")
+        _notify_admin(user_username, user_email, f"EXPIRED RENEWAL → {new_plan}")
         return redirect(f"/auth/pending-approval?user_id={user_id}", code=303)
     except Exception:
         db.close()
@@ -805,6 +890,7 @@ def forgot_password_page():
     return render_template("forgot_password.html")
 
 @auth_bp.route("/forgot-password", methods=['POST'])
+@_limiter().limit("5 per minute")
 def forgot_password_submit():
     email = request.form.get("email").lower().strip()
     db = SessionLocal()
@@ -833,6 +919,7 @@ def reset_otp_page():
     return render_template("reset_password_otp.html", user_id=user_id)
 
 @auth_bp.route("/reset-password-otp", methods=['POST'])
+@_limiter().limit("5 per minute")
 def reset_otp_verify():
     user_id = request.form.get("user_id", type=int)
     otp = request.form.get("otp")
@@ -861,6 +948,7 @@ def reset_otp_verify():
         raise
 
 @auth_bp.route("/resend-reset-otp", methods=['POST'])
+@_limiter().limit("5 per minute")
 def resend_reset_otp():
     user_id = request.form.get("user_id", type=int)
     db = SessionLocal()
@@ -889,6 +977,7 @@ def reset_password_page():
     return render_template("reset_password.html", user_id=user_id, token=token, errors=[])
 
 @auth_bp.route("/reset-password", methods=['POST'])
+@_limiter().limit("5 per minute")
 def reset_password_submit():
     user_id = request.form.get("user_id", type=int)
     token = request.form.get("token")
@@ -931,7 +1020,8 @@ def subscribe_page():
     return render_template("subscribe.html")
 
 # ── Helper to register blueprint ─────────────────────────────────────────
-def init_auth_routes(app):
+def init_auth_routes(app, limiter=None):
+    _auth_limiter.init_app(app)
     app.register_blueprint(auth_bp)
 
 
