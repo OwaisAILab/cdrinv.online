@@ -710,7 +710,7 @@ def routes_data():
 
     # Sort by frequency descending and return ONLY the top route
     enriched_routes.sort(key=lambda x: x['frequency'], reverse=True)
-    return jsonify(enriched_routes[:1])  # <-- only the first (most frequent) route
+    return jsonify(enriched_routes[:3])  # top 3 most frequent routes
 
 @app.route("/routes-map")
 def routes_map():
