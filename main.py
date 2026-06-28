@@ -20,7 +20,7 @@ from core.timeline import (
     imsi_switch_timeline
 )
 from core.map_utils import generate_map_data
-from core.comparison import same_tower_same_time, common_contacts, cross_suspect_timeline
+from core.comparison import same_tower_same_time, common_contacts
 from core.relationship import direct_contacts, relationship_score_engine, relationship_intelligence
 from core.network_graph import build_network_data
 from core.movement import (
@@ -36,6 +36,7 @@ from core.operational_intel import (
 
 from core.imsi_utils import load_plmn_database, get_network_info_from_imsi
 from core.tac_utils import load_tac_database, get_device_info_from_imei
+from core.pattern_analysis import burst_detection, first_contact_analysis, call_abandonment_analysis
 
 # ── Create tables if not exist ────────────────────────────────────────────
 Base.metadata.create_all(engine)
@@ -292,7 +293,10 @@ def upload_cdr():
             "relationship": relationship_scores,
             "imei_timeline": imei_switch_timeline(normalized_df),
             "imsi_timeline": imsi_switch_timeline(normalized_df),
-            "non_mobile_summary": non_mobile_summary(non_mobile_df)
+            "non_mobile_summary": non_mobile_summary(non_mobile_df),
+            "burst_detection": burst_detection(normalized_df),
+            "call_abandonment": call_abandonment_analysis(normalized_df),
+            "first_contact": first_contact_analysis(normalized_df),
         }
 
         set_user_data(uid, {
@@ -363,7 +367,6 @@ def compare_cdrs():
         meetings = same_tower_same_time(norm1, norm2)
         hotspots = meeting_hotspots(meetings)
         hotspot_history = hotspot_dates(meetings)
-        timeline_overlay = cross_suspect_timeline(norm1, norm2, "Subject A", "Subject B")
         common = common_contacts(norm1, norm2)
         relationship = relationship_score_engine(norm1, norm2, direct, common, meetings)
 
@@ -380,8 +383,7 @@ def compare_cdrs():
             "direct_relationship": direct,
             "relationship_analysis": relationship,
             "meeting_hotspots": hotspots,
-            "hotspot_history": hotspot_history,
-            "timeline_overlay": timeline_overlay,
+            "hotspot_history": hotspot_history
         }
         user_data = get_user_data(uid)
         user_data['comparison_data'] = comparison_data
@@ -402,6 +404,94 @@ def dashboard_data():
     user = get_current_user()
     data = get_user_data(user['id']).get('dashboard_data', {})
     return jsonify(data)
+
+@app.route("/contact-search")
+def contact_search():
+    """
+    Search all CDR records for a specific contact number.
+    Returns JSON with every call record involving that contact,
+    plus summary stats (total calls, total duration, first/last seen,
+    towers used, direction breakdown).
+    """
+    user  = get_current_user()
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify({"error": "No contact number provided"}), 400
+
+    user_data = get_user_data(user['id'])
+    df = user_data.get('normalized')
+    if df is None or df.empty:
+        return jsonify({"error": "No CDR data loaded"}), 404
+
+    # Normalize query the same way comparison.py does
+    def _norm(val):
+        val = str(val).strip().replace(" ", "").replace("-", "")
+        if val.startswith("+"):   val = val[1:]
+        if val.startswith("0092"): val = val[4:]
+        if val.startswith("92") and len(val) == 12:   return val
+        if val.startswith("03") and len(val) == 11:   return "92" + val[1:]
+        if val.startswith("3")  and len(val) == 10:   return "92" + val
+        if val.startswith("0"):
+            s = val.lstrip("0")
+            if s.startswith("3") and len(s) == 10:    return "92" + s
+        return val
+
+    norm_query = _norm(query)
+
+    # Match against normalized contact numbers
+    mask = df["contact_number"].astype(str).apply(_norm) == norm_query
+    matched = df[mask].copy()
+
+    if matched.empty:
+        return jsonify({"found": False, "contact": query, "records": [], "summary": {}})
+
+    # Build datetime for sorting
+    matched["_dt"] = pd.to_datetime(
+        matched["call_date"].astype(str) + " " + matched["call_time"].astype(str),
+        errors="coerce"
+    )
+    matched = matched.sort_values("_dt")
+
+    records = []
+    for _, row in matched.iterrows():
+        records.append({
+            "date":      str(row.get("call_date", "")),
+            "time":      str(row.get("call_time", "")),
+            "direction": str(row.get("direction", "")).upper(),
+            "call_type": str(row.get("call_type", "VOICE")).upper(),
+            "duration":  int(row["duration"]) if pd.notna(row.get("duration")) else 0,
+            "tower":     str(row.get("tower_address", "")),
+            "latitude":  str(row.get("latitude", "")),
+            "longitude": str(row.get("longitude", "")),
+            "imei":      str(row.get("imei", "")),
+            "cell_id":   str(row.get("cell_id", "")),
+        })
+
+    dur_series = matched["duration"].dropna().astype(float)
+    dir_counts = matched["direction"].astype(str).str.upper().value_counts().to_dict()
+
+    summary = {
+        "total_calls":       len(records),
+        "total_duration_sec": int(dur_series.sum()) if len(dur_series) > 0 else 0,
+        "avg_duration_sec":  round(float(dur_series.mean()), 1) if len(dur_series) > 0 else 0,
+        "first_seen":        records[0]["date"] + " " + records[0]["time"] if records else "",
+        "last_seen":         records[-1]["date"] + " " + records[-1]["time"] if records else "",
+        "unique_towers":     int(matched["tower_address"].nunique()),
+        "direction_breakdown": dir_counts,
+        "towers":            matched["tower_address"].dropna().unique().tolist(),
+    }
+
+    return jsonify({
+        "found":   True,
+        "contact": query,
+        "summary": summary,
+        "records": records,
+    })
+
+@app.route("/contact-detail")
+def contact_detail():
+    user = get_current_user()
+    return render_template("contact_detail.html")
 
 @app.route("/map-data")
 def map_data():
