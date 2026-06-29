@@ -438,6 +438,86 @@ def compare_cdrs():
             if os.path.exists(p):
                 os.remove(p)
 
+# ── Date records endpoint ────────────────────────────────────────────────
+@app.route("/date-records")
+@limiter.limit("30 per minute")
+def date_records():
+    """
+    Return every CDR record for a specific date.
+    ?date=YYYY-MM-DD
+    """
+    user = get_current_user()
+    query_date = request.args.get("date", "").strip()
+    if not query_date:
+        return jsonify({"error": "No date provided"}), 400
+
+    # Basic format validation
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", query_date):
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    user_data = get_user_data(user['id'])
+    df = user_data.get('normalized')
+    if df is None or df.empty:
+        return jsonify({"error": "No CDR data loaded"}), 404
+
+    if "call_date" not in df.columns:
+        return jsonify({"error": "CDR has no date column after normalisation"}), 500
+
+    matched = df[df["call_date"].astype(str) == query_date].copy()
+    if matched.empty:
+        return jsonify({"found": False, "date": query_date, "records": [], "summary": {}})
+
+    # Sort by time
+    if "call_time" in matched.columns:
+        matched = matched.sort_values("call_time")
+
+    records = []
+    for _, row in matched.iterrows():
+        records.append({
+            "time":         str(row.get("call_time", "")).split(".")[0],  # strip microseconds
+            "contact":      str(row.get("contact_number", row.get("contact", "—"))),
+            "direction":    str(row.get("direction", "")).upper(),
+            "call_type":    str(row.get("call_type", "VOICE")).upper(),
+            "duration":     int(row["duration"]) if pd.notna(row.get("duration")) else 0,
+            "tower":        str(row.get("tower_address", "—")),
+            "cell_id":      str(row.get("cell_id", "—")),
+            "imei":         str(row.get("imei", "—")),
+            "imsi":         str(row.get("imsi", "—")),
+            "latitude":     str(row.get("latitude", "")),
+            "longitude":    str(row.get("longitude", "")),
+        })
+
+    # Summary stats for the day
+    total       = len(matched)
+    incoming    = int((matched.get("direction", pd.Series()) == "Incoming").sum()) if "direction" in matched else 0
+    outgoing    = int((matched.get("direction", pd.Series()) == "Outgoing").sum()) if "direction" in matched else 0
+    calls       = int(matched[matched["call_type"].str.upper().str.contains("CALL|VOICE", na=False)].shape[0]) if "call_type" in matched else total
+    sms         = int(matched[matched["call_type"].str.upper().str.contains("SMS|TEXT", na=False)].shape[0]) if "call_type" in matched else 0
+    unique_cont = int(matched["contact_number"].nunique()) if "contact_number" in matched else 0
+    dur_series  = matched["duration"].dropna().astype(float) if "duration" in matched else pd.Series(dtype=float)
+    total_dur   = int(dur_series.sum()) if not dur_series.empty else 0
+
+    towers_used = []
+    if "tower_address" in matched.columns:
+        towers_used = matched["tower_address"].dropna().unique().tolist()[:10]
+
+    return jsonify({
+        "found":   True,
+        "date":    query_date,
+        "records": records,
+        "summary": {
+            "total_records":   total,
+            "incoming":        incoming,
+            "outgoing":        outgoing,
+            "calls":           calls,
+            "sms":             sms,
+            "unique_contacts": unique_cont,
+            "total_duration":  total_dur,
+            "towers_used":     towers_used,
+        }
+    })
+
 # ── JSON endpoints ──────────────────────────────────────────────────────
 @app.route("/dashboard-data")
 def dashboard_data():
