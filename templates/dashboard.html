@@ -813,6 +813,66 @@ tbody td:first-child { color: var(--accent2); }
     <div id="dateFilterInfo" style="margin-top: 12px; font-family: var(--mono); font-size: 0.7rem; color: var(--accent3);"></div>
 </div>
 
+<!-- ── CALL RECORDS BY DATE ─────────────────────────────────────────── -->
+<div class="card" id="date-records-card" style="margin-bottom:0">
+  <div class="section-header">
+    <div class="section-title"><span>🗓</span> Call Records for a Specific Date</div>
+    <div class="section-badge">DATE DRILL-DOWN</div>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;">
+    <div style="flex:0 0 auto;">
+      <label style="font-family:var(--mono);font-size:0.6rem;letter-spacing:0.1em;color:var(--dim);display:block;margin-bottom:5px;">SELECT DATE</label>
+      <input type="date" id="dr-date"
+        style="background:var(--surface2);border:1px solid var(--border);color:var(--text);
+               padding:10px 14px;font-family:var(--mono);font-size:0.85rem;outline:none;cursor:pointer;">
+    </div>
+    <button onclick="loadDateRecords()"
+      style="background:var(--accent);color:#000;border:none;font-family:var(--cond);
+             font-size:0.9rem;font-weight:700;letter-spacing:0.1em;padding:11px 24px;
+             cursor:pointer;text-transform:uppercase;height:42px;">
+      ⚡ LOAD RECORDS
+    </button>
+    <button onclick="clearDateRecords()"
+      style="background:transparent;border:1px solid var(--border);color:var(--dim);
+             font-family:var(--mono);font-size:0.8rem;padding:11px 18px;cursor:pointer;height:42px;">
+      ✕ Clear
+    </button>
+    <button onclick="exportDateRecordsPDF()"  id="dr-pdf-btn"
+      style="display:none;background:transparent;border:1px solid var(--accent);color:var(--accent);
+             font-family:var(--cond);font-size:0.85rem;font-weight:700;letter-spacing:0.08em;
+             padding:11px 18px;cursor:pointer;height:42px;text-transform:uppercase;">
+      ⬇ Export PDF
+    </button>
+  </div>
+
+  <!-- Status / summary bar -->
+  <div id="dr-status" style="font-family:var(--mono);font-size:0.72rem;color:var(--dim);min-height:18px;margin-bottom:10px;"></div>
+
+  <!-- Summary stat pills -->
+  <div id="dr-summary" style="display:none;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+
+  <!-- Records table -->
+  <div id="dr-table-wrap" style="display:none;overflow-x:auto;">
+    <table id="dr-table" style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:0.72rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">#</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">TIME</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">CONTACT</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">DIR</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">TYPE</th>
+          <th style="text-align:right;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">DUR(s)</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">TOWER</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">CELL ID</th>
+          <th style="text-align:left;padding:7px 10px;color:var(--dim);font-weight:500;letter-spacing:0.06em;">IMEI</th>
+        </tr>
+      </thead>
+      <tbody id="dr-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
 <main id="app">
   <!-- JS will populate this -->
 </main>
@@ -1686,6 +1746,13 @@ fetch('/dashboard-data').then(r => r.json()).then(data => {
     picker.max = data.date_range.max_date;
     picker.value = data.date_range.min_date;
     document.getElementById('dateFilterInfo').innerHTML = `📅 CDR period: <b>${data.date_range.min_date}</b> → <b>${data.date_range.max_date}</b>`;
+    // Also wire the date-records picker
+    const drPicker = document.getElementById('dr-date');
+    if (drPicker) {
+      drPicker.min = data.date_range.min_date;
+      drPicker.max = data.date_range.max_date;
+      drPicker.value = data.date_range.min_date;
+    }
   }
 });
 
@@ -1703,6 +1770,151 @@ function filterMapByDate() {
     }).catch(err => { console.error(err); infoDiv.innerHTML = '❌ Network error — check browser console.'; infoDiv.style.color = 'var(--danger)'; });
 }
 function resetMapFilter() { sessionStorage.removeItem('filteredMapData'); sessionStorage.removeItem('filterDate'); document.getElementById('singleDate').value = ''; document.getElementById('dateFilterInfo').innerHTML = ''; }
+
+// ── DATE RECORDS ──────────────────────────────────────────────────────────
+let _drData = null; // cache last loaded records
+
+function loadDateRecords() {
+  const dateVal = document.getElementById('dr-date').value;
+  const statusEl = document.getElementById('dr-status');
+  const summaryEl = document.getElementById('dr-summary');
+  const tableWrap = document.getElementById('dr-table-wrap');
+  const pdfBtn = document.getElementById('dr-pdf-btn');
+
+  if (!dateVal) {
+    statusEl.textContent = '⚠ Please select a date.';
+    statusEl.style.color = 'var(--danger)';
+    return;
+  }
+
+  statusEl.style.color = 'var(--accent)';
+  statusEl.textContent = '⏳ Loading records for ' + dateVal + '...';
+  summaryEl.style.display = 'none';
+  tableWrap.style.display = 'none';
+  pdfBtn.style.display = 'none';
+  _drData = null;
+
+  fetch('/date-records?date=' + encodeURIComponent(dateVal))
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        statusEl.textContent = '❌ ' + data.error;
+        statusEl.style.color = 'var(--danger)';
+        return;
+      }
+      if (!data.found || !data.records.length) {
+        statusEl.textContent = '⚠ No records found for ' + dateVal + '.';
+        statusEl.style.color = 'var(--danger)';
+        return;
+      }
+
+      _drData = data;
+      const s = data.summary;
+      statusEl.style.color = 'var(--green, #2ecc71)';
+      statusEl.textContent = '✓ ' + s.total_records + ' record(s) found for ' + dateVal;
+
+      // Summary pills
+      const pills = [
+        ['TOTAL', s.total_records, '#c9a84c'],
+        ['INCOMING', s.incoming, '#00ccff'],
+        ['OUTGOING', s.outgoing, '#ff9966'],
+        ['CALLS', s.calls, '#88cc88'],
+        ['SMS', s.sms, '#cc88cc'],
+        ['CONTACTS', s.unique_contacts, '#aaaaff'],
+        ['DURATION', formatDuration(s.total_duration), '#ffcc44'],
+      ];
+      summaryEl.innerHTML = pills.map(([label, val, color]) =>
+        `<span style="background:var(--surface2);border:1px solid ${color}33;border-left:3px solid ${color};
+          padding:5px 12px;font-family:var(--mono);font-size:0.65rem;color:${color};letter-spacing:0.06em;">
+          ${label}<br><b style="font-size:0.95rem;">${val}</b></span>`
+      ).join('');
+      summaryEl.style.display = 'flex';
+
+      // Table rows
+      const tbody = document.getElementById('dr-tbody');
+      const dirColor = d => d === 'INCOMING' ? '#00ccff' : d === 'OUTGOING' ? '#ff9966' : '#888';
+      const typeColor = t => t.includes('SMS') ? '#cc88cc' : t.includes('DATA') ? '#88cccc' : '#88cc88';
+
+      tbody.innerHTML = data.records.map((r, i) => `
+        <tr style="border-bottom:1px solid var(--border);transition:background 0.1s;"
+            onmouseover="this.style.background='var(--surface2)'"
+            onmouseout="this.style.background=''">
+          <td style="padding:7px 10px;color:var(--dim);">${i + 1}</td>
+          <td style="padding:7px 10px;color:var(--text);white-space:nowrap;">${r.time}</td>
+          <td style="padding:7px 10px;color:var(--accent);font-weight:600;">${r.contact || '—'}</td>
+          <td style="padding:7px 10px;">
+            <span style="color:${dirColor(r.direction)};font-size:0.65rem;letter-spacing:0.06em;">${r.direction || '—'}</span>
+          </td>
+          <td style="padding:7px 10px;">
+            <span style="color:${typeColor(r.call_type)};font-size:0.65rem;">${r.call_type || '—'}</span>
+          </td>
+          <td style="padding:7px 10px;text-align:right;color:var(--text);">${r.duration || 0}</td>
+          <td style="padding:7px 10px;color:var(--dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.tower}">${r.tower || '—'}</td>
+          <td style="padding:7px 10px;color:var(--dim);">${r.cell_id || '—'}</td>
+          <td style="padding:7px 10px;color:var(--dim);font-size:0.65rem;">${r.imei && r.imei !== 'nan' ? r.imei : '—'}</td>
+        </tr>
+      `).join('');
+
+      tableWrap.style.display = 'block';
+      pdfBtn.style.display = 'inline-block';
+
+      // Scroll into view
+      document.getElementById('date-records-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(err => {
+      statusEl.textContent = '❌ Network error — ' + err.message;
+      statusEl.style.color = 'var(--danger)';
+    });
+}
+
+function clearDateRecords() {
+  _drData = null;
+  document.getElementById('dr-status').textContent = '';
+  document.getElementById('dr-summary').style.display = 'none';
+  document.getElementById('dr-table-wrap').style.display = 'none';
+  document.getElementById('dr-pdf-btn').style.display = 'none';
+  document.getElementById('dr-tbody').innerHTML = '';
+}
+
+function formatDuration(sec) {
+  if (!sec) return '0s';
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return (h ? h + 'h ' : '') + (m ? m + 'm ' : '') + s + 's';
+}
+
+function exportDateRecordsPDF() {
+  if (!_drData || !_drData.records.length) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const s = _drData.summary;
+
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
+  doc.text('CDRInv.Online — Call Records: ' + _drData.date, 14, 15);
+  doc.setFontSize(8);
+  doc.setTextColor(80, 80, 80);
+  doc.text(
+    `Total: ${s.total_records}  |  Incoming: ${s.incoming}  |  Outgoing: ${s.outgoing}  |  Calls: ${s.calls}  |  SMS: ${s.sms}  |  Unique Contacts: ${s.unique_contacts}  |  Duration: ${formatDuration(s.total_duration)}`,
+    14, 22
+  );
+
+  doc.autoTable({
+    startY: 27,
+    head: [['#', 'Time', 'Contact', 'Direction', 'Type', 'Duration(s)', 'Tower', 'Cell ID', 'IMEI']],
+    body: _drData.records.map((r, i) => [
+      i + 1, r.time, r.contact || '—', r.direction || '—', r.call_type || '—',
+      r.duration || 0, r.tower || '—', r.cell_id || '—',
+      r.imei && r.imei !== 'nan' ? r.imei : '—'
+    ]),
+    theme: 'grid',
+    headStyles: { fillColor: false, textColor: [0,0,0], fontStyle: 'bold', lineColor: [0,0,0], lineWidth: 0.3 },
+    bodyStyles: { fillColor: false, textColor: [0,0,0], lineColor: [180,180,180], lineWidth: 0.2 },
+    alternateRowStyles: { fillColor: [245,245,245] },
+    styles: { fontSize: 7 }
+  });
+
+  doc.save('CDR_DateRecords_' + _drData.date + '.pdf');
+}
 
 function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebar-overlay').style.display = 'block'; }
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').style.display = 'none'; }
