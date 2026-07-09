@@ -210,6 +210,7 @@ _MAP_JAZZ = {
     "date&time" : "datetime",
     "call_start_dt_tm": "datetime",
     "start_time": "datetime",
+    "duration": "duration",
     "cellid": "cell_id",
     "imsi": "imsi",
     "imei": "imei",
@@ -282,6 +283,7 @@ _MAP_ZONG = {
     "call_start_dt_tm": "datetime",
     "start_time": "datetime",
     "bnumber": "contact_number",
+    "duration": "duration",
     "cell_id": "cell_id",
     "imei": "imei",
     "sitelocation": "tower_address",
@@ -346,6 +348,8 @@ _MAP_TELENOR = {
     "Site": "tower_address",
     "location": "tower_address",
     "site_address": "tower_address",
+    "duration": "duration",
+
 }
 _MAP_TELENOR_ORIG_DIALED = {
     "msisdn": "owner_number",
@@ -354,6 +358,7 @@ _MAP_TELENOR_ORIG_DIALED = {
     "date_and_time": "datetime",
     "datetime": "datetime",
     "date&time" : "datetime",
+    "duration": "duration",
     "call_start_dt_tm": "datetime",
     "start_time": "datetime",
     "call_type": "direction",          # OUTGOING / INCOMING
