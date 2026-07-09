@@ -15,10 +15,10 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86989603,ONEPLUS A6003,OnePlus 6,1+,OnePlus Technology (Shenzhen) Co Ltd
 35802209,C516C,Infinity k2,ABANS,Abans PLC
 35802309,C516D,Infinity e3,ABANS,Abans PLC
-01464700,SL6087,AirPrime SL6087,AirPrime,Sierra Wireless
-01492400,HL8549,AirPrime HL8549,AirPrime,Sierra Wireless
-01525900,HL8549,AirPrime HL8549,AirPrime,Sierra Wireless
-01560100,HL8549,AirPrime HL8549,AirPrime,Sierra Wireless
+1464700,SL6087,AirPrime SL6087,AirPrime,Sierra Wireless
+1492400,HL8549,AirPrime HL8549,AirPrime,Sierra Wireless
+1525900,HL8549,AirPrime HL8549,AirPrime,Sierra Wireless
+1560100,HL8549,AirPrime HL8549,AirPrime,Sierra Wireless
 35182708,EM7430,AirPrime EM7430,AirPrime,Sierra Wireless
 35186506,Q2687,AirPrime Q2687,AirPrime,Sierra Wireless
 35226707,SL6087,AirPrime SL6087,AirPrime,Sierra Wireless
@@ -37,7 +37,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35936207,HiLo3G 900,Sierra Wireless HiLo3G 900,AirPrime,Sierra Wireless
 35991306,HL6528,AirPrime HL6528,AirPrime,Sierra Wireless
 35991406,HL6528-G,AirPrime HL6528-G,AirPrime,Sierra Wireless
-01505000,1066D,ALCATEL 1066D,ALCATEL,TCL Communication Ltd
+1505000,1066D,ALCATEL 1066D,ALCATEL,TCL Communication Ltd
 35151510,1066D,ALCATEL 1066D,ALCATEL,TCL Communication Ltd
 35166808,9015Q,"PIXI 4 7"" 4G android",ALCATEL,TCL Communication Ltd
 35169408,5048U,PIXI 4 (5.5),ALCATEL,TCL Communication Ltd
@@ -88,8 +88,8 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86459602,5038D,ALCATEL ONETOUCH POP D5,ALCATEL,TCT Mobile Limited
 86515902,2007D,2007D,ALCATEL,TCT Mobile Limited
 86553202,6070K,ALCATEL ONETOUCH IDOL X2,ALCATEL,TCT Mobile Limited
-01425300,2004C,Alcatel Onetouch 2004C,ALCATEL ONETOUCH,TCT Mobile Limited
-01465900,2004C,ALCATEL ONETOUCH 2004C,ALCATEL ONETOUCH,TCT Mobile Limited
+1425300,2004C,Alcatel Onetouch 2004C,ALCATEL ONETOUCH,TCT Mobile Limited
+1465900,2004C,ALCATEL ONETOUCH 2004C,ALCATEL ONETOUCH,TCT Mobile Limited
 35241507,1050D,ALCATEL ONETOUCH 1050D,ALCATEL ONETOUCH,TCL Communication Ltd
 35293307,5022D,ALCATEL ONETOUCH 5022D,ALCATEL ONETOUCH,TCL Communication Ltd
 35314507,7053D,ALCATEL ONETOUCH 7053D,ALCATEL ONETOUCH,TCL Communication Ltd
@@ -111,123 +111,123 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35548007,GT500,GT500,Amobile,Amobile Intelligent Corp.
 35686410,PD470,PD470,Amobile,Amobile Intelligent Corp.
 35718802,D242,D242,Anycool ,Shenzhen KDI Communication Co Ltd
-01293600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01293700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01293800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01293900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01294000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01294100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01300800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01302900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01303900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01304900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01305900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01306900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01307000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01307100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01307200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01307300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01317900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01318900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01319900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01320900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
-01390000,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390100,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390200,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390300,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390400,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390500,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390600,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390700,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01390800,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
-01448200,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448300,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448400,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448500,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448600,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448700,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448800,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01448900,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
-01449000,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1293600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1293700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1293800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1293900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1294000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1294100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1300800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1302900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1303900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1304900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1305900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1306900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1307000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1307100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1307200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1307300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1317900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1318900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1319900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320000,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320100,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320200,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320300,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320400,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320500,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320600,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320700,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320800,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1320900,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
+1390000,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390100,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390200,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390300,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390400,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390500,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390600,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390700,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1390800,A1332,Apple iPhone 4 (A1332),Apple,Apple Inc
+1448200,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448300,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448400,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448500,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448600,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448700,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448800,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1448900,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
+1449000,A1387,Apple iPhone 4S (A1387),Apple,Apple Inc
 35197606,iPad Air (A1475),Apple iPad Air (A1475),Apple,Apple Inc
 35197706,iPad Air (A1475),Apple iPad Air (A1475),Apple,Apple Inc
 35198006,iPhone 5S (A1530),Apple iPhone 5S (A1530),Apple,Apple Inc
@@ -1575,26 +1575,26 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 99000414,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
 99000415,iPhone 4S (A1387),Apple iPhone 4S (A1387),Apple,Apple Inc
 99000418,iPad mini (A1455),Apple iPad mini (A1455),Apple,Apple Inc
-01353200,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353300,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353400,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353500,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353600,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353700,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353800,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01353900,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01354000,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01354100,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01358900,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359000,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359100,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359200,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359300,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359400,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359500,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359600,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359700,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
-01359800,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353200,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353300,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353400,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353500,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353600,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353700,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353800,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1353900,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1354000,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1354100,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1358900,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359000,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359100,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359200,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359300,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359400,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359500,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359600,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359700,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
+1359800,A1387,Apple iPhone 4S (A1387),Apple iPhone 4S,Apple Inc
 35399707,BM5500,Fingerprint Smart Terminal,Aratek,Aratek Group International Limited
 35841907,BM7500,Fingerprint Smart Terminal,Aratek,Aratek Group International Limited
 35175106,AC101XE,Archos AC101XE,Archos,Archos SA
@@ -1623,7 +1623,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35468708,JOY,BLU JOY,BLU,BLU Products Inc
 35525009,TANK JR,BLU TANK JR,BLU,BLU Products Inc
 35859708,Z3 Music,BLU Z3 Music,BLU,BLU Products Inc
-01444900,EF500,EF500,BLUEBIRD,Bluebird Inc
+1444900,EF500,EF500,BLUEBIRD,Bluebird Inc
 35250909,EF501,EF501,BLUEBIRD,Bluebird Inc
 35298307,EF500,EF500,BLUEBIRD,Bluebird Inc
 35419711,EF501R,EF501R,BLUEBIRD,Bluebird Inc
@@ -4844,18 +4844,18 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86167801,S351,NONY S351,NONY,Shenzhen Nony Technology Co Ltd
 86167901,S352,NONY S352,NONY,Shenzhen Nony Technology Co Ltd
 101700,Wireless CPU Q2687,Wireless CPU Q2687,Not Known,Wavecom
-01215100,VX680,VX680,Not Known,VeriFone
-01239000,VX520,VX520,Not Known,VeriFone
-01289600,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
-01316400,VX680,VX680,Not Known,VeriFone
-01322600,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
-01322700,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
-01357800,VX520,VX520,Not Known,VeriFone
-01364100,VX680,VX680,Not Known,VeriFone
-01377700,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
-01394900,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
-01395000,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
-01409900,VX680,VX680,Not Known,VeriFone
+1215100,VX680,VX680,Not Known,VeriFone
+1239000,VX520,VX520,Not Known,VeriFone
+1289600,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
+1316400,VX680,VX680,Not Known,VeriFone
+1322600,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
+1322700,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
+1357800,VX520,VX520,Not Known,VeriFone
+1364100,VX680,VX680,Not Known,VeriFone
+1377700,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
+1394900,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
+1395000,SIM900,SIM900,Not Known,SIMCOM Wireless Solutions Co Ltd
+1409900,VX680,VX680,Not Known,VeriFone
 35152501,SIM300,SIM300,Not Known,SIMCOM Wireless Solutions Co Ltd
 35192001,SGH-E788,SGH-E788,Not Known,Samsung Korea
 35254702,SIM300,SIM300,Not Known,SIMCOM Wireless Solutions Co Ltd
@@ -9366,10 +9366,10 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86431603,i9000 S,i9000 S,urovo,Shenzhen Urovo Technology Co Ltd
 86728203,VK-T8,VK-T8,V.KEL,V.KEL Communications Equipment (Shenzhen) Co Ltd
 35851109,V007,V007 VCARE IOT,VCARE IOT,Vcare IoT Pakistan (SMC-Private) Limited
-01345400,VX680 3G,VX680 3G,VeriFone,VeriFone
-01414200,VX520,VeriFone VX520,VeriFone,VeriFone
-01490100,V200t 3G/D/E,V200t 3G/D/E,VeriFone,VeriFone
-01522400,VX680 3G,VX680 3G,Verifone,VeriFone
+1345400,VX680 3G,VX680 3G,VeriFone,VeriFone
+1414200,VX520,VeriFone VX520,VeriFone,VeriFone
+1490100,V200t 3G/D/E,V200t 3G/D/E,VeriFone,VeriFone
+1522400,VX680 3G,VX680 3G,Verifone,VeriFone
 35812906,VX520 and VX680,Verifone VX520 and VX680,Verifone,VeriFone
 35940008,VX680,Verifone VX680,VeriFone,VeriFone
 35961905,"VX520, VX680","VeriFone VX520, VX680",VeriFone,VeriFone
@@ -9938,31 +9938,31 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35604440,A2111,iPhone 11,Apple,Apple Inc
 86254106,Redmi Note 11,Redmi Note 11,XIAOMI,"Xiaomi Communications Co., Ltd."
 35315211,A2111,iPhone 11,Apple,Apple Inc
-01124500,iPhone,iPhone,Apple,
-01130000,iPhone,iPhone,Apple,
-01136400,iPhone,iPhone,Apple,
-01154600,iPhone,iPhone,Apple,
-01161200,iPhone 3G,iPhone 3G,Apple,
-01174400,iPhone 3G,iPhone 3G,Apple,
-01180800,iPhone 3G,iPhone 3G,Apple,
-01181200,iPhone 3G,iPhone 3G,Apple,
-01193400,iPhone 3G,iPhone 3G,Apple,
-01194800,iPhone 3GS,iPhone 3GS,Apple,
-01215800,iPhone 3GS,iPhone 3GS,Apple,
-01215900,iPhone 3GS,iPhone 3GS,Apple,
-01216100,iPhone 3GS,iPhone 3GS,Apple,
-01226800,iPhone 3GS,iPhone 3GS,Apple,
-01233600,iPhone 4,iPhone 4,Apple,
-01233700,iPhone 4,iPhone 4,Apple,
-01233800,iPhone 4,iPhone 4,Apple,
-01241700,iPhone 4,iPhone 4,Apple,
-01242000,iPhone 4,iPhone 4,Apple,
-01243000,iPhone 4,iPhone 4,Apple,
-01253600,iPhone 4,iPhone 4,Apple,
-01254200,iPhone 4,iPhone 4,Apple,
-01326300,iPhone 4,iPhone 4,Apple,
-01332700,iPhone 5,iPhone 5,Apple,
-01388300,iPhone 5S,iPhone 5S,Apple,
+1124500,iPhone,iPhone,Apple,
+1130000,iPhone,iPhone,Apple,
+1136400,iPhone,iPhone,Apple,
+1154600,iPhone,iPhone,Apple,
+1161200,iPhone 3G,iPhone 3G,Apple,
+1174400,iPhone 3G,iPhone 3G,Apple,
+1180800,iPhone 3G,iPhone 3G,Apple,
+1181200,iPhone 3G,iPhone 3G,Apple,
+1193400,iPhone 3G,iPhone 3G,Apple,
+1194800,iPhone 3GS,iPhone 3GS,Apple,
+1215800,iPhone 3GS,iPhone 3GS,Apple,
+1215900,iPhone 3GS,iPhone 3GS,Apple,
+1216100,iPhone 3GS,iPhone 3GS,Apple,
+1226800,iPhone 3GS,iPhone 3GS,Apple,
+1233600,iPhone 4,iPhone 4,Apple,
+1233700,iPhone 4,iPhone 4,Apple,
+1233800,iPhone 4,iPhone 4,Apple,
+1241700,iPhone 4,iPhone 4,Apple,
+1242000,iPhone 4,iPhone 4,Apple,
+1243000,iPhone 4,iPhone 4,Apple,
+1253600,iPhone 4,iPhone 4,Apple,
+1254200,iPhone 4,iPhone 4,Apple,
+1326300,iPhone 4,iPhone 4,Apple,
+1332700,iPhone 5,iPhone 5,Apple,
+1388300,iPhone 5S,iPhone 5S,Apple,
 35875105,iPhone 5S,iPhone 5S,Apple,
 35875205,iPhone 5S,iPhone 5S,Apple,
 35875305,iPhone 5S,iPhone 5S,Apple,
@@ -9996,10 +9996,10 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35201906,iPhone 5S,iPhone 5S,Apple,
 35438506,iPhone 6+,iPhone 6+,Apple,
 35325807,iPhone 6S,iPhone 6S,Apple,
-03530340,iPad 6th gen,iPad 6th gen,Apple,
+3530340,iPad 6th gen,iPad 6th gen,Apple,
 35103627,iPad 9th gen,iPad 9th gen,Apple,
 35676211,iPad Air 4th gen,iPad Air 4th gen,Apple,
-03576677,iPad Air 5th gen,iPad Air 5th gen,Apple,
+3576677,iPad Air 5th gen,iPad Air 5th gen,Apple,
 35705623,FastMile 5G Gateway 3.2,FastMile 5G Gateway 3.2,Nokia,
 35089080,3410,3410,Nokia,
 35099480,3410,3410,Nokia,
@@ -10074,7 +10074,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86217001,Queclink GV200,Queclink GV200,Quectel,
 86723902,"Rook from EE, Orange Dive 30, Blade A410","Rook from EE, Orange Dive 30, Blade A410",ZTE Corporation,
 86813001,G3S,G3S,Jiayu,
-01333200,iPhone 5,iPhone 5,Apple,
+1333200,iPhone 5,iPhone 5,Apple,
 99000481,Galaxy note 4 GM-N910V,Galaxy note 4 GM-N910V,Samsung,
 35808005,Sony C6833 - XPERIA Z ULTRA,Sony C6833 - XPERIA Z ULTRA,Sony,
 35415808,Samsung J7 Prime,Samsung J7 Prime,Samsung,
@@ -10085,7 +10085,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86092103,P9 Lite 2016,P9 Lite 2016,Huawei,
 35293708,Galaxy A5 2016,Galaxy A5 2016,Samsung,
 35684610,Galaxy Fold 5G,Galaxy Fold 5G,Samsung,
-01459300,T-Mobile LineLink,T-Mobile LineLink,WondaLink,
+1459300,T-Mobile LineLink,T-Mobile LineLink,WondaLink,
 35253108,Google Pixel,Google Pixel,Google,
 35803408,Google Pixel 2 XL (Verizon),Google Pixel 2 XL (Verizon),Google,
 35803508,Google Pixel 2 XL (Unlocked),Google Pixel 2 XL (Unlocked),Google,
@@ -10095,8 +10095,8 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 86551004,OnePlus 7 Pro (T-Mobile),OnePlus 7 Pro (T-Mobile),OnePlus,
 86492106,OnePlus 11,OnePlus 11,OnePlus,
 350151..,3330,3330,Nokia,
-00,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
-01234567,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
+0,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
+1234567,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
 12345678,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
 13579024,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
 88888888,"typical fake TAC codes, usually in software damaged phones","typical fake TAC codes, usually in software damaged phones",N/A,
@@ -10109,39 +10109,39 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 44919451,M35i,Siemens,Siemens,
 35863907,Dream G2,SciPhone,SciPhone,
 44814551,S10 active,Siemens,Siemens,
-01203000,iPhone 3GS,Apple,Apple,
-01215600,iPhone 3GS,Apple,Apple,
-01216200,iPhone 3GS,Apple,Apple,
-01216300,iPhone 3GS,Apple,Apple,
-01242200,iPhone 4,Apple,Apple,
-01243100,iPhone 4,Apple,Apple,
-01253300,iPhone 4,Apple,Apple,
-01254100,iPhone 4,Apple,Apple,
-01275000,iPhone 4,Apple,Apple,
-01283700,iPhone 4,Apple,Apple,
-01312600,iPhone 4,Apple,Apple,
-01312700,iPhone 4,Apple,Apple,
-01312800,iPhone 4,Apple,Apple,
-01334500,iPhone 5,Apple,Apple,
-01334600,iPhone 5,Apple,Apple,
-01335000,iPhone 5,Apple,Apple,
-01335100,iPhone 5,Apple,Apple,
-01340300,iPhone 5,Apple,Apple,
-01340400,iPhone 5,Apple,Apple,
-01341100,iPhone 5,Apple,Apple,
-01341400,iPhone 5,Apple,Apple,
-01341700,iPhone 5,Apple,Apple,
-01341800,iPhone 5,Apple,Apple,
-01342000,iPhone 5,Apple,Apple,
-01342100,iPhone 5,Apple,Apple,
-01342200,iPhone 5,Apple,Apple,
-01343800,iPhone 5,Apple,Apple,
-01344100,iPhone 5,Apple,Apple,
-01355100,iPhone 5,Apple,Apple,
-01355600,iPhone 5,Apple,Apple,
-01361900,iPhone 5,Apple,Apple,
-01362500,iPhone 5,Apple,Apple,
-01363100,iPhone 5,Apple,Apple,
+1203000,iPhone 3GS,Apple,Apple,
+1215600,iPhone 3GS,Apple,Apple,
+1216200,iPhone 3GS,Apple,Apple,
+1216300,iPhone 3GS,Apple,Apple,
+1242200,iPhone 4,Apple,Apple,
+1243100,iPhone 4,Apple,Apple,
+1253300,iPhone 4,Apple,Apple,
+1254100,iPhone 4,Apple,Apple,
+1275000,iPhone 4,Apple,Apple,
+1283700,iPhone 4,Apple,Apple,
+1312600,iPhone 4,Apple,Apple,
+1312700,iPhone 4,Apple,Apple,
+1312800,iPhone 4,Apple,Apple,
+1334500,iPhone 5,Apple,Apple,
+1334600,iPhone 5,Apple,Apple,
+1335000,iPhone 5,Apple,Apple,
+1335100,iPhone 5,Apple,Apple,
+1340300,iPhone 5,Apple,Apple,
+1340400,iPhone 5,Apple,Apple,
+1341100,iPhone 5,Apple,Apple,
+1341400,iPhone 5,Apple,Apple,
+1341700,iPhone 5,Apple,Apple,
+1341800,iPhone 5,Apple,Apple,
+1342000,iPhone 5,Apple,Apple,
+1342100,iPhone 5,Apple,Apple,
+1342200,iPhone 5,Apple,Apple,
+1343800,iPhone 5,Apple,Apple,
+1344100,iPhone 5,Apple,Apple,
+1355100,iPhone 5,Apple,Apple,
+1355600,iPhone 5,Apple,Apple,
+1361900,iPhone 5,Apple,Apple,
+1362500,iPhone 5,Apple,Apple,
+1363100,iPhone 5,Apple,Apple,
 35793200,6600,Nokia,Nokia,
 35795200,6600,Nokia,Nokia,
 35881700,6600,Nokia,Nokia,
@@ -13649,29 +13649,29 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35311302,6301,Nokia,Nokia,
 35686702,7510 Supernova,Nokia,Nokia,
 35932102,7510 Supernova,Nokia,Nokia,
-01020100,SL55,Siemens,Siemens,
-01020900,S45,Siemens,Siemens,
-01022200,C1400,LG,LG,
-01030500,G4011,LG,LG,
-01033900,N-Gage QD,Nokia,Nokia,
-01034500,C1200,LG,LG,
-01034600,C1300,LG,LG,
-01037800,C1300,LG,LG,
-01037900,L1100,LG,LG,
-01042100,G4020,LG,LG,
-01045700,C1300,LG,LG,
-01047500,C1300,LG,LG,
-01052900,C1300,LG,LG,
-01054000,F9100,LG,LG,
-01056400,C1300,LG,LG,
-01060500,C1300,LG,LG,
-01062800,LG-2000,LG,LG,
-01074200,MG200,LG,LG,
-01078200,MG200,LG,LG,
-01085100,CU500,LG,LG,
-01096500,6060,Nokia,Nokia,
-01096600,6060,Nokia,Nokia,
-01114600,6060,Nokia,Nokia,
+1020100,SL55,Siemens,Siemens,
+1020900,S45,Siemens,Siemens,
+1022200,C1400,LG,LG,
+1030500,G4011,LG,LG,
+1033900,N-Gage QD,Nokia,Nokia,
+1034500,C1200,LG,LG,
+1034600,C1300,LG,LG,
+1037800,C1300,LG,LG,
+1037900,L1100,LG,LG,
+1042100,G4020,LG,LG,
+1045700,C1300,LG,LG,
+1047500,C1300,LG,LG,
+1052900,C1300,LG,LG,
+1054000,F9100,LG,LG,
+1056400,C1300,LG,LG,
+1060500,C1300,LG,LG,
+1062800,LG-2000,LG,LG,
+1074200,MG200,LG,LG,
+1078200,MG200,LG,LG,
+1085100,CU500,LG,LG,
+1096500,6060,Nokia,Nokia,
+1096600,6060,Nokia,Nokia,
+1114600,6060,Nokia,Nokia,
 10015000,i860,Motorola,Motorola,
 10134000,C56,Siemens,Siemens,
 10135000,Netpad 5110,Psion,Psion,
@@ -14443,9 +14443,9 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 33217467,OT-304,Alcatel,Alcatel,
 33217470,OT-304,Alcatel,Alcatel,
 33217471,OT-304,Alcatel,Alcatel,
-01037200,1100b,Nokia,Nokia,
-01111400,6030,Nokia,Nokia,
-01045600,C1300,LG,LG,
+1037200,1100b,Nokia,Nokia,
+1111400,6030,Nokia,Nokia,
+1045600,C1300,LG,LG,
 33217536,OT-304,Alcatel,Alcatel,
 33217540,OT-304,Alcatel,Alcatel,
 33217553,OT-304,Alcatel,Alcatel,
@@ -14791,7 +14791,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 33232672,MW3056,Sagem,Sagem,
 33232682,MW3056,Sagem,Sagem,
 33232695,MW3056,Sagem,Sagem,
-01108700,1116,Nokia,Nokia,
+1108700,1116,Nokia,Nokia,
 35007600,GD93,Panasonic,Panasonic,
 35007662,GD93,Panasonic,Panasonic,
 35007687,GD93,Panasonic,Panasonic,
@@ -31603,13 +31603,13 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 36367102,SGH-C260,Samsung,Samsung,
 36766401,1600,Nokia,Nokia,
 37534000,8800e Arte,Nokia,Nokia,
-0499901,CW-Vi7,CHUWI,CHUWI,
-01404600,D321,LG,LG,
-01408500,SD4930UR,Amazon,Amazon,
-01408900,LG-D851,LG,LG,
-01428500,Fire Phone,Amazon,Amazon,
-01437900,5017A,TCL,TCL,
-01445100,5054N,TCL,TCL,
+499901,CW-Vi7,CHUWI,CHUWI,
+1404600,D321,LG,LG,
+1408500,SD4930UR,Amazon,Amazon,
+1408900,LG-D851,LG,LG,
+1428500,Fire Phone,Amazon,Amazon,
+1437900,5017A,TCL,TCL,
+1445100,5054N,TCL,TCL,
 35000000,SM-J700F,Samsung,Samsung,
 35159107,Ilium S106,LANIX,LANIX,
 35168006,D5503,Sony,Sony,
@@ -31898,7 +31898,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35501304,E1750,Huawei,Huawei,
 86992102,M3 note,Meizu,Meizu,
 35503104,Nexus S,Samsung,Samsung,
-01229100,U10i,Sony Ericsson,Sony Ericsson,
+1229100,U10i,Sony Ericsson,Sony Ericsson,
 35783603,GT-B5310,Samsung,Samsung,
 35800104,Galaxy S,Samsung,Samsung,
 35519104,OT-890D,Alcatel,Alcatel,
@@ -31913,7 +31913,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35814204,V350,ViewSonic,ViewSonic,
 86189501,Y200,Huawei,Huawei,
 35756401,GTM 382,Option,Option,
-01195200,iPhone 3GS,Apple,Apple,
+1195200,iPhone 3GS,Apple,Apple,
 35278404,MILESTONE 2,Motorola,Motorola,
 98002800,ES400,Motorola,Motorola,
 35187990,E61i,Nokia,Nokia,
@@ -31922,7 +31922,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35911804,Sensation Z710e,HTC,HTC,
 35412003,HD2,HTC,HTC,
 35278901,DP-L10,Pirelli,Pirelli,
-01215400,iPhone 3GS,Apple,Apple,
+1215400,iPhone 3GS,Apple,Apple,
 35839804,Galaxy Xcover,Samsung,Samsung,
 35700503,GE864-QUAD-V2,Telit,Telit,
 35221204,Vision,HTC,HTC,
@@ -31934,7 +31934,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35277803,Dream,HTC,HTC,
 35813902,Pre,Palm,Palm,
 35719104,U8510 IDEOS X3,Huawei,Huawei,
-01246800,U20i,Sony Ericsson,Sony Ericsson,
+1246800,U20i,Sony Ericsson,Sony Ericsson,
 35479505,Galaxy Tab 2 7.0 GSM,Samsung,Samsung,
 35251905,RAZR i,Motorola,Motorola,
 35397505,Galaxy S III,Samsung,Samsung,
@@ -31972,7 +31972,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35342508,SM-G930V,Samsung,Samsung,
 35930005,Moto E,Motorola,Motorola,
 86638302,JY-S3,Jiayu,Jiayu,
-01431600,7040N,TCL,TCL,
+1431600,7040N,TCL,TCL,
 35155907,SM-G920W8,Samsung,Samsung,
 35217805,Sensation XE,HTC,HTC,
 35222805,One XL,HTC,HTC,
@@ -31997,9 +31997,9 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 91142520,Q372,Micromax,Micromax,
 91827364,XT320,Batmobile,Batmobile,
 99000580,SM-S820L,Samsung,Samsung,
-01382600,ONE TOUCH 7040A,Alcatel,Alcatel,
-01425000,MS323,LG,LG,
-01469900,Alcatel 4060A,TCL,TCL,
+1382600,ONE TOUCH 7040A,Alcatel,Alcatel,
+1425000,MS323,LG,LG,
+1469900,Alcatel 4060A,TCL,TCL,
 10449733,SM-G925F,Samsung,Samsung,
 35154507,Nexus 7,Asus,Asus,
 35171808,SM-A910F,Samsung,Samsung,
@@ -32091,7 +32091,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 99000508,XT1096,Motorola,Motorola,
 99000591,SM-J100VPP,Samsung,Samsung,
 99000719,6545LVW,HTC,HTC,
-01376300,OneTouch Fierce,Alcatel,Alcatel,
+1376300,OneTouch Fierce,Alcatel,Alcatel,
 35116947,SM-G900F,Samsung,Samsung,
 35267708,Pixel XL,Google,Google,
 35271306,A5Smiley,Allview,Allview,
@@ -32248,7 +32248,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35499405,XT1033,Motorola,Motorola,
 35800200,V3,Motorola,Motorola,
 35639200,U6,Motorola,Motorola,
-01326200,Discover,Pantech,Pantech,
+1326200,Discover,Pantech,Pantech,
 35263800,A55,Siemens,Siemens,
 35882104,A230,LG,LG,
 35153205,Duos GT-3782 (SIM2),Samsung,Samsung,
@@ -32261,7 +32261,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35463804,E1550,Huawei,Huawei,
 35911606,Desire 326G,HTC,HTC,
 35191104,E1550,Huawei,Huawei,
-01220700,SIM900,Simcom,Simcom,
+1220700,SIM900,Simcom,Simcom,
 35299401,glofiish X500,Eten,Eten,
 35831304,Sensation XE,HTC,HTC,
 35644004,Sensation XE,HTC,HTC,
@@ -32280,7 +32280,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35194104,MF180,ZTE,ZTE,
 35210804,E150,Huawei,Huawei,
 35967202,MF626,ZTE,ZTE,
-01505100,1066,Alcatel,Alcatel,
+1505100,1066,Alcatel,Alcatel,
 35506604,Sensation,HTC,HTC,
 35629204,One Touch 112,Alcatel,Alcatel,
 86815601,TS90,Fly,Fly,
@@ -32367,7 +32367,7 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35389811,A80Pro,Blackview,Blackview,
 35104463,iPhone 13,Apple,Apple,
 86565504,FIND X2 LITE,OPPO,OPPO,
-01229500,R225,ZTE,ZTE,
+1229500,R225,ZTE,ZTE,
 35018398,iPhone,Apple,Apple,
 35740800,EC211003,Fih,Fih,
 35058828,PLS63-W,Thales,Thales,
@@ -32385,3 +32385,4 @@ GSMA TAC,Model as per GSMA,Mobile Device,Brand Name,Manufacturer
 35561610,SM-A205FN/DS (SIM2),Samsung,Samsung,
 35648710,iPhone SE,Apple,Apple,
 35603310,SM-G970U,Samsung,Samsung,
+86703806,Vivo Y17s,Vivo,BLU Products Inc,
